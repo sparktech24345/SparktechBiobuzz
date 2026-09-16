@@ -7,13 +7,19 @@ repositories {
     maven { url = 'https://maven.brott.dev/' } //2
     maven { url = 'https://maven.pedropathing.com' } //3
     maven { url = "https://mymaven.bylazar.com/releases" } //4
-    maven { url = 'https://repo.dairy.foundation/releases' } //5
+    maven { url 'https://repo.dairy.foundation/releases/'}//5
     maven { url = 'https://jitpack.io' } //6
+    maven {
+        name "dairyReleases"
+        url "https://repo.dairy.foundation/releases"
+    }
+
 }
 
 dependencies {
     implementation 'org.firstinspires.ftc:Inspection:12.0.0'
     implementation 'org.firstinspires.ftc:Blocks:12.0.0'
+    //noinspection Aligned16KB
     implementation 'org.firstinspires.ftc:RobotCore:12.0.0'
     implementation 'org.firstinspires.ftc:RobotServer:12.0.0'
     implementation 'org.firstinspires.ftc:OnBotJava:12.0.0'
@@ -28,6 +34,8 @@ dependencies {
     //Pedro
     implementation 'com.pedropathing:revhub:3.0.0'
     implementation 'com.pedropathing:tuning:1.0.0'
+    implementation "dev.frozenmilk.sinister:Sloth:0.3.1"
+
 
 //    //Photon
 //    implementation 'org.solverslib:photon:0.3.5'
