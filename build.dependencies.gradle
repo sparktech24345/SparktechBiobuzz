@@ -1,6 +1,14 @@
 repositories {
     mavenCentral()
     google() // Needed for androidx
+
+    maven { url = 'https://maven.anygeneric.dev/' } //1
+
+    maven { url = 'https://maven.brott.dev/' } //2
+    maven { url = 'https://maven.pedropathing.com' } //3
+    maven { url = "https://mymaven.bylazar.com/releases" } //4
+    maven { url = 'https://repo.dairy.foundation/releases' } //5
+    maven { url = 'https://jitpack.io' } //6
 }
 
 dependencies {
@@ -13,5 +21,37 @@ dependencies {
     implementation 'org.firstinspires.ftc:FtcCommon:12.0.0'
     implementation 'org.firstinspires.ftc:Vision:12.0.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
+
+    //Dashboard
+    implementation "com.acmerobotics.dashboard:dashboard:0.6.0"
+
+    //Pedro
+    implementation 'com.pedropathing:revhub:3.0.0'
+    implementation 'com.pedropathing:tuning:1.0.0'
+
+//    //Photon
+//    implementation 'org.solverslib:photon:0.3.5'
+
+    //Blaze FTC
+    implementation "dev.anygeneric:blazeftc:0.1.61"
+    implementation 'dev.anygeneric:blazeftc_pedro:0.1.61'
+
+    //Panels
+    implementation 'com.bylazar:fullpanels:1.0.13'
+
+    //LogiCore
+    implementation project(':LogiCore')
+    implementation project(':LogiCore-pedropathing')
+
+
+    // Force Gradle to cap androidx.core at 1.13.1
+    constraints {
+        implementation("androidx.core:core:1.13.1") {
+            because("Prevents transitive updates requiring Android API 37")
+        }
+        implementation("androidx.core:core-ktx:1.13.1") {
+            because("Prevents transitive updates requiring Android API 37")
+        }
+    }
 }
 

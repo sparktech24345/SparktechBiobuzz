@@ -15,6 +15,7 @@ plugins {
     // Note for FTC Teams: Do not modify this yourself.
     id 'com.android.application' version '8.13.2' apply false
     id 'com.android.library' version '8.13.2' apply false
+    id 'org.jetbrains.kotlin.android' version '2.2.20' apply false
 }
 
 // This is now required because aapt2 has to be downloaded from the
@@ -23,6 +24,12 @@ allprojects {
     repositories {
         mavenCentral()
         google()
+        maven { url = 'https://maven.anygeneric.dev/' }
+        maven { url = 'https://maven.brott.dev/' }
+        maven { url = 'https://maven.pedropathing.com' }
+        maven { url = "https://mymaven.bylazar.com/releases" }
+        maven { url = 'https://repo.dairy.foundation/releases' }
+        maven { url = 'https://jitpack.io' }
     }
 }
 
