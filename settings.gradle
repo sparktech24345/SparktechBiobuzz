@@ -14,4 +14,3 @@ pluginManagement {
 include ':FtcRobotController'
 include ':TeamCode'
 include ':LogiCore'
-include ':LogiCore-pedropathing'

@@ -42,11 +42,13 @@ class CoreLimelight(val name: String, interval: Double = 1.0) : CoreModule {
         status = limelight.status
     }
 
+    override fun loopCore() = Unit
+
     /**
      * Update vision results at throttled rate.
      * Only stores results that pass the validity check.
      */
-    override fun loopCore() {
+    override fun readCore() {
         if (!tracker.shouldTick()) return
         val tempResult = limelight.latestResult
         if (tempResult.isValid) {

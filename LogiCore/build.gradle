@@ -52,6 +52,10 @@ dependencies {
     // Blaze FTC
     implementation "dev.anygeneric:blazeftc:0.1.61"
     implementation 'dev.anygeneric:blazeftc_pedro:0.1.61'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0'
+
+    compileOnly 'com.pedropathing:revhub:3.0.1'
+    compileOnly 'com.pedropathing:tuning:1.0.1'
 }
 
 

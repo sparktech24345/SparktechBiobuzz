@@ -168,7 +168,7 @@ class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T) : CoreModule,
 
     override fun initCore() {
         states.own(this)
-        motor = CachingDcMotorEx(CoreOpMode.instance!!.hardwareMap[name] as DcMotorEx)
+        motor = CachingDcMotorEx(CoreOpMode.instance!!.hardwareMap[name] as DcMotorImplEx)
         unitsPerRev =
             (motor.dcMotorEx as DcMotorImplEx?)?.controller?.getMotorType(motor.portNumber)?.ticksPerRev ?: 1.0
     }

@@ -22,6 +22,10 @@ interface CoreModule {
 
     /** Called when OpMode stops - clean up resources */
     fun stopCore() {}
+    
+    fun readCore() {}
+    
+    fun writeCore() {}
 
     /**
      * Central update method that routes to appropriate lifecycle method based on game stage.

@@ -1,4 +1,4 @@
-package ro.sparktech24345.logicore.pedropathing
+package ro.sparktech24345.logicore.pedro
 
 import com.pedropathing.follower.Follower
 import com.qualcomm.robotcore.hardware.HardwareMap

@@ -48,7 +48,6 @@ dependencies {
 
     //LogiCore
     implementation project(':LogiCore')
-    implementation project(':LogiCore-pedropathing')
 
 
     // Force Gradle to cap androidx.core at 1.13.1

@@ -55,13 +55,12 @@ class CoreServo<T : BaseStateSet>(val name: String, stateSet: T) : CoreModule,
     override fun initCore() {
         states.own(this)
         servo = CachingServo(CoreOpMode.instance!!.hardwareMap[name] as Servo)
-        realPosition = servo.position
     }
 
-    override fun init_loopCore() = loopCore()
+    override fun loopCore() = Unit
 
     /** Update servo position every loop cycle */
-    override fun loopCore() {
+    override fun writeCore() {
         servo.position = realPosition
     }
 }

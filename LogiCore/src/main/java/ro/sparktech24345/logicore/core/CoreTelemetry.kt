@@ -1,5 +1,9 @@
 package ro.sparktech24345.logicore.core
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import ro.sparktech24345.logicore.utils.MultiTelemetry
 import ro.sparktech24345.logicore.utils.TickInterval
 
@@ -12,6 +16,7 @@ import ro.sparktech24345.logicore.utils.TickInterval
 class CoreTelemetry(interval: Double = 3.0): MultiTelemetry(), CoreModule {
     /** Tick interval tracker for throttling telemetry updates */
     val tracker = TickInterval(interval)
+    val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun initCore() = Unit
     override fun init_loopCore() = loopCore()
@@ -21,7 +26,9 @@ class CoreTelemetry(interval: Double = 3.0): MultiTelemetry(), CoreModule {
      * This prevents excessive CPU usage from frequent telemetry updates.
      */
     override fun loopCore() {
-        if (tracker.shouldTick()) update()
+        if (tracker.shouldTick()) scope.launch {
+            update()
+        }
     }
 
     override fun setNumDecimalPlaces(minDecimalPlaces: Int, maxDecimalPlaces: Int) {

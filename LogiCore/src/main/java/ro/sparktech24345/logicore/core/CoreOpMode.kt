@@ -1,11 +1,13 @@
 package ro.sparktech24345.logicore.core
 
+import com.pedropathing.math.Pose
 import com.seattlesolvers.solverslib.photon.PhotonCore
 import dev.anygeneric.blazeftc.BlazeDummyPlug.closeBlazeFTC
 import dev.anygeneric.blazeftc.DummyPlugOpMode
-import dev.anygeneric.blazeftc.Hub
 import ro.sparktech24345.logicore.commands.BaseCommand
 import ro.sparktech24345.logicore.hardware.CoreVoltageSensor
+import ro.sparktech24345.logicore.pedro.CoreFollower
+import ro.sparktech24345.logicore.pedro.FollowerConstants
 import ro.sparktech24345.logicore.utils.PreciseTimer
 
 /**
@@ -13,17 +15,15 @@ import ro.sparktech24345.logicore.utils.PreciseTimer
  * module system, command queuing, and hardware access.
  *
  * @param type The type of OpMode (TELEOP, AUTONOMOUS, or TESTING)
- * @param dash Whether to enable FTC Dashboard telemetry integration
  * @param debug Enable debug mode for benchmarking and additional logging
  * @param performanceEngine The hardware acceleration engine to use (PHOTON, BLAZE, or NONE)
  */
 @Suppress("PROPERTY_HIDES_JAVA_FIELD")
 abstract class CoreOpMode(
     val type: OpModeType,
-    val dash: Boolean = true,
-    var debug: Boolean = false,
-    var performanceEngine: PerformanceEngine = PerformanceEngine.NONE,
-) : DummyPlugOpMode(), CommandQueuer, ModuleContainer {
+    val followerConstants: FollowerConstants,
+    val performanceEngine: PerformanceEngine = PerformanceEngine.NONE,
+) : DummyPlugOpMode(), CommandQueuer {
 
     /** Represents the hardware optimization engine used for bulk reads and performance */
     enum class PerformanceEngine {
@@ -41,7 +41,8 @@ abstract class CoreOpMode(
         STOP,       // Cleanup phase
     }
 
-    private var modules = ModuleHandler()
+    private var cHubModules = ModuleHandler()
+    private var eHubModules = ModuleHandler()
     private var queuer = CoreQueuer()
 
     companion object {
@@ -49,6 +50,8 @@ abstract class CoreOpMode(
         @Volatile
         var instance: CoreOpMode? = null
             private set
+
+        val currentPosition = Pose(0.0, 0.0, 0.0)
     }
 
     /** Current stage of the OpMode lifecycle */
@@ -63,6 +66,7 @@ abstract class CoreOpMode(
 
     /** Telemetry system with update throttling and multi-output support */
     val coreTelemetry = CoreTelemetry()
+    val follower = CoreFollower(followerConstants, initWithLastPose = (type == OpModeType.TELEOP))
 
     /** Gamepad input processing with button state tracking */
     lateinit var gamepad: CoreGamepad
@@ -74,8 +78,12 @@ abstract class CoreOpMode(
     val hubs = CoreHubs()
 
     /** Install a module into the system with priority-based execution order */
-    final override fun <T : CoreModule> install(module: T, priority: Float): T =
-        modules.install(module, priority)
+    fun <T : CoreModule> cInstall(module: T, priority: Float): T =
+        cHubModules.install(module, priority)
+
+    /** Install a module into the system with priority-based execution order */
+    fun <T : CoreModule> eInstall(module: T, priority: Float): T =
+        eHubModules.install(module, priority)
 
     /** Execute a command immediately (bypasses queue) */
     final override fun execute(command: BaseCommand) = queuer.execute(command)
@@ -94,7 +102,6 @@ abstract class CoreOpMode(
         run: () -> Unit = {},
         name: String = "GENERIC_BENCHMARK_NAME"
     ) {
-        if (!debug) return
         val bm = PreciseTimer(name).start()
         run()
         bm.log(coreTelemetry)
@@ -111,14 +118,23 @@ abstract class CoreOpMode(
      * 6. Update telemetry (last, to capture all changes)
      */
     private fun update(fn: () -> Unit) {
+        // read control hub motors, exp motors, senzori, processing, write controlhub, motors exp, motors all servos
         hubs.doUpdate(stage)
+
+        cHubModules.readCore()
+        eHubModules.readCore()
+
         if (performanceEngine == PerformanceEngine.BLAZE) updateGamepads()
         gamepad.doUpdate(stage)
         voltageSensor.doUpdate(stage)
         fn()
-        modules.doUpdate(stage)
         queuer.doUpdate(stage)
+        cHubModules.doUpdate(stage)
+        eHubModules.doUpdate(stage)
         coreTelemetry.doUpdate(stage)
+
+        cHubModules.writeCore()
+        eHubModules.writeCore()
     }
 
     final override fun initCore() {

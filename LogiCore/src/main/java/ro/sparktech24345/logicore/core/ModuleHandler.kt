@@ -53,4 +53,12 @@ class ModuleHandler : ModuleContainer {
         for (module in modules.list()) module.value.stopCore()
         modules.clear()
     }
+
+    override fun readCore() {
+        for (module in modules.list()) module.value.readCore()
+    }
+
+    override fun writeCore() {
+        for (module in modules.list()) module.value.writeCore()
+    }
 }

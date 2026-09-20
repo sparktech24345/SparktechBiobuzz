@@ -1,4 +1,4 @@
-package ro.sparktech24345.logicore.pedropathing
+package ro.sparktech24345.logicore.pedro
 
 import com.pedropathing.paths.Path
 import ro.sparktech24345.logicore.commands.BaseCommand

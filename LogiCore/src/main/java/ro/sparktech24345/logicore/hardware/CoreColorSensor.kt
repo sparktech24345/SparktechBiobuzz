@@ -4,6 +4,10 @@ import com.qualcomm.robotcore.hardware.ColorSensor
 import ro.sparktech24345.logicore.core.CoreModule
 import ro.sparktech24345.logicore.core.CoreOpMode
 import ro.sparktech24345.logicore.utils.TickInterval
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /**
  * Color sensor with throttled updates and RGBA color extraction.
@@ -16,6 +20,9 @@ class CoreColorSensor(val name: String, interval: Double = 3.0) : CoreModule {
     lateinit var sensor: ColorSensor
     val tracker = TickInterval(interval)
     private var color: UInt = 0u
+    companion object {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    }
 
     /** Red color channel (0-255) */
     var r: UInt = 0u
@@ -33,18 +40,20 @@ class CoreColorSensor(val name: String, interval: Double = 3.0) : CoreModule {
         sensor = CoreOpMode.instance!!.hardwareMap[name] as ColorSensor
     }
 
-    override fun init_loopCore() = loopCore()
+    override fun loopCore() = Unit
 
     /**
      * Update color readings at throttled rate.
      * Extracts individual RGBA channels from the ARGB integer value.
      */
-    override fun loopCore() {
+    override fun readCore() {
         if (!tracker.shouldTick()) return
-        color = sensor.argb().toUInt()
-        a = (color shr 24) and 0xFFu
-        r = (color shr 16) and 0xFFu
-        g = (color shr 8) and 0xFFu
-        b = color and 0xFFu
+        scope.launch {
+            color = sensor.argb().toUInt()
+            a = (color shr 24) and 0xFFu
+            r = (color shr 16) and 0xFFu
+            g = (color shr 8) and 0xFFu
+            b = color and 0xFFu
+        }
     }
 }

@@ -4,10 +4,11 @@ import org.firstinspires.ftc.robotcore.external.Func
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.Telemetry.DisplayFormat
 import org.firstinspires.ftc.robotcore.external.Telemetry.Log.DisplayOrder
+import java.util.Collections
 
 /** Delegate for a list of multiple telemetry objects.  */
 open class MultiTelemetry(vararg telemetryList: Telemetry) : Telemetry {
-    private val telemetryList: MutableList<Telemetry> = ArrayList(listOf(*telemetryList))
+    private val telemetryList = Collections.synchronizedList(mutableListOf(*telemetryList))
     private val log: MultipleLog
 
     init {
@@ -19,173 +20,223 @@ open class MultiTelemetry(vararg telemetryList: Telemetry) : Telemetry {
 
     /**
      * Adds another telemetry object.
-     * 
+     *
      * @param telemetry delegate to add
      */
     fun addTelemetry(telemetry: Telemetry) {
-        this.telemetryList.add(telemetry)
-        this.log.addLog(telemetry.log())
+        synchronized(telemetryList) {
+            this.telemetryList.add(telemetry)
+            this.log.addLog(telemetry.log())
+        }
     }
 
     override fun addData(s: String?, s1: String?, vararg objects: Any?): Telemetry.Item {
-        val items: MutableList<Telemetry.Item> = ArrayList()
-        for (telemetry in telemetryList) {
-            items.add(telemetry.addData(s, s1, *objects))
+        synchronized(telemetryList) {
+            val items: MutableList<Telemetry.Item> = ArrayList()
+            for (telemetry in telemetryList) {
+                items.add(telemetry.addData(s, s1, *objects))
+            }
+            return MultipleItem(items)
         }
-        return MultipleItem(items)
     }
 
     override fun addData(s: String?, o: Any?): Telemetry.Item {
-        val items: MutableList<Telemetry.Item> = ArrayList()
-        for (telemetry in telemetryList) {
-            items.add(telemetry.addData(s, o))
+        synchronized(telemetryList) {
+            val items: MutableList<Telemetry.Item> = ArrayList()
+            for (telemetry in telemetryList) {
+                items.add(telemetry.addData(s, o))
+            }
+            return MultipleItem(items)
         }
-        return MultipleItem(items)
     }
 
     override fun <T> addData(s: String?, func: Func<T?>?): Telemetry.Item {
-        val items: MutableList<Telemetry.Item> = ArrayList()
-        for (telemetry in telemetryList) {
-            items.add(telemetry.addData<T?>(s, func))
+        synchronized(telemetryList) {
+            val items: MutableList<Telemetry.Item> = ArrayList()
+            for (telemetry in telemetryList) {
+                items.add(telemetry.addData<T?>(s, func))
+            }
+            return MultipleItem(items)
         }
-        return MultipleItem(items)
     }
 
     override fun <T> addData(s: String?, s1: String?, func: Func<T?>?): Telemetry.Item {
-        val items: MutableList<Telemetry.Item> = ArrayList()
-        for (telemetry in telemetryList) {
-            items.add(telemetry.addData<T?>(s, s1, func))
+        synchronized(telemetryList) {
+            val items: MutableList<Telemetry.Item> = ArrayList()
+            for (telemetry in telemetryList) {
+                items.add(telemetry.addData<T?>(s, s1, func))
+            }
+            return MultipleItem(items)
         }
-        return MultipleItem(items)
     }
 
     override fun removeItem(item: Telemetry.Item?): Boolean {
-        var retVal = true
-        for (telemetry in telemetryList) {
-            val temp = telemetry.removeItem(item)
-            retVal = retVal && temp
+        synchronized(telemetryList) {
+            var retVal = true
+            for (telemetry in telemetryList) {
+                val temp = telemetry.removeItem(item)
+                retVal = retVal && temp
+            }
+            return retVal
         }
-        return retVal
     }
 
     override fun clear() {
-        for (telemetry in telemetryList) {
-            telemetry.clear()
+        synchronized(telemetryList) {
+            for (telemetry in telemetryList) {
+                telemetry.clear()
+            }
         }
     }
 
     override fun clearAll() {
-        for (telemetry in telemetryList) {
-            telemetry.clearAll()
+        synchronized(telemetryList) {
+            for (telemetry in telemetryList) {
+                telemetry.clearAll()
+            }
         }
     }
 
     override fun addAction(runnable: Runnable?): Any? {
-        for (telemetry in telemetryList) {
-            telemetry.addAction(runnable)
+        synchronized(telemetryList) {
+            for (telemetry in telemetryList) {
+                telemetry.addAction(runnable)
+            }
+            // note: this behavior is correct given the current default Telemetry implementation
+            return runnable
         }
-        // note: this behavior is correct given the current default Telemetry implementation
-        return runnable
     }
 
     override fun removeAction(o: Any?): Boolean {
-        var retVal = true
-        for (telemetry in telemetryList) {
-            val temp = telemetry.removeAction(o)
-            retVal = retVal && temp
+        synchronized(telemetryList) {
+            var retVal = true
+            for (telemetry in telemetryList) {
+                val temp = telemetry.removeAction(o)
+                retVal = retVal && temp
+            }
+            return retVal
         }
-        return retVal
     }
 
     override fun speak(text: String?) {
-        for (telemetry in telemetryList) {
-            telemetry.speak(text)
+        synchronized(telemetryList) {
+            for (telemetry in telemetryList) {
+                telemetry.speak(text)
+            }
         }
     }
 
     override fun speak(text: String?, languageCode: String?, countryCode: String?) {
-        for (telemetry in telemetryList) {
-            telemetry.speak(text, languageCode, countryCode)
+        synchronized(telemetryList) {
+            for (telemetry in telemetryList) {
+                telemetry.speak(text, languageCode, countryCode)
+            }
         }
     }
 
     override fun update(): Boolean {
-        var retVal = true
-        for (telemetry in telemetryList) {
-            val temp = telemetry.update()
-            retVal = retVal && temp
+        synchronized(telemetryList) {
+            var retVal = true
+            for (telemetry in telemetryList) {
+                val temp = telemetry.update()
+                retVal = retVal && temp
+            }
+            return retVal
         }
-        return retVal
     }
 
     override fun addLine(): Telemetry.Line {
-        val lines: MutableList<Telemetry.Line> = ArrayList()
-        for (telemetry in telemetryList) {
-            lines.add(telemetry.addLine())
+        synchronized(telemetryList) {
+            val lines: MutableList<Telemetry.Line> = ArrayList()
+            for (telemetry in telemetryList) {
+                lines.add(telemetry.addLine())
+            }
+            return MultipleLine(lines)
         }
-        return MultipleLine(lines)
     }
 
     override fun addLine(s: String?): Telemetry.Line {
-        val lines: MutableList<Telemetry.Line> = ArrayList()
-        for (telemetry in telemetryList) {
-            lines.add(telemetry.addLine(s))
+        synchronized(telemetryList) {
+            val lines: MutableList<Telemetry.Line> = ArrayList()
+            for (telemetry in telemetryList) {
+                lines.add(telemetry.addLine(s))
+            }
+            return MultipleLine(lines)
         }
-        return MultipleLine(lines)
     }
 
     override fun removeLine(line: Telemetry.Line?): Boolean {
-        var retVal = true
-        for (telemetry in telemetryList) {
-            val temp = telemetry.removeLine(line)
-            retVal = retVal && temp
+        synchronized(telemetryList) {
+            var retVal = true
+            for (telemetry in telemetryList) {
+                val temp = telemetry.removeLine(line)
+                retVal = retVal && temp
+            }
+            return retVal
         }
-        return retVal
     }
 
     override fun isAutoClear(): Boolean {
-        return if (telemetryList.isEmpty()) true else telemetryList[0].isAutoClear
+        synchronized(telemetryList) {
+            return if (telemetryList.isEmpty()) true else telemetryList[0].isAutoClear
+        }
     }
 
     override fun setAutoClear(b: Boolean) {
-        for (telemetry in telemetryList) {
-            telemetry.isAutoClear = b
+        synchronized(telemetryList) {
+            for (telemetry in telemetryList) {
+                telemetry.isAutoClear = b
+            }
         }
     }
 
     override fun getMsTransmissionInterval(): Int {
-        return if (telemetryList.isEmpty()) 250 else telemetryList[0].msTransmissionInterval
+        synchronized(telemetryList) {
+            return if (telemetryList.isEmpty()) 250 else telemetryList[0].msTransmissionInterval
+        }
     }
 
     override fun setMsTransmissionInterval(i: Int) {
-        for (telemetry in telemetryList) {
-            telemetry.msTransmissionInterval = i
+        synchronized(telemetryList) {
+            for (telemetry in telemetryList) {
+                telemetry.msTransmissionInterval = i
+            }
         }
     }
 
     override fun getItemSeparator(): String? {
-        return if (telemetryList.isEmpty()) " | " else telemetryList[0].itemSeparator
+        synchronized(telemetryList) {
+            return if (telemetryList.isEmpty()) " | " else telemetryList[0].itemSeparator
+        }
     }
 
     override fun setItemSeparator(s: String?) {
-        for (telemetry in telemetryList) {
-            telemetry.itemSeparator = s
+        synchronized(telemetryList) {
+            for (telemetry in telemetryList) {
+                telemetry.itemSeparator = s
+            }
         }
     }
 
     override fun getCaptionValueSeparator(): String? {
-        return if (telemetryList.isEmpty()) " : " else telemetryList[0].captionValueSeparator
+        synchronized(telemetryList) {
+            return if (telemetryList.isEmpty()) " : " else telemetryList[0].captionValueSeparator
+        }
     }
 
     override fun setCaptionValueSeparator(s: String?) {
-        for (telemetry in telemetryList) {
-            telemetry.captionValueSeparator = s
+        synchronized(telemetryList) {
+            for (telemetry in telemetryList) {
+                telemetry.captionValueSeparator = s
+            }
         }
     }
 
     override fun setDisplayFormat(displayFormat: DisplayFormat?) {
-        for (telemetry in telemetryList) {
-            telemetry.setDisplayFormat(displayFormat)
+        synchronized(telemetryList) {
+            for (telemetry in telemetryList) {
+                telemetry.setDisplayFormat(displayFormat)
+            }
         }
     }
 

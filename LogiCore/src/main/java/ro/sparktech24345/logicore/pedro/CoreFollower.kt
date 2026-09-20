@@ -1,22 +1,20 @@
-package ro.sparktech24345.logicore.pedropathing
+package ro.sparktech24345.logicore.pedro
 
 import com.pedropathing.api.PoseFactory
 import com.pedropathing.drivetrain.DrivePowers
 import com.pedropathing.follower.Follower
 import com.pedropathing.math.Pose
 import ro.sparktech24345.logicore.core.CoreModule
-import ro.sparktech24345.logicore.core.CoreOpMode
 import com.pedropathing.paths.Path
 import com.pedropathing.paths.curves.Curve
-import com.qualcomm.robotcore.hardware.HardwareMap
+import ro.sparktech24345.logicore.core.CoreOpMode
 import kotlin.math.abs
 
-class CoreFollower<T: FollowerConstants>(
-    private val constants: T,
-    val poseFactory: PoseFactory = PoseFactory.degrees(),
+class CoreFollower<NeededConstants: FollowerConstants>(
+    private val constants: NeededConstants,
     val startPose: Pose = Pose.zero(),
-    private val initWithLastPose: Boolean = false,
-    var hardwareMap: HardwareMap
+    val poseFactory: PoseFactory = PoseFactory.degrees(),
+    private val initWithLastPose: Boolean = false
 ): CoreModule {
     private lateinit var follower: Follower
 
@@ -74,7 +72,7 @@ class CoreFollower<T: FollowerConstants>(
     fun hold(pose: Pose) = follower.hold(pose)
 
     override fun initCore() {
-        follower = constants.create(hardwareMap)
+        follower = constants.create(CoreOpMode.instance!!.hardwareMap)
         follower.setPose(if (initWithLastPose) PoseStorage.lastPose else startPose)
         follower.update()
     }
