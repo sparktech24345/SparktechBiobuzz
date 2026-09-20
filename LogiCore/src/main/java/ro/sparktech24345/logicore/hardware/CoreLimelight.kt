@@ -35,7 +35,7 @@ class CoreLimelight(val name: String, interval: Double = 1.0) : CoreModule {
     /** Latest valid vision result (null if no valid result available) */
     var result: LLResult? = null
 
-    override fun init() {
+    override fun initCore() {
         limelight = CoreOpMode.instance!!.hardwareMap[name] as Limelight3A
         limelight.pipelineSwitch(pipeline)
         limelight.start()
@@ -46,7 +46,7 @@ class CoreLimelight(val name: String, interval: Double = 1.0) : CoreModule {
      * Update vision results at throttled rate.
      * Only stores results that pass the validity check.
      */
-    override fun loop() {
+    override fun loopCore() {
         if (!tracker.shouldTick()) return
         val tempResult = limelight.latestResult
         if (tempResult.isValid) {
@@ -56,7 +56,7 @@ class CoreLimelight(val name: String, interval: Double = 1.0) : CoreModule {
     }
 
     /** Stop the Limelight vision processing */
-    override fun stop() {
+    override fun stopCore() {
         limelight.stop()
     }
 }

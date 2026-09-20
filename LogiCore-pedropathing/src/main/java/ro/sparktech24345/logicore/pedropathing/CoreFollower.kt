@@ -8,13 +8,15 @@ import ro.sparktech24345.logicore.core.CoreModule
 import ro.sparktech24345.logicore.core.CoreOpMode
 import com.pedropathing.paths.Path
 import com.pedropathing.paths.curves.Curve
+import com.qualcomm.robotcore.hardware.HardwareMap
 import kotlin.math.abs
 
 class CoreFollower<T: FollowerConstants>(
     private val constants: T,
     val poseFactory: PoseFactory = PoseFactory.degrees(),
     val startPose: Pose = Pose.zero(),
-    private val initWithLastPose: Boolean = false
+    private val initWithLastPose: Boolean = false,
+    var hardwareMap: HardwareMap
 ): CoreModule {
     private lateinit var follower: Follower
 
@@ -71,17 +73,17 @@ class CoreFollower<T: FollowerConstants>(
 
     fun hold(pose: Pose) = follower.hold(pose)
 
-    override fun init() {
-        follower = constants.create(CoreOpMode.instance!!.hardwareMap)
+    override fun initCore() {
+        follower = constants.create(hardwareMap)
         follower.setPose(if (initWithLastPose) PoseStorage.lastPose else startPose)
         follower.update()
     }
 
-    override fun loop() {
+    override fun loopCore() {
         follower.update()
     }
     
-    override fun stop() {
+    override fun stopCore() {
         PoseStorage.lastPose = pose
     }
     

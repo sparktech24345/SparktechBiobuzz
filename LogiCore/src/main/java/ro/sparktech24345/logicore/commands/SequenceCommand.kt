@@ -15,7 +15,7 @@ class SequenceCommand(private val run: (CoreQueuer) -> Unit) : BaseCommand() {
     override var onStart = { run(queuer) }
 
     /** Process the queued commands each update cycle */
-    override var command = { queuer.loop() }
+    override var command = { queuer.loopCore() }
 
     /** Command finishes when all queued commands have completed */
     override var finishCondition = { !queuer.busy }

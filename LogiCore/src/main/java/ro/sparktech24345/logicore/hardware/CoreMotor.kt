@@ -166,19 +166,19 @@ class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T) : CoreModule,
             field = value
         }
 
-    override fun init() {
+    override fun initCore() {
         states.own(this)
         motor = CachingDcMotorEx(CoreOpMode.instance!!.hardwareMap[name] as DcMotorEx)
         unitsPerRev =
             (motor.dcMotorEx as DcMotorImplEx?)?.controller?.getMotorType(motor.portNumber)?.ticksPerRev ?: 1.0
     }
 
-    override fun init_loop() {
-        if (updateInInit) loop()
+    override fun init_loopCore() {
+        if (updateInInit) loopCore()
     }
 
     /** Update motor control - runs custom loop if in CUSTOM mode */
-    override fun loop() {
+    override fun loopCore() {
         if (runMode == MotorRunMode.CUSTOM) customLoop(motor, customTarget)
     }
 }

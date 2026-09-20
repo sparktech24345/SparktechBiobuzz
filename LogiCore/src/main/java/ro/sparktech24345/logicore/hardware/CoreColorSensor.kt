@@ -29,17 +29,17 @@ class CoreColorSensor(val name: String, interval: Double = 3.0) : CoreModule {
     /** Alpha/opacity channel (0-255) */
     var a: UInt = 0u
 
-    override fun init() {
+    override fun initCore() {
         sensor = CoreOpMode.instance!!.hardwareMap[name] as ColorSensor
     }
 
-    override fun init_loop() = loop()
+    override fun init_loopCore() = loopCore()
 
     /**
      * Update color readings at throttled rate.
      * Extracts individual RGBA channels from the ARGB integer value.
      */
-    override fun loop() {
+    override fun loopCore() {
         if (!tracker.shouldTick()) return
         color = sensor.argb().toUInt()
         a = (color shr 24) and 0xFFu

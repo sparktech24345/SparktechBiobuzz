@@ -26,31 +26,31 @@ class ModuleHandler : ModuleContainer {
     override fun <T : CoreModule> install(module: T, priority: Float): T {
         if (lock) error("A module was installed after init. Please install all modules before start!")
         modules.add(module, priority)
-        module.init()
+        module.initCore()
         return module
     }
 
-    override fun init() = Unit
+    override fun initCore() = Unit
 
     /** Update all modules during init_loop stage, in priority order */
-    override fun init_loop() {
-        for (module in modules.list()) module.value.init_loop()
+    override fun init_loopCore() {
+        for (module in modules.list()) module.value.init_loopCore()
     }
 
     /** Lock the handler and start all modules */
-    override fun start() {
+    override fun startCore() {
         lock = true
-        for (module in modules.list()) module.value.start()
+        for (module in modules.list()) module.value.startCore()
     }
 
     /** Update all modules during main loop, in priority order */
-    override fun loop() {
-        for (module in modules.list()) module.value.loop()
+    override fun loopCore() {
+        for (module in modules.list()) module.value.loopCore()
     }
 
     /** Stop all modules and clear the module list */
-    override fun stop() {
-        for (module in modules.list()) module.value.stop()
+    override fun stopCore() {
+        for (module in modules.list()) module.value.stopCore()
         modules.clear()
     }
 }

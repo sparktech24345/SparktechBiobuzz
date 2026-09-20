@@ -19,15 +19,15 @@ class CoreVoltageSensor(interval: Double = 5.0) : CoreModule {
     var voltage: Double = 0.0
         private set
 
-    override fun init() {
+    override fun initCore() {
         sensor =
             CoreOpMode.instance!!.hardwareMap.getAll(VoltageSensor::class.java).iterator().next()
     }
 
-    override fun init_loop() = loop()
+    override fun init_loopCore() = loopCore()
 
     /** Update voltage reading at throttled rate */
-    override fun loop() {
+    override fun loopCore() {
         if (tracker.shouldTick()) voltage = sensor.voltage
     }
 

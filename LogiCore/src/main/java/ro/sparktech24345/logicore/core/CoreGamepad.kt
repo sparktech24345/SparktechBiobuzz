@@ -34,9 +34,9 @@ class CoreGamepad(
     /** Access button state using array-like syntax: gamepad[Button.CROSS1] */
     operator fun get(button: Button): CoreButton = buttons[button]!!
 
-    override fun init() = Unit
-    override fun init_loop() = loop()
-    override fun loop() = buttons.values.forEach { it.update() }
+    override fun initCore() = Unit
+    override fun init_loopCore() = loopCore()
+    override fun loopCore() = buttons.values.forEach { it.update() }
 
     /** Complete button mapping for both gamepads with state tracking */
     val buttons = mapOf<Button, CoreButton>(

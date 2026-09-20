@@ -13,14 +13,14 @@ class CoreTelemetry(interval: Double = 3.0): MultiTelemetry(), CoreModule {
     /** Tick interval tracker for throttling telemetry updates */
     val tracker = TickInterval(interval)
 
-    override fun init() = Unit
-    override fun init_loop() = loop()
+    override fun initCore() = Unit
+    override fun init_loopCore() = loopCore()
 
     /**
      * Update telemetry only when the tick interval allows.
      * This prevents excessive CPU usage from frequent telemetry updates.
      */
-    override fun loop() {
+    override fun loopCore() {
         if (tracker.shouldTick()) update()
     }
 

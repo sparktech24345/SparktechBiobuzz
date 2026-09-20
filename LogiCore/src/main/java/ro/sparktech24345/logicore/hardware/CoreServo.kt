@@ -52,16 +52,16 @@ class CoreServo<T : BaseStateSet>(val name: String, stateSet: T) : CoreModule,
     /** Calculated range difference for position mapping */
     var rangeDif = 1.0
 
-    override fun init() {
+    override fun initCore() {
         states.own(this)
         servo = CachingServo(CoreOpMode.instance!!.hardwareMap[name] as Servo)
         realPosition = servo.position
     }
 
-    override fun init_loop() = loop()
+    override fun init_loopCore() = loopCore()
 
     /** Update servo position every loop cycle */
-    override fun loop() {
+    override fun loopCore() {
         servo.position = realPosition
     }
 }

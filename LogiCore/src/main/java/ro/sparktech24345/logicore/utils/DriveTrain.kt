@@ -47,7 +47,7 @@ class DriveTrain (
     var slowdownMultiplier = 1.0
         set(value) { field = value.coerceIn(0.0..1.0) }
 
-    override fun init() {
+    override fun initCore() {
         val map = CoreOpMode.instance!!.hardwareMap
         rf = CachingDcMotorEx(map[rightFront] as DcMotorEx)
         lf = CachingDcMotorEx(map[leftFront]  as DcMotorEx)
@@ -63,7 +63,7 @@ class DriveTrain (
      * Update drive train with mecanum drive calculations.
      * Implements holonomic drive with automatic power normalization.
      */
-    override fun loop() {
+    override fun loopCore() {
         var vertical   = -gamepad.left_stick_y.toDouble()
         var horizontal = -gamepad.left_stick_x.toDouble()
         val pivot      =  gamepad.right_stick_x.toDouble()

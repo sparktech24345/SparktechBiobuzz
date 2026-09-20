@@ -1,8 +1,9 @@
 package ro.sparktech24345.logicore.core
 
-import com.qualcomm.hardware.lynx.LynxModule
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.seattlesolvers.solverslib.photon.PhotonCore
+import dev.anygeneric.blazeftc.BlazeDummyPlug.closeBlazeFTC
+import dev.anygeneric.blazeftc.DummyPlugOpMode
+import dev.anygeneric.blazeftc.Hub
 import ro.sparktech24345.logicore.commands.BaseCommand
 import ro.sparktech24345.logicore.hardware.CoreVoltageSensor
 import ro.sparktech24345.logicore.utils.PreciseTimer
@@ -14,16 +15,21 @@ import ro.sparktech24345.logicore.utils.PreciseTimer
  * @param type The type of OpMode (TELEOP, AUTONOMOUS, or TESTING)
  * @param dash Whether to enable FTC Dashboard telemetry integration
  * @param debug Enable debug mode for benchmarking and additional logging
+ * @param performanceEngine The hardware acceleration engine to use (PHOTON, BLAZE, or NONE)
  */
 @Suppress("PROPERTY_HIDES_JAVA_FIELD")
 abstract class CoreOpMode(
     val type: OpModeType,
     val dash: Boolean = true,
     var debug: Boolean = false,
-    val enablePhoton: Boolean = true,
-) : OpMode(), CommandQueuer, ModuleContainer {
-    init {
-        instance = this
+    var performanceEngine: PerformanceEngine = PerformanceEngine.NONE,
+) : DummyPlugOpMode(), CommandQueuer, ModuleContainer {
+
+    /** Represents the hardware optimization engine used for bulk reads and performance */
+    enum class PerformanceEngine {
+        NONE,
+        PHOTON,
+        BLAZE
     }
 
     /** Represents the different stages of an OpMode lifecycle */
@@ -40,6 +46,7 @@ abstract class CoreOpMode(
 
     companion object {
         /** Global instance accessor for hardware components that need OpMode context */
+        @Volatile
         var instance: CoreOpMode? = null
             private set
     }
@@ -55,7 +62,7 @@ abstract class CoreOpMode(
     }
 
     /** Telemetry system with update throttling and multi-output support */
-    val telemetry = CoreTelemetry()
+    val coreTelemetry = CoreTelemetry()
 
     /** Gamepad input processing with button state tracking */
     lateinit var gamepad: CoreGamepad
@@ -90,7 +97,7 @@ abstract class CoreOpMode(
         if (!debug) return
         val bm = PreciseTimer(name).start()
         run()
-        bm.log(telemetry)
+        bm.log(coreTelemetry)
         println("Timer: ${bm.name} -- ${bm.getTime().get() ?: 0} ms")
     }
 
@@ -103,53 +110,67 @@ abstract class CoreOpMode(
      * 5. Process command queue
      * 6. Update telemetry (last, to capture all changes)
      */
-    private fun upd(fn: () -> Unit) {
-        hubs.update(stage)
-        gamepad.update(stage)
-        voltageSensor.update(stage)
+    private fun update(fn: () -> Unit) {
+        hubs.doUpdate(stage)
+        if (performanceEngine == PerformanceEngine.BLAZE) updateGamepads()
+        gamepad.doUpdate(stage)
+        voltageSensor.doUpdate(stage)
         fn()
-        modules.update(stage)
-        queuer.update(stage)
-        telemetry.update(stage)
+        modules.doUpdate(stage)
+        queuer.doUpdate(stage)
+        coreTelemetry.doUpdate(stage)
     }
 
-    final override fun init() {
+    final override fun initCore() {
         instance = this
-        // ============ PHOTON SETTINGS ============
-
-        if (enablePhoton) {
-            PhotonCore.experimental.setMaximumParallelCommands(8)
-            PhotonCore.PARALLELIZE_SERVOS = false
-            PhotonCore.enable()
+        
+        // ============ PERFORMANCE ENGINE SETUP ============
+        when (performanceEngine) {
+            PerformanceEngine.PHOTON -> {
+                PhotonCore.experimental.setMaximumParallelCommands(6)
+                PhotonCore.PARALLELIZE_SERVOS = true
+                PhotonCore.enable()
+            }
+            PerformanceEngine.BLAZE -> {
+                initializeBlazeFTC()
+                engageMotorAcceleration()
+//                engageBulkReadAcceleration(Hub.CtrlHub,1,stuffToGetEncoderData)
+                //ima just do the stuff in the blaze Op mode ig
+            }
+            PerformanceEngine.NONE -> {
+                // Default OpMode behavior
+            }
         }
-
 
         // ====== GAMEPAD + TELEMETRY SETUP =======
         gamepad = CoreGamepad(gamepad1, gamepad2)
-        telemetry.addTelemetry(super.telemetry)
+        coreTelemetry.addTelemetry(super.telemetry)
 
         // ============================ EXECUTING THE USER WRITTEN CODE ============================
-        upd(this::onInit)
+        update(this::onInit)
         stage = GameStage.INIT_LOOP
     }
 
-    final override fun init_loop() {
-        upd(this::onInitLoop)
+    final override fun init_loopCore() {
+        update(this::onInitLoop)
     }
 
-    final override fun start() {
+    final override fun startCore() {
         stage = GameStage.START
-        upd(this::onStart)
+        update(this::onStart)
         stage = GameStage.LOOP
     }
 
-    final override fun loop() {
-        upd(this::onLoop)
+    final override fun loopCore() {
+        update(this::onLoop)
     }
 
-    final override fun stop() {
+    final override fun stopCore() {
         stage = GameStage.STOP
-        upd(this::onStop)
+        update(this::onStop)
+        if(performanceEngine == PerformanceEngine.BLAZE){
+            closeBlazeFTC()
+        }
         instance = null
     }
 
@@ -167,4 +188,70 @@ abstract class CoreOpMode(
 
     /** Optional user cleanup logic - called when OpMode stops */
     open fun onStop() {}
+
+    override fun runOpMode() {
+        if (performanceEngine == PerformanceEngine.BLAZE) {
+            super.runOpMode()
+        } else { // normal op mode
+            try {
+                initCore()
+                while (opModeInInit()) {
+                    init_loopCore()
+                }
+                waitForStart()
+                if (opModeIsActive()) {
+                    startCore()
+                    while (opModeIsActive()) {
+                        loopCore()
+                    }
+                }
+            } finally {
+                stopCore()
+            }
+        }
+    }
+
+    val wantedMillisecondsPerLoop : Long = 5
+
+    override fun runOpModeInBlaze() {
+        val targetMs = wantedMillisecondsPerLoop
+
+        try {
+            initCore()
+            while (opModeInInit()) {
+                maintainLoopRate(targetMs) {
+                    init_loopCore()
+                }
+            }
+
+            waitForStart()
+
+            if (opModeIsActive()) {
+                runBlazeFTC(0)
+                startCore()
+
+                while (opModeIsActive()) {
+                    maintainLoopRate(targetMs) {
+                        loopCore()
+                    }
+                }
+            }
+        } finally {
+            stopCore()
+        }
+    }
+
+    /**
+     * Runs the body block and sleeps for any remaining time in the target cycle.
+     */
+    private inline fun maintainLoopRate(targetMs: Long, block: () -> Unit) {
+        val startTime = System.currentTimeMillis()
+        block()
+        val elapsedTime = System.currentTimeMillis() - startTime
+        val sleepTime = targetMs - elapsedTime
+
+        if (sleepTime > 0) {
+            sleep(sleepTime)
+        }
+    }
 }

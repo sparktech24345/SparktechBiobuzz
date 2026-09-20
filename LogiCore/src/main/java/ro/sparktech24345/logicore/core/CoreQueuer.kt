@@ -39,15 +39,15 @@ class CoreQueuer : CommandQueuer {
         executor.clear()
     }
 
-    override fun init() = Unit
-    override fun init_loop() = loop()
+    override fun initCore() = Unit
+    override fun init_loopCore() = loopCore()
 
     /** 
      * Update command execution state.
      * Processes sequential queue (one at a time) and parallel executor (simultaneously).
      * Sequential queue only advances when the current command finishes.
      */
-    override fun loop() {
+    override fun loopCore() {
         if (pause) return
 
         // Process sequential queue - only one command runs at a time
