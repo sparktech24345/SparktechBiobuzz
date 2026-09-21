@@ -14,8 +14,11 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.jetbrains.annotations.NotNull;
 
-public class ConstantsDecode {
+import ro.sparktech24345.logicore.pedro.FollowerConstants;
+
+public class ConstantsDecode implements FollowerConstants {
 
     public static ForesightConfig foresightConfig = new ForesightConfig(
             c -> {
@@ -94,5 +97,15 @@ public class ConstantsDecode {
         PinpointLocalizer localizer = new PinpointLocalizer(hardwareMap, localizerConfig);
         Foresight algorithm = new Foresight(foresightConfigFarAuto);
         return new Follower(localizer, drivetrain, algorithm);
+    }
+
+    @Override
+    public @NotNull Follower create(@NotNull HardwareMap hardwareMap) {
+        return createFollowerDecode(hardwareMap);
+    }
+
+    @Override
+    public double getVelocityConstraint() {
+        return 4.0; // hey dont ask why 4.0 thats also in the main class so ima leave it be
     }
 }

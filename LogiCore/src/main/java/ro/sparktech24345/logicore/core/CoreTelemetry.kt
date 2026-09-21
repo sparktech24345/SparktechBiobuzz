@@ -13,7 +13,7 @@ import ro.sparktech24345.logicore.utils.TickInterval
  *
  * @param interval Update interval in ticks (default: 3, updates every 3rd loop cycle)
  */
-class CoreTelemetry(interval: Double = 3.0): MultiTelemetry(), CoreModule {
+class CoreTelemetry(interval: Double = 1.0): MultiTelemetry(), CoreModule {
     /** Tick interval tracker for throttling telemetry updates */
     val tracker = TickInterval(interval)
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

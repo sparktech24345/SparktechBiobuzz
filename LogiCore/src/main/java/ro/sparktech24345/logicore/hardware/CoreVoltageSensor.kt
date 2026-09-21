@@ -11,7 +11,7 @@ import ro.sparktech24345.logicore.utils.TickInterval
  *
  * @param interval Update interval in ticks (default: 5, updates every 5th loop cycle)
  */
-class CoreVoltageSensor(interval: Double = 5.0) : CoreModule {
+class CoreVoltageSensor(interval: Double = 3.0) : CoreModule {
     private lateinit var sensor: VoltageSensor
     val tracker = TickInterval(interval)
 
