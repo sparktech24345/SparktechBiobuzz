@@ -3,17 +3,15 @@ package ro.sparktech24345.logicore.core
 import com.qualcomm.hardware.lynx.LynxModule
 
 class CoreHubs: CoreModule {
-    val hubs: MutableList<LynxModule> = mutableListOf()
+    private lateinit var hubs: MutableList<LynxModule>
 
     override fun initCore() {
-        hubs.addAll(CoreOpMode.instance!!.hardwareMap.getAll(LynxModule::class.java))
+        hubs = CoreOpMode.instance!!.hardwareMap.getAll(LynxModule::class.java).toMutableList()
         for (hub in hubs) hub.bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
     }
 
-    override fun startCore() = loopCore()
-    override fun init_loopCore() = loopCore()
-    override fun stopCore() = loopCore()
-    override fun loopCore() {
+    override fun loopCore() = Unit
+    override fun readCore() {
         for (hub in hubs) hub.clearBulkCache()
     }
 

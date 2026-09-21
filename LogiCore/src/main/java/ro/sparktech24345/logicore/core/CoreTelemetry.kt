@@ -19,19 +19,15 @@ class CoreTelemetry(interval: Double = 3.0): MultiTelemetry(), CoreModule {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun initCore() = Unit
-    override fun init_loopCore() = loopCore()
+    override fun loopCore() = Unit
 
     /**
      * Update telemetry only when the tick interval allows.
      * This prevents excessive CPU usage from frequent telemetry updates.
      */
-    override fun loopCore() {
+    override fun writeCore() {
         if (tracker.shouldTick()) scope.launch {
             update()
         }
-    }
-
-    override fun setNumDecimalPlaces(minDecimalPlaces: Int, maxDecimalPlaces: Int) {
-        super.setNumDecimalPlaces(minDecimalPlaces, maxDecimalPlaces)
     }
 }

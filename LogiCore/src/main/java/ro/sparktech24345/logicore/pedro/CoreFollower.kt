@@ -43,7 +43,7 @@ class CoreFollower<NeededConstants: FollowerConstants>(
     val closestPose: Pose
         get() = follower.closestPose()
 
-    val state: Follower.Mode
+    val mode: Follower.Mode
         get() = follower.mode()
 
     val velocityConstraint: Double
@@ -58,9 +58,6 @@ class CoreFollower<NeededConstants: FollowerConstants>(
     val lenientFinish: Boolean
         get() = abs(follower.tangentialVelocity()) < velocityConstraint && distanceToEnd < 4
 
-    val manualMode: Boolean
-        get() = follower.mode() == Follower.Mode.MANUAL
-
     var manualPower = DrivePowers(0.0, 0.0, 0.0)
         set(value) {
             field = value
@@ -71,6 +68,8 @@ class CoreFollower<NeededConstants: FollowerConstants>(
 
     fun hold(pose: Pose) = follower.hold(pose)
 
+    fun interrupt() = follower.stop()
+
     override fun initCore() {
         follower = constants.create(CoreOpMode.instance!!.hardwareMap)
         follower.setPose(if (initWithLastPose) PoseStorage.lastPose else startPose)
@@ -78,7 +77,14 @@ class CoreFollower<NeededConstants: FollowerConstants>(
     }
 
     override fun loopCore() {
+
+    }
+
+    override fun readCore() {
         follower.update()
+    }
+
+    override fun writeCore() {
     }
     
     override fun stopCore() {

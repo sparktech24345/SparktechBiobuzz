@@ -39,8 +39,9 @@ class CoreQueuer : CommandQueuer {
         executor.clear()
     }
 
-    override fun initCore() = Unit
+    override fun initCore() = loopCore()
     override fun init_loopCore() = loopCore()
+    override fun startCore() = loopCore()
 
     /** 
      * Update command execution state.
@@ -71,5 +72,12 @@ class CoreQueuer : CommandQueuer {
                 it.remove()
             }
         }
+    }
+
+    override fun stopCore() {
+        for (command in queuer) command.cleanup()
+        for (command in executor) command.cleanup()
+        queuer.clear()
+        executor.clear()
     }
 }

@@ -43,6 +43,8 @@ abstract class CoreOpMode(
 
     private var cHubModules = ModuleHandler()
     private var eHubModules = ModuleHandler()
+    private var internalModules = ModuleHandler()
+    private var independentModules = ModuleHandler()
     private var queuer = CoreQueuer()
 
     companion object {
@@ -85,6 +87,10 @@ abstract class CoreOpMode(
     fun <T : CoreModule> eInstall(module: T, priority: Float): T =
         eHubModules.install(module, priority)
 
+    /** Install a module into the system with priority-based execution order */
+    fun <T : CoreModule> iInstall(module: T, priority: Float): T =
+        independentModules.install(module, priority)
+
     /** Execute a command immediately (bypasses queue) */
     final override fun execute(command: BaseCommand) = queuer.execute(command)
 
@@ -119,22 +125,26 @@ abstract class CoreOpMode(
      */
     private fun update(fn: () -> Unit) {
         // read control hub motors, exp motors, senzori, processing, write controlhub, motors exp, motors all servos
-        hubs.doUpdate(stage)
 
-        cHubModules.readCore()
-        eHubModules.readCore()
+        if (stage != GameStage.INIT) {
+            internalModules.readCore()
+            cHubModules.readCore()
+            eHubModules.readCore()
+            independentModules.readCore()
+        }
 
-        if (performanceEngine == PerformanceEngine.BLAZE) updateGamepads()
-        gamepad.doUpdate(stage)
-        voltageSensor.doUpdate(stage)
         fn()
-        queuer.doUpdate(stage)
+        internalModules.doUpdate(stage)
         cHubModules.doUpdate(stage)
         eHubModules.doUpdate(stage)
-        coreTelemetry.doUpdate(stage)
+        independentModules.doUpdate(stage)
 
-        cHubModules.writeCore()
-        eHubModules.writeCore()
+        if (stage != GameStage.INIT) {
+            internalModules.writeCore()
+            cHubModules.writeCore()
+            eHubModules.writeCore()
+            independentModules.writeCore()
+        }
     }
 
     final override fun initCore() {
@@ -159,8 +169,12 @@ abstract class CoreOpMode(
         }
 
         // ====== GAMEPAD + TELEMETRY SETUP =======
-        gamepad = CoreGamepad(gamepad1, gamepad2)
+        internalModules.install(follower)
+        gamepad = internalModules.install(CoreGamepad(gamepad1, gamepad2))
         coreTelemetry.addTelemetry(super.telemetry)
+        internalModules.install(coreTelemetry)
+        internalModules.install(voltageSensor)
+        internalModules.install(hubs, Float.POSITIVE_INFINITY)
 
         // ============================ EXECUTING THE USER WRITTEN CODE ============================
         update(this::onInit)
@@ -252,6 +266,10 @@ abstract class CoreOpMode(
                     }
                 }
             }
+        } catch (e: Throwable) {
+            coreTelemetry.addData("[${e.cause}]", "${e.message}")
+            println("[${e.cause}] ${e.message}")
+            coreTelemetry.writeCore()
         } finally {
             stopCore()
         }
