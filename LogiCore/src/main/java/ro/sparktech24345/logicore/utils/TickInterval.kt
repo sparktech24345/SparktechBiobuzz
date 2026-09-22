@@ -7,7 +7,7 @@ package ro.sparktech24345.logicore.utils
  *
  * @param interval Number of loop cycles between updates (default: 1, runs every cycle)
  */
-class TickInterval(var interval: Double = 1.0) {
+class TickInterval(var interval: Double = 1.0, var delay: Double = 0.0) {
     enum class IntervalMode {
         TICKS,
         TIME,
@@ -25,17 +25,12 @@ class TickInterval(var interval: Double = 1.0) {
      * @return true if an update is due
      */
     fun shouldTick(): Boolean {
-        if (firstTick) {
-            firstTick = false
-            if (mode == IntervalMode.TIME) timer.start()
-            return true
-        }
 
         return when (mode) {
             IntervalMode.TICKS -> {
-                ticks += 1
-                val update = ticks >= interval.toLong()
-                if (update) ticks = 0
+                ticks %= interval.toLong()
+                val update = ticks == delay.toLong()
+                ticks++
                 update
             }
             IntervalMode.TIME -> {

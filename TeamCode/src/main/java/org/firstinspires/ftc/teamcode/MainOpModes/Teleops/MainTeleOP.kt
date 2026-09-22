@@ -1,27 +1,16 @@
-package org.firstinspires.ftc.teamcode.MainOpModes.Teleops;
+package org.firstinspires.ftc.teamcode.MainOpModes.Teleops
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.teamcode.Pedro.ConstantsDecode;
-import org.jetbrains.annotations.NotNull;
-
-import ro.sparktech24345.logicore.core.CoreOpMode;
-import ro.sparktech24345.logicore.pedro.FollowerConstants;
-import ro.sparktech24345.logicore.utils.DriveTrain;
+import com.acmerobotics.dashboard.FtcDashboard
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.teamcode.Pedro.ConstantsDecode
+import ro.sparktech24345.logicore.core.CoreOpMode
+import ro.sparktech24345.logicore.utils.PreciseTimer
 
 @TeleOp(name = "Main Teleop", group = "AAA")
-public class MainTeleop extends CoreOpMode {
-    ElapsedTime mainTimer = new ElapsedTime();
-    public MainTeleop() {
-        super(OpModeType.TELEOP, new ConstantsDecode(), PerformanceEngine.PHOTON);
-    }
-
-    @Override
-    public void onInit() {
-
+class MainTeleOP : CoreOpMode(OpModeType.TELEOP, ConstantsDecode(), PerformanceEngine.PHOTON) {
+    var mainTimer = PreciseTimer()
+    override fun onInit() {
+        coreTelemetry.addTelemetry(FtcDashboard.getInstance().telemetry)
     }
 
     /**TO DO
@@ -29,23 +18,14 @@ public class MainTeleop extends CoreOpMode {
      * 2. Cu blaze pare ca avem niste probleme
      * 3. OMA GAD KOTLIN E ASA ANNOYING
      * 4. start la tickere pentru modelulele care se intampla separat decalat ex am 2 module care executa odata la 3 secunde, unul incepe la 0 celalalt la +2
-     * */
-
-
-
-
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        mainTimer.reset();
+     */
+    override fun onStart() {
+        mainTimer.start()
     }
 
-    @Override
-    public void onLoop() {
-        double time = mainTimer.milliseconds();
-        mainTimer.reset();
-        telemetry.addData("Loop time",time);
-        telemetry.addData("voltage",getVoltageSensor().getVoltage());
+    override fun onLoop() {
+        coreTelemetry.addData("voltage", voltageSensor.voltage)
+        coreTelemetry.addData("Loop time", mainTimer.getTime().get(PreciseTimer.TimeUnit.MILLIS))
+        mainTimer.start()
     }
 }

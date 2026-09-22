@@ -8,6 +8,7 @@ import ro.sparktech24345.logicore.core.CoreModule
 import com.pedropathing.paths.Path
 import com.pedropathing.paths.curves.Curve
 import ro.sparktech24345.logicore.core.CoreOpMode
+import ro.sparktech24345.logicore.utils.Benchmark
 import kotlin.math.abs
 
 class CoreFollower<NeededConstants: FollowerConstants>(
@@ -73,18 +74,13 @@ class CoreFollower<NeededConstants: FollowerConstants>(
     override fun initCore() {
         follower = constants.create(CoreOpMode.instance!!.hardwareMap)
         follower.setPose(if (initWithLastPose) PoseStorage.lastPose else startPose)
+        Benchmark.of("follower") { follower.update() }
+    }
+
+    override fun loopCore() = Unit
+
+    override fun writeCore() = Benchmark.of("follower") {
         follower.update()
-    }
-
-    override fun loopCore() {
-
-    }
-
-    override fun readCore() {
-        follower.update()
-    }
-
-    override fun writeCore() {
     }
     
     override fun stopCore() {

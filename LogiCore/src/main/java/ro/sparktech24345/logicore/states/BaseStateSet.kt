@@ -9,7 +9,7 @@ open class BaseStateSet {
     var stateArray: MutableList<CoreState> = mutableListOf()
 
     /** Default zero state for convenience */
-    val ZERO = make(CoreState(0.0, "ZERO"))
+    val ZERO = register(CoreState(0.0, "ZERO"))
 
     /** Default state used when no specific state is requested */
     open val DEFAULT = ZERO
@@ -21,7 +21,7 @@ open class BaseStateSet {
      * @param state The state to register
      * @return The same state for chaining
      */
-    fun <T : CoreState> make(state: T): T {
+    fun <T : CoreState> register(state: T): T {
         stateArray += state
         return state
     }

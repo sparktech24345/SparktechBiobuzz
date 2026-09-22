@@ -59,11 +59,17 @@ class DriveTrain (
         this.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
     }
 
+    private var rfp = 0.0
+    private var rbp = 0.0
+    private var lfp = 0.0
+    private var lbp = 0.0
+
     /**
      * Update drive train with mecanum drive calculations.
      * Implements holonomic drive with automatic power normalization.
      */
     override fun loopCore() {
+        if (CoreOpMode.instance!!.type == CoreOpMode.OpModeType.AUTONOMOUS) return
         var vertical   = -gamepad.left_stick_y.toDouble()
         var horizontal = -gamepad.left_stick_x.toDouble()
         val pivot      =  gamepad.right_stick_x.toDouble()
@@ -74,10 +80,10 @@ class DriveTrain (
         }
 
         // Mecanum drive calculations
-        var rfp = vertical + horizontal - pivot
-        var rbp = vertical - horizontal - pivot
-        var lfp = vertical - horizontal + pivot
-        var lbp = vertical + horizontal + pivot
+        rfp = vertical + horizontal - pivot
+        rbp = vertical - horizontal - pivot
+        lfp = vertical - horizontal + pivot
+        lbp = vertical + horizontal + pivot
 
         // Normalize power to prevent saturation
         val div = MathUtils.max(
@@ -93,11 +99,15 @@ class DriveTrain (
             lfp /= div
             lbp /= div
         }
+    }
 
+    override fun writeCore() {
+        if (CoreOpMode.instance!!.type == CoreOpMode.OpModeType.AUTONOMOUS) return
         // Apply slowdown multiplier and set motor powers
-        rf.power = (rfp * slowdownMultiplier)
+        rf.power = rfp * slowdownMultiplier
         rb.power = rbp * slowdownMultiplier
         lf.power = lfp * slowdownMultiplier
         lb.power = lbp * slowdownMultiplier
     }
+
 }

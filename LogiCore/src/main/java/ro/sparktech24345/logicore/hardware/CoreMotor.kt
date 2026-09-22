@@ -10,6 +10,7 @@ import ro.sparktech24345.logicore.core.CoreOpMode
 import ro.sparktech24345.logicore.states.BaseStateSet
 import ro.sparktech24345.logicore.states.CoreState
 import ro.sparktech24345.logicore.states.HasStates
+import ro.sparktech24345.logicore.utils.TickInterval
 
 /**
  * Enhanced motor control with state management, PID control, and multiple run modes.
@@ -19,13 +20,15 @@ import ro.sparktech24345.logicore.states.HasStates
  * @param name Hardware device name from the robot configuration
  * @param stateSet State definitions for this motor
  */
-class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T) : CoreModule,
+class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Double = 1.0) : CoreModule,
     HasStates<T> {
 
     lateinit var motor: CachingDcMotorEx
         private set
 
     override val states: T = stateSet
+
+    val tracker = TickInterval(interval)
 
     /**
      * Set the motor to a specific state.
@@ -122,6 +125,7 @@ class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T) : CoreModule,
     }
 
     override fun writeCore() {
+        if (!tracker.shouldTick()) return
         motor.power = wantedPower
     }
 }

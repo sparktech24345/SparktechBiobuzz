@@ -7,6 +7,7 @@ import ro.sparktech24345.logicore.core.CoreOpMode
 import ro.sparktech24345.logicore.states.BaseStateSet
 import ro.sparktech24345.logicore.states.CoreState
 import ro.sparktech24345.logicore.states.HasStates
+import ro.sparktech24345.logicore.utils.TickInterval
 
 /**
  * Enhanced servo control with position mapping and state management.
@@ -16,12 +17,14 @@ import ro.sparktech24345.logicore.states.HasStates
  * @param name Hardware device name from the robot configuration
  * @param stateSet State definitions for this servo
  */
-class CoreServo<T : BaseStateSet>(val name: String, stateSet: T) : CoreModule,
+class CoreServo<T : BaseStateSet>(val name: String, stateSet: T, interval: Double = 1.0) : CoreModule,
     HasStates<T> {
 
     lateinit var servo: CachingServo
 
     override val states = stateSet
+
+    val tracker = TickInterval(interval)
 
     /** Set servo to a specific state position */
     override fun <T : CoreState> setState(state: T) {
@@ -61,6 +64,7 @@ class CoreServo<T : BaseStateSet>(val name: String, stateSet: T) : CoreModule,
 
     /** Update servo position every loop cycle */
     override fun writeCore() {
+        if (!tracker.shouldTick()) return
         servo.position = realPosition
     }
 }

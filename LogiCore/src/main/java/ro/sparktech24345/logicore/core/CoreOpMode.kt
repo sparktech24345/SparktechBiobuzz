@@ -8,6 +8,7 @@ import ro.sparktech24345.logicore.commands.BaseCommand
 import ro.sparktech24345.logicore.hardware.CoreVoltageSensor
 import ro.sparktech24345.logicore.pedro.CoreFollower
 import ro.sparktech24345.logicore.pedro.FollowerConstants
+import ro.sparktech24345.logicore.utils.Benchmark
 import ro.sparktech24345.logicore.utils.DriveTrain
 import ro.sparktech24345.logicore.utils.PreciseTimer
 
@@ -103,20 +104,6 @@ abstract class CoreOpMode(
     final override fun clear() = queuer.clear()
 
     /**
-     * Benchmark a block of code when debug mode is enabled.
-     * Logs execution time to both telemetry and console.
-     */
-    private fun benchmark(
-        run: () -> Unit = {},
-        name: String = "GENERIC_BENCHMARK_NAME"
-    ) {
-        val bm = PreciseTimer(name).start()
-        run()
-        bm.log(coreTelemetry)
-        println("Timer: ${bm.name} -- ${bm.getTime().get() ?: 0} ms")
-    }
-
-    /**
      * Central update function that coordinates all system updates in the correct order:
      * 1. Clear hardware bulk caches
      * 2. Update input systems (gamepad, sensors)
@@ -127,38 +114,34 @@ abstract class CoreOpMode(
      */
     private fun update(fn: () -> Unit) {
         // read control hub motors, exp motors, senzori, processing, write controlhub, motors exp, motors all servos
-        benchmark({
+        Benchmark.of("inputs") {
             if (stage != GameStage.INIT) {
                 internalModules.readCore()
                 cHubModules.readCore()
                 eHubModules.readCore()
                 independentModules.readCore()
             }
-            internalModules.doUpdate(stage) // kinda aslo read
             // end of input stuff
-        },"inputs")
+        }
 
 
-        benchmark({
+        Benchmark.of("processing") {
             fn()
-            queuer.doUpdate(stage);
+            internalModules.doUpdate(stage) // kinda also read // actually not really
             cHubModules.doUpdate(stage)
             eHubModules.doUpdate(stage)
             independentModules.doUpdate(stage)
             // end of processing
-        },"processing")
+        }
 
-        benchmark({follower.doUpdate(stage) },"pedro")// this also processes also outputs as such has stupid loop time
-
-        benchmark({
+        Benchmark.of("outputs") {
             if (stage != GameStage.INIT) {
-                if(type == OpModeType.TELEOP) driveTrain.loopCore();
                 internalModules.writeCore()
                 cHubModules.writeCore()
                 eHubModules.writeCore()
                 independentModules.writeCore()
             }
-        },"outputs")
+        }
 
     }
 
@@ -185,12 +168,13 @@ abstract class CoreOpMode(
 
         // ====== GAMEPAD + TELEMETRY SETUP =======
         gamepad = internalModules.install(CoreGamepad(gamepad1, gamepad2))
+        if (type != OpModeType.AUTONOMOUS)
+            driveTrain = internalModules.install(DriveTrain(gamepad1))
         coreTelemetry.addTelemetry(super.telemetry)
         internalModules.install(coreTelemetry)
         internalModules.install(voltageSensor)
         internalModules.install(hubs, Float.POSITIVE_INFINITY)
-        driveTrain = DriveTrain(gamepad1)
-        driveTrain.initCore()
+        internalModules.install(queuer)
 
         // ============================ EXECUTING THE USER WRITTEN CODE ============================
         update(this::onInit)
@@ -214,7 +198,7 @@ abstract class CoreOpMode(
     final override fun stopCore() {
         stage = GameStage.STOP
         update(this::onStop)
-        if(performanceEngine == PerformanceEngine.BLAZE){
+        if (performanceEngine == PerformanceEngine.BLAZE) {
             closeBlazeFTC()
         }
         instance = null
