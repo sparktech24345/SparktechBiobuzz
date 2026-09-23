@@ -1,13 +1,27 @@
 package org.firstinspires.ftc.teamcode.MainOpModes.Teleops
 
 import com.acmerobotics.dashboard.FtcDashboard
+import com.pedropathing.drivetrain.DrivePowers
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import org.firstinspires.ftc.teamcode.Pedro.ConstantsDecode
+import org.firstinspires.ftc.teamcode.MyConstants
+import ro.sparktech24345.logicore.core.CoreGamepad
 import ro.sparktech24345.logicore.core.CoreOpMode
+import ro.sparktech24345.logicore.core.OpModeConfig
 import ro.sparktech24345.logicore.utils.PreciseTimer
 
 @TeleOp(name = "Main Teleop", group = "AAA")
-class MainTeleOP : CoreOpMode(OpModeType.TELEOP, ConstantsDecode(), PerformanceEngine.PHOTON) {
+class MainTeleOP : CoreOpMode(cfg) {
+
+    companion object {
+        val cfg = OpModeConfig { c ->
+            c.type.set(OpModeType.TELEOP)
+            c.performanceEngine.set(PerformanceEngine.PHOTON)
+            c.useFollower.set(true)
+            c.useDriveTrain.set(true)
+            c.followerConstants.set(MyConstants())
+        }
+    }
+
     var mainTimer = PreciseTimer()
     override fun onInit() {
         coreTelemetry.addTelemetry(FtcDashboard.getInstance().telemetry)
@@ -26,6 +40,7 @@ class MainTeleOP : CoreOpMode(OpModeType.TELEOP, ConstantsDecode(), PerformanceE
     override fun onLoop() {
         coreTelemetry.addData("voltage", voltageSensor.voltage)
         coreTelemetry.addData("Loop time", mainTimer.getTime().get(PreciseTimer.TimeUnit.MILLIS))
+        coreTelemetry.addData("pos", follower.pose.toString())
         mainTimer.start()
     }
 }

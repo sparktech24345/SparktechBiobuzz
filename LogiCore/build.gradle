@@ -56,6 +56,8 @@ dependencies {
 
     compileOnly 'com.pedropathing:revhub:3.0.1'
     compileOnly 'com.pedropathing:tuning:1.0.1'
+    compileOnly "dev.frozenmilk.sinister:Sloth:0.3.2"
+    compileOnly "com.acmerobotics.slothboard:dashboard:0.3.2+0.6.0"
 }
 
 

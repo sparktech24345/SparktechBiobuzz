@@ -13,7 +13,7 @@ object Benchmark {
     ) {
         val bm = PreciseTimer(name).start()
         run()
-        bm.log(CoreOpMode.instance!!.coreTelemetry)
-        println("Timer: ${bm.name} -- ${bm.getTime().get()} ms")
+        bm.log(CoreOpMode.instance?.coreTelemetry)
+        println("Timer: ${bm.name} [ms]: ${bm.getTime().get()}")
     }
 }

@@ -21,11 +21,7 @@ import ro.sparktech24345.logicore.utils.PreciseTimer
  * @param performanceEngine The hardware acceleration engine to use (PHOTON, BLAZE, or NONE)
  */
 @Suppress("PROPERTY_HIDES_JAVA_FIELD")
-abstract class CoreOpMode(
-    val type: OpModeType,
-    val followerConstants: FollowerConstants,
-    val performanceEngine: PerformanceEngine = PerformanceEngine.NONE,
-) : DummyPlugOpMode(), CommandQueuer {
+abstract class CoreOpMode(val config: OpModeConfig) : DummyPlugOpMode(), CommandQueuer {
 
     /** Represents the hardware optimization engine used for bulk reads and performance */
     enum class PerformanceEngine {
@@ -70,7 +66,7 @@ abstract class CoreOpMode(
 
     /** Telemetry system with update throttling and multi-output support */
     val coreTelemetry = CoreTelemetry()
-    val follower = CoreFollower(followerConstants, initWithLastPose = (type == OpModeType.TELEOP))
+    val follower = CoreFollower(config.followerConstants.get(), initWithLastPose = (config.type.get() == OpModeType.TELEOP))
     lateinit var driveTrain : DriveTrain
 
     /** Gamepad input processing with button state tracking */
@@ -149,7 +145,7 @@ abstract class CoreOpMode(
         instance = this
         
         // ============ PERFORMANCE ENGINE SETUP ============
-        when (performanceEngine) {
+        when (config.performanceEngine.get()) {
             PerformanceEngine.PHOTON -> {
                 PhotonCore.experimental.setMaximumParallelCommands(6)
                 PhotonCore.PARALLELIZE_SERVOS = true
@@ -168,37 +164,38 @@ abstract class CoreOpMode(
 
         // ====== GAMEPAD + TELEMETRY SETUP =======
         gamepad = internalModules.install(CoreGamepad(gamepad1, gamepad2))
-        if (type != OpModeType.AUTONOMOUS)
+        if (config.useDriveTrain.get())
             driveTrain = internalModules.install(DriveTrain(gamepad1))
         coreTelemetry.addTelemetry(super.telemetry)
         internalModules.install(coreTelemetry)
         internalModules.install(voltageSensor)
         internalModules.install(hubs, Float.POSITIVE_INFINITY)
         internalModules.install(queuer)
+        if (config.useFollower.get()) internalModules.install(follower)
 
         // ============================ EXECUTING THE USER WRITTEN CODE ============================
-        update(this::onInit)
+        update { onInit() }
         stage = GameStage.INIT_LOOP
     }
 
     final override fun init_loopCore() {
-        update(this::onInitLoop)
+        update { onInitLoop() }
     }
 
     final override fun startCore() {
         stage = GameStage.START
-        update(this::onStart)
+        update { onStart() }
         stage = GameStage.LOOP
     }
 
     final override fun loopCore() {
-        update(this::onLoop)
+        update { onLoop() }
     }
 
     final override fun stopCore() {
         stage = GameStage.STOP
-        update(this::onStop)
-        if (performanceEngine == PerformanceEngine.BLAZE) {
+        update { onStop() }
+        if (config.performanceEngine.get() == PerformanceEngine.BLAZE) {
             closeBlazeFTC()
         }
         instance = null
@@ -220,8 +217,8 @@ abstract class CoreOpMode(
     open fun onStop() {}
 
     override fun runOpMode() {
-        if (performanceEngine == PerformanceEngine.BLAZE) {
-            super.runOpMode()
+        if (config.performanceEngine.get() == PerformanceEngine.BLAZE) {
+            runOpModeInBlaze()
         } else { // normal op mode
             try {
                 initCore()
@@ -235,6 +232,9 @@ abstract class CoreOpMode(
                         loopCore()
                     }
                 }
+            } catch (e: Throwable) {
+                println("Error in OpMode!!!")
+                println(e.message)
             } finally {
                 stopCore()
             }

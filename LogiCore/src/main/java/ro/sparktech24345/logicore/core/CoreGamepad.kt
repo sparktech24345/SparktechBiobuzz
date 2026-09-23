@@ -2,6 +2,7 @@ package ro.sparktech24345.logicore.core
 
 import com.qualcomm.robotcore.hardware.Gamepad
 import ro.sparktech24345.logicore.core.CoreOpMode.PerformanceEngine
+import ro.sparktech24345.logicore.utils.Benchmark
 
 /**
  * Enhanced gamepad input processing with button state tracking.
@@ -37,8 +38,8 @@ class CoreGamepad(
 
     override fun initCore() = Unit
     override fun loopCore() = Unit
-    override fun readCore() {
-        if (CoreOpMode.instance!!.performanceEngine == PerformanceEngine.BLAZE) CoreOpMode.instance!!.updateGamepads()
+    override fun readCore() = Benchmark.of("gamepad") {
+        if (CoreOpMode.instance!!.config.performanceEngine.get() == PerformanceEngine.BLAZE) CoreOpMode.instance!!.updateGamepads()
         buttons.values.forEach { it.update() }
     }
 

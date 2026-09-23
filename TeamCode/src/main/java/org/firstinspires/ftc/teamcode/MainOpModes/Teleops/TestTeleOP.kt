@@ -17,9 +17,8 @@ import ro.sparktech24345.logicore.states.CoreState
 import ro.sparktech24345.logicore.utils.PreciseTimer
 
 @TeleOp(name = "Test Op Mode", group = "Testing")
-class TestTeleOP: CoreOpMode(OpModeType.TESTING, // sau AUTONOMOUS sau TELEOP, pretty self explanatory
-    followerConstants = MyConstants(), // constantele pt pedro, trebuie sa fie o clasa ce da implement la FollowerConstants
-    performanceEngine = PerformanceEngine.PHOTON // sau BLAZE sau NONE, also pretty self explanatory
+class TestTeleOP: CoreOpMode(
+    MainTeleOP.cfg
 ) {
 
     class MotorTestStateSet: BaseStateSet() {

@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlin.concurrent.Volatile
 
 /**
  * Color sensor with throttled updates and RGBA color extraction.
@@ -25,15 +26,19 @@ class CoreColorSensor(val name: String, interval: Double = 3.0) : CoreModule {
     }
 
     /** Red color channel (0-255) */
+    @Volatile
     var r: UInt = 0u
 
     /** Green color channel (0-255) */
+    @Volatile
     var g: UInt = 0u
 
     /** Blue color channel (0-255) */
+    @Volatile
     var b: UInt = 0u
 
     /** Alpha/opacity channel (0-255) */
+    @Volatile
     var a: UInt = 0u
 
     override fun initCore() {

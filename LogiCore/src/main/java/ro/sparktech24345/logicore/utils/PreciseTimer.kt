@@ -90,6 +90,6 @@ class PreciseTimer(val name: String = "GENERIC_TIMER_NAME") {
      * @param unit Time unit for display (default: milliseconds)
      */
     fun log(telemetry: CoreTelemetry?, unit: TimeUnit = TimeUnit.MILLIS) {
-        telemetry?.addLine("Timer: $name -- ${getTime().get(unit)} ms")
+        telemetry?.addData("Timer: $name -- [ms]:", getTime().get(unit))
     }
 }

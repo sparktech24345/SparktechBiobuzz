@@ -49,10 +49,10 @@ class DriveTrain (
 
     override fun initCore() {
         val map = CoreOpMode.instance!!.hardwareMap
-        rf = CachingDcMotorEx(map[rightFront] as DcMotorEx)
-        lf = CachingDcMotorEx(map[leftFront]  as DcMotorEx)
-        rb = CachingDcMotorEx(map[rightBack]  as DcMotorEx)
-        lb = CachingDcMotorEx(map[leftBack]   as DcMotorEx)
+        rf = CachingDcMotorEx(map[rightFront] as DcMotorEx, 0.05)
+        lf = CachingDcMotorEx(map[leftFront]  as DcMotorEx, 0.05)
+        rb = CachingDcMotorEx(map[rightBack]  as DcMotorEx, 0.05)
+        lb = CachingDcMotorEx(map[leftBack]   as DcMotorEx, 0.05)
 
         lf.direction = DcMotorSimple.Direction.REVERSE
         lb.direction = DcMotorSimple.Direction.REVERSE
@@ -68,8 +68,8 @@ class DriveTrain (
      * Update drive train with mecanum drive calculations.
      * Implements holonomic drive with automatic power normalization.
      */
-    override fun loopCore() {
-        if (CoreOpMode.instance!!.type == CoreOpMode.OpModeType.AUTONOMOUS) return
+    override fun loopCore() = Benchmark.of("drivetrain calc") {
+        if (CoreOpMode.instance!!.config.type.get() == CoreOpMode.OpModeType.AUTONOMOUS) return@of
         var vertical   = -gamepad.left_stick_y.toDouble()
         var horizontal = -gamepad.left_stick_x.toDouble()
         val pivot      =  gamepad.right_stick_x.toDouble()
@@ -101,8 +101,8 @@ class DriveTrain (
         }
     }
 
-    override fun writeCore() {
-        if (CoreOpMode.instance!!.type == CoreOpMode.OpModeType.AUTONOMOUS) return
+    override fun writeCore() = Benchmark.of("drivetrain") {
+        if (CoreOpMode.instance!!.config.type.get() == CoreOpMode.OpModeType.AUTONOMOUS) return@of
         // Apply slowdown multiplier and set motor powers
         rf.power = rfp * slowdownMultiplier
         rb.power = rbp * slowdownMultiplier
