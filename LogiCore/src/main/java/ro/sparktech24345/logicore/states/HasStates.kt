@@ -6,7 +6,7 @@ package ro.sparktech24345.logicore.states
  *
  * @param T The type of state set this object manages
  */
-interface HasStates<T : BaseStateSet> {
+interface HasStates<T: BaseStateSet> {
     /** The state set containing all available states for this object */
     val states: T
 
@@ -16,5 +16,5 @@ interface HasStates<T : BaseStateSet> {
      *
      * @param state The state to apply
      */
-    fun <S : CoreState> setState(state: S)
+    fun <S: CoreState> setState(state: S)
 }

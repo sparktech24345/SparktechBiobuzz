@@ -36,6 +36,9 @@ class CoreGamepad(
     /** Access button state using array-like syntax: gamepad[Button.CROSS1] */
     operator fun get(button: Button): CoreButton = buttons[button]!!
 
+    // Java: gamepad.get(Button.CROSS1)
+    // Kotlin: gamepad[Button.CROSS1]
+
     override fun initCore() = Unit
     override fun loopCore() = Unit
     override fun readCore() = Benchmark.of("gamepad") {

@@ -22,7 +22,7 @@ class TurretComponent: CoreModule {
         servo = instance.cInstall(CoreServo("sample_servo", BaseStateSet()), 2.0F) // un priority mai mare inseamna ca se da update mai devreme la componenta
                                                                                                                        // ex: servo isi ia update mai devreme decat motorul pentru ca 2 > 1
 
-        motor.customLoop = { _, target -> target } // custom loop este functia f(x) : (-inf, +inf) -> [0, 1]
+        motor.customLoop = { _, target -> target } // custom loop este functia f(x) : (-inf, +inf) -> [-1, 1]
                                                    // adica ia un target si returneaza puterea data la motor ca sa se ajunga la target
                                                    // in cazul asta parametrul _ reprezinta instanta motorului, iar functia returneaza acelasi target dat, adica practic functia este f(x) = x
     }

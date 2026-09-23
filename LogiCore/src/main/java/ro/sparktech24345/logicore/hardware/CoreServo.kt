@@ -17,7 +17,7 @@ import ro.sparktech24345.logicore.utils.TickInterval
  * @param name Hardware device name from the robot configuration
  * @param stateSet State definitions for this servo
  */
-class CoreServo<T : BaseStateSet>(val name: String, stateSet: T, interval: Double = 1.0) : CoreModule,
+class CoreServo<T: BaseStateSet>(val name: String, stateSet: T, interval: Double = 1.0) : CoreModule,
     HasStates<T> {
 
     lateinit var servo: CachingServo

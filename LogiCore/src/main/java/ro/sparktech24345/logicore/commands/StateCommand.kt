@@ -8,4 +8,4 @@ import ro.sparktech24345.logicore.states.CoreState
  *
  * @param state The state to set on the owning module
  */
-class StateCommand(state: CoreState) : BaseCommand({ state.owner!!.setState(state) })
+class StateCommand(state: CoreState): BaseCommand({ state.owner!!.setState(state) })

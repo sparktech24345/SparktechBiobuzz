@@ -21,7 +21,7 @@ open class BaseStateSet {
      * @param state The state to register
      * @return The same state for chaining
      */
-    fun <T : CoreState> register(state: T): T {
+    fun <T: CoreState> register(state: T): T {
         stateArray += state
         return state
     }
@@ -32,7 +32,7 @@ open class BaseStateSet {
      *
      * @param module The module that will own all states in this set
      */
-    fun <T : HasStates<out BaseStateSet>> own(module: T) {
+    fun <T: HasStates<out BaseStateSet>> own(module: T) {
         for (state in stateArray) state.owner = module
     }
 }

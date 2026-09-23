@@ -3,7 +3,6 @@ package ro.sparktech24345.logicore.hardware
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorImplEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
-import com.qualcomm.robotcore.hardware.PIDFCoefficients
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx
 import ro.sparktech24345.logicore.core.CoreModule
 import ro.sparktech24345.logicore.core.CoreOpMode
@@ -112,7 +111,8 @@ class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Doubl
         if (zeroPowerBehavior != motor.zeroPowerBehavior &&
             zeroPowerBehavior != DcMotor.ZeroPowerBehavior.UNKNOWN)
             motor.zeroPowerBehavior = zeroPowerBehavior
-        if (direction != motor.direction) motor.direction = direction
+        if (direction != motor.direction)
+            motor.direction = direction
         if (encoded != (motor.mode == DcMotor.RunMode.RUN_USING_ENCODER)) {
             motor.mode = if (encoded) DcMotor.RunMode.RUN_USING_ENCODER
                          else DcMotor.RunMode.RUN_WITHOUT_ENCODER
@@ -126,6 +126,6 @@ class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Doubl
 
     override fun writeCore() {
         if (!tracker.shouldTick()) return
-        motor.power = wantedPower
+        motor.power = wantedPower.coerceIn(-1.0, 1.0)
     }
 }
