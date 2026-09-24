@@ -50,8 +50,8 @@ dependencies {
     implementation 'org.solverslib:photon:0.3.5'
 
     // Blaze FTC
-    implementation "dev.anygeneric:blazeftc:0.1.61"
-    implementation 'dev.anygeneric:blazeftc_pedro:0.1.61'
+    implementation "dev.anygeneric:blazeftc:0.1.62"
+    implementation 'dev.anygeneric:blazeftc_pedro:0.1.62'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0'
 
     compileOnly 'com.pedropathing:revhub:3.0.1'

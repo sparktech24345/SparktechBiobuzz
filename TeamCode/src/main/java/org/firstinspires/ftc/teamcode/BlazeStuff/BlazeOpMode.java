@@ -6,16 +6,21 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.math.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Pedro.ConstantsBiobuzz;
+import org.firstinspires.ftc.teamcode.Pedro.ConstantsDecode;
+
+import java.util.zip.ZipInputStream;
 
 import dev.anygeneric.blazeftc.BlazeDummyPlug;
 import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.anygeneric.blazeftc.Hub;
 import dev.anygeneric.blazeftc_pedro.PedroSingleDataLocalizer;
 
+@TeleOp(name = "BlazeOpMode", group = "teleops")
 public class BlazeOpMode extends OpMode {
     boolean motorInPlace = false;
     int target = 500;
@@ -25,8 +30,8 @@ public class BlazeOpMode extends OpMode {
     public void init() {
         BlazeDummyPlug.initializeBlazeFTC(hardwareMap);
         BlazeDummyPlug.engageMotorAccel(hardwareMap);
-        follower = ConstantsBiobuzz.create(hardwareMap);
-        DcMotor motor = hardwareMap.get(DcMotor.class, "motor");
+        follower = ConstantsDecode.createFollowerDecode(hardwareMap);
+        DcMotor motor = hardwareMap.get(DcMotor.class, "intakeMotor");
         //do whatever else init stuff you need to here
         ElapsedTime elt = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         PedroSingleDataLocalizer.setup(follower, () -> {

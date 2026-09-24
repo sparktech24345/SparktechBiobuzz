@@ -17,70 +17,70 @@ class CoreFollower<NeededConstants: FollowerConstants>(
     val poseFactory: PoseFactory = PoseFactory.degrees(),
     private val initWithLastPose: Boolean = false
 ): CoreModule {
-    private lateinit var follower: Follower
+    var follower: Follower? = null
 
     var pose: Pose
-        get() = follower.pose()
-        set(value) = follower.setPose(value)
+        get() = follower!!.pose()
+        set(value) = follower!!.setPose(value)
 
     val progress: Double
-        get() = follower.completion()
+        get() = follower!!.completion()
 
     val distanceLeft: Double
-        get() = follower.remainingDistance()
+        get() = follower!!.remainingDistance()
 
     val distanceToEnd: Double
-        get() = follower.distanceToEndpoint()
+        get() = follower!!.distanceToEndpoint()
 
     val currentPath: Path
-        get() = follower.currentPath()
+        get() = follower!!.currentPath()
 
     val currentCurve: Curve
-        get() = follower.currentCurve()
+        get() = follower!!.currentCurve()
 
     val pathIndex: Int
-        get() = follower.pathIndex()
+        get() = follower!!.pathIndex()
 
     val closestPose: Pose
-        get() = follower.closestPose()
+        get() = follower!!.closestPose()
 
     val mode: Follower.Mode
-        get() = follower.mode()
+        get() = follower!!.mode()
 
     val velocityConstraint: Double
         get() = constants.getVelocityConstraint()
 
     val stationaryFinish: Boolean
-        get() = !follower.isBusy
+        get() = !follower!!.isBusy
 
     val inertialFinish: Boolean
-        get() = follower.atParametricEnd()
+        get() = follower!!.atParametricEnd()
 
     val lenientFinish: Boolean
-        get() = abs(follower.tangentialVelocity()) < velocityConstraint && distanceToEnd < 4
+        get() = abs(follower!!.tangentialVelocity()) < velocityConstraint && distanceToEnd < 4
 
     var manualPower = DrivePowers(0.0, 0.0, 0.0)
         set(value) {
             field = value
-            follower.manual(value)
+            follower!!.manual(value)
         }
 
-    fun follow(path: Path) = follower.follow(path)
+    fun follow(path: Path) = follower!!.follow(path)
 
-    fun hold(pose: Pose) = follower.hold(pose)
+    fun hold(pose: Pose) = follower!!.hold(pose)
 
-    fun interrupt() = follower.stop()
+    fun interrupt() = follower!!.stop()
 
     override fun initCore() {
         follower = constants.create(CoreOpMode.instance!!.hardwareMap)
-        follower.setPose(if (initWithLastPose) PoseStorage.lastPose else startPose)
-        Benchmark.of("follower") { follower.update() }
+        follower!!.setPose(if (initWithLastPose) PoseStorage.lastPose else startPose)
+        Benchmark.of("follower") { follower!!.update() }
     }
 
     override fun loopCore() = Unit
 
     override fun writeCore() = Benchmark.of("follower") {
-        follower.update()
+        follower!!.update()
     }
     
     override fun stopCore() {

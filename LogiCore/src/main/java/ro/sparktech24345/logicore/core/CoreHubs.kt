@@ -12,7 +12,11 @@ class CoreHubs: CoreModule {
 
     override fun loopCore() = Unit
     override fun readCore() {
-        for (hub in hubs) hub.clearBulkCache()
+        for (hub in hubs) {
+            CoreOpMode.instance!!.coreTelemetry.addLine("hub $hub")
+            CoreOpMode.instance!!.coreTelemetry.addLine("hub id stuff" + hub.moduleAddress)
+            hub.clearBulkCache()
+        }
     }
 
 }

@@ -3,6 +3,7 @@ package ro.sparktech24345.logicore.hardware
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorImplEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
+import dev.anygeneric.blazeftc.BlazeFTC
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx
 import ro.sparktech24345.logicore.core.CoreModule
 import ro.sparktech24345.logicore.core.CoreOpMode
@@ -19,7 +20,7 @@ import ro.sparktech24345.logicore.utils.TickInterval
  * @param name Hardware device name from the robot configuration
  * @param stateSet State definitions for this motor
  */
-class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Double = 1.0) : CoreModule,
+class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Double = 1.0, var hubId: Int = 0) : CoreModule,
     HasStates<T> {
 
     lateinit var motor: CachingDcMotorEx
@@ -126,6 +127,7 @@ class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Doubl
 
     override fun writeCore() {
         if (!tracker.shouldTick()) return
-        motor.power = wantedPower.coerceIn(-1.0, 1.0)
+        if (CoreOpMode.instance!!.config.performanceEngine.get() == CoreOpMode.PerformanceEngine.BLAZE) BlazeFTC.setMotorPower(hubId, motor.dcMotorEx.portNumber, wantedPower.coerceIn(-1.0, 1.0))
+        else motor.power = wantedPower.coerceIn(-1.0, 1.0)
     }
 }

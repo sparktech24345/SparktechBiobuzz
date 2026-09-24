@@ -4,21 +4,22 @@ import com.acmerobotics.dashboard.FtcDashboard
 import com.pedropathing.drivetrain.DrivePowers
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.MyConstants
+import org.firstinspires.ftc.teamcode.Pedro.ConstantsDecode
 import ro.sparktech24345.logicore.core.CoreGamepad
 import ro.sparktech24345.logicore.core.CoreOpMode
 import ro.sparktech24345.logicore.core.OpModeConfig
 import ro.sparktech24345.logicore.utils.PreciseTimer
 
-@TeleOp(name = "Main Teleop", group = "AAA")
+@TeleOp(name = "Main TeleOP", group = "AAA")
 class MainTeleOP : CoreOpMode(cfg) {
 
     companion object {
         val cfg = OpModeConfig { c ->
             c.type.set(OpModeType.TELEOP)
-            c.performanceEngine.set(PerformanceEngine.PHOTON)
+            c.performanceEngine.set(PerformanceEngine.BLAZE)
             c.useFollower.set(true)
             c.useDriveTrain.set(true)
-            c.followerConstants.set(MyConstants())
+            c.followerConstants.set(ConstantsDecode())
         }
     }
 
@@ -28,10 +29,10 @@ class MainTeleOP : CoreOpMode(cfg) {
     }
 
     /**TO DO
-     * 1. rezolvat ca nu trimite la deashboard
-     * 2. Cu blaze pare ca avem niste probleme
-     * 3. OMA GAD KOTLIN E ASA ANNOYING
-     * 4. start la tickere pentru modelulele care se intampla separat decalat ex am 2 module care executa odata la 3 secunde, unul incepe la 0 celalalt la +2
+     * 1. rezolvat ca nu trimite la deashboard -- check
+     * 2. Cu blaze pare ca avem niste probleme -- check
+     * 3. OMA GAD KOTLIN E ASA ANNOYING        -- skill issue
+     * 4. start la tickere pentru modelulele care se intampla separat decalat ex am 2 module care executa odata la 3 secunde, unul incepe la 0 celalalt la +2 -- check
      */
     override fun onStart() {
         mainTimer.start()
@@ -40,7 +41,7 @@ class MainTeleOP : CoreOpMode(cfg) {
     override fun onLoop() {
         coreTelemetry.addData("voltage", voltageSensor.voltage)
         coreTelemetry.addData("Loop time", mainTimer.getTime().get(PreciseTimer.TimeUnit.MILLIS))
-        coreTelemetry.addData("pos", follower.pose.toString())
+        coreTelemetry.addData("pos", coreFollower.pose.toString())
         mainTimer.start()
     }
 }

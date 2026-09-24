@@ -1,16 +1,17 @@
 package ro.sparktech24345.logicore.core
 
 import com.pedropathing.math.Pose
+import com.qualcomm.robotcore.util.ElapsedTime
 import com.seattlesolvers.solverslib.photon.PhotonCore
 import dev.anygeneric.blazeftc.BlazeDummyPlug.closeBlazeFTC
+import dev.anygeneric.blazeftc.BlazeFTC
 import dev.anygeneric.blazeftc.DummyPlugOpMode
+import dev.anygeneric.blazeftc_pedro.PedroSingleDataLocalizer
 import ro.sparktech24345.logicore.commands.BaseCommand
 import ro.sparktech24345.logicore.hardware.CoreVoltageSensor
 import ro.sparktech24345.logicore.pedro.CoreFollower
-import ro.sparktech24345.logicore.pedro.FollowerConstants
 import ro.sparktech24345.logicore.utils.Benchmark
 import ro.sparktech24345.logicore.utils.DriveTrain
-import ro.sparktech24345.logicore.utils.PreciseTimer
 
 /**
  * Base class for all LogiCore OpModes. Provides unified lifecycle management,
@@ -66,7 +67,9 @@ abstract class CoreOpMode(val config: OpModeConfig) : DummyPlugOpMode(), Command
 
     /** Telemetry system with update throttling and multi-output support */
     val coreTelemetry = CoreTelemetry()
-    val follower = CoreFollower(config.followerConstants.get(), initWithLastPose = (config.type.get() == OpModeType.TELEOP))
+    val coreFollower = CoreFollower(config.followerConstants.get(), initWithLastPose = (config.type.get() == OpModeType.TELEOP))
+
+    val elt: ElapsedTime = ElapsedTime()
     lateinit var driveTrain : DriveTrain
 
     /** Gamepad input processing with button state tracking */
@@ -171,7 +174,7 @@ abstract class CoreOpMode(val config: OpModeConfig) : DummyPlugOpMode(), Command
         internalModules.install(voltageSensor)
         internalModules.install(hubs, Float.POSITIVE_INFINITY)
         internalModules.install(queuer)
-        if (config.useFollower.get()) internalModules.install(follower)
+        if (config.useFollower.get()) internalModules.install(coreFollower)
 
         // ============================ EXECUTING THE USER WRITTEN CODE ============================
         update { onInit() }

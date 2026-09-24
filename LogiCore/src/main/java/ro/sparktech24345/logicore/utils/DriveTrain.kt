@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Gamepad
+import dev.anygeneric.blazeftc.BlazeFTC
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx
 import ro.sparktech24345.logicore.core.CoreModule
 import ro.sparktech24345.logicore.core.CoreOpMode
@@ -104,10 +105,22 @@ class DriveTrain (
     override fun writeCore() = Benchmark.of("drivetrain") {
         if (CoreOpMode.instance!!.config.type.get() == CoreOpMode.OpModeType.AUTONOMOUS) return@of
         // Apply slowdown multiplier and set motor powers
-        rf.power = rfp * slowdownMultiplier
-        rb.power = rbp * slowdownMultiplier
-        lf.power = lfp * slowdownMultiplier
-        lb.power = lbp * slowdownMultiplier
-    }
 
+        //CoreOpMode.instance!!.coreTelemetry.addData("Motor rf", rf.portNumber)
+        //CoreOpMode.instance!!.coreTelemetry.addData("Motor rb", rb.portNumber)
+        //CoreOpMode.instance!!.coreTelemetry.addData("Motor lf", lf.portNumber)
+        //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
+
+        if (CoreOpMode.instance!!.config.performanceEngine.get() == CoreOpMode.PerformanceEngine.BLAZE) {
+            BlazeFTC.setMotorPower(173, rf.portNumber, rfp * slowdownMultiplier * (if (rf.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
+            BlazeFTC.setMotorPower(173,lf.portNumber, lfp * slowdownMultiplier * (if (lf.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
+            BlazeFTC.setMotorPower(173, lb.portNumber, lbp * slowdownMultiplier * (if (lb.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
+            BlazeFTC.setMotorPower(173, rb.portNumber, rbp * slowdownMultiplier * (if (rb.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
+        } else {
+            rf.power = rfp * slowdownMultiplier
+            rb.power = rbp * slowdownMultiplier
+            lf.power = lfp * slowdownMultiplier
+            lb.power = lbp * slowdownMultiplier
+        }
+    }
 }
