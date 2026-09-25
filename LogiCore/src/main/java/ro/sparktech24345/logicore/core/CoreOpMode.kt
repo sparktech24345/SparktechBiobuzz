@@ -155,6 +155,7 @@ abstract class CoreOpMode(val config: OpModeConfig) : DummyPlugOpMode(), Command
                 PhotonCore.enable()
             }
             PerformanceEngine.BLAZE -> {
+                registerConfig()
                 initializeBlazeFTC()
                 engageMotorAcceleration()
 //                engageBulkReadAcceleration(Hub.CtrlHub,1,stuffToGetEncoderData)
@@ -218,6 +219,8 @@ abstract class CoreOpMode(val config: OpModeConfig) : DummyPlugOpMode(), Command
 
     /** Optional user cleanup logic - called when OpMode stops */
     open fun onStop() {}
+
+    open fun registerConfig() {}
 
     override fun runOpMode() {
         if (config.performanceEngine.get() == PerformanceEngine.BLAZE) {

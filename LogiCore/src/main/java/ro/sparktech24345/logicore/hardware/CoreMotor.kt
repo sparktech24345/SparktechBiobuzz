@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.hardware.DcMotorImplEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import dev.anygeneric.blazeftc.BlazeFTC
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx
+import ro.sparktech24345.logicore.config.ConfigMap
+import ro.sparktech24345.logicore.config.MotorConfig
 import ro.sparktech24345.logicore.core.CoreModule
 import ro.sparktech24345.logicore.core.CoreOpMode
 import ro.sparktech24345.logicore.states.BaseStateSet
@@ -20,11 +22,13 @@ import ro.sparktech24345.logicore.utils.TickInterval
  * @param name Hardware device name from the robot configuration
  * @param stateSet State definitions for this motor
  */
-class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Double = 1.0, var hubId: Int = 0) : CoreModule,
+class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Double = 1.0) : CoreModule,
     HasStates<T> {
 
     lateinit var motor: CachingDcMotorEx
         private set
+
+    lateinit var mconf: MotorConfig
 
     override val states: T = stateSet
 
@@ -100,6 +104,7 @@ class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Doubl
     override fun initCore() {
         states.own(this)
         motor = CachingDcMotorEx(CoreOpMode.instance!!.hardwareMap[name] as DcMotorImplEx)
+        if (CoreOpMode.instance!!.config.performanceEngine.get() == CoreOpMode.PerformanceEngine.BLAZE) mconf = ConfigMap[name]!!
         unitsPerRev =
             (motor.dcMotorEx as DcMotorImplEx?)?.controller?.getMotorType(motor.portNumber)?.ticksPerRev ?: Double.NaN
     }
@@ -127,7 +132,8 @@ class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Doubl
 
     override fun writeCore() {
         if (!tracker.shouldTick()) return
-        if (CoreOpMode.instance!!.config.performanceEngine.get() == CoreOpMode.PerformanceEngine.BLAZE) BlazeFTC.setMotorPower(hubId, motor.dcMotorEx.portNumber, wantedPower.coerceIn(-1.0, 1.0))
+        if (CoreOpMode.instance!!.config.performanceEngine.get() == CoreOpMode.PerformanceEngine.BLAZE)
+            BlazeFTC.setMotorPower(mconf.id, if (mconf.port >= 0) mconf.port else motor.portNumber, wantedPower.coerceIn(-1.0, 1.0))
         else motor.power = wantedPower.coerceIn(-1.0, 1.0)
     }
 }

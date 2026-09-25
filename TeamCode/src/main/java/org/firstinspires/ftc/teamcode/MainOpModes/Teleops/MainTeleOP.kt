@@ -3,8 +3,12 @@ package org.firstinspires.ftc.teamcode.MainOpModes.Teleops
 import com.acmerobotics.dashboard.FtcDashboard
 import com.pedropathing.drivetrain.DrivePowers
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.seattlesolvers.solverslib.hardware.motors.Motor
 import org.firstinspires.ftc.teamcode.MyConstants
 import org.firstinspires.ftc.teamcode.Pedro.ConstantsDecode
+import ro.sparktech24345.logicore.config.ConfigMap
+import ro.sparktech24345.logicore.config.Hubs
+import ro.sparktech24345.logicore.config.MotorConfig
 import ro.sparktech24345.logicore.core.CoreGamepad
 import ro.sparktech24345.logicore.core.CoreOpMode
 import ro.sparktech24345.logicore.core.OpModeConfig
@@ -43,5 +47,12 @@ class MainTeleOP : CoreOpMode(cfg) {
         coreTelemetry.addData("Loop time", mainTimer.getTime().get(PreciseTimer.TimeUnit.MILLIS))
         coreTelemetry.addData("pos", coreFollower.pose.toString())
         mainTimer.start()
+    }
+
+    override fun registerConfig() {
+        ConfigMap["frontleft"] = MotorConfig(Hubs.EXPANSION, -1)
+        ConfigMap["backleft"] = MotorConfig(Hubs.EXPANSION, -1)
+        ConfigMap["backright"] = MotorConfig(Hubs.EXPANSION, -1)
+        ConfigMap["frontright"] = MotorConfig(Hubs.EXPANSION, -1)
     }
 }
