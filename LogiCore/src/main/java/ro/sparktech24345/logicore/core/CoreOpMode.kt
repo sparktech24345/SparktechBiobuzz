@@ -8,6 +8,8 @@ import dev.anygeneric.blazeftc.BlazeFTC
 import dev.anygeneric.blazeftc.DummyPlugOpMode
 import dev.anygeneric.blazeftc_pedro.PedroSingleDataLocalizer
 import ro.sparktech24345.logicore.commands.BaseCommand
+import ro.sparktech24345.logicore.config.Hubs
+import ro.sparktech24345.logicore.config.IsHardware
 import ro.sparktech24345.logicore.hardware.CoreVoltageSensor
 import ro.sparktech24345.logicore.pedro.CoreFollower
 import ro.sparktech24345.logicore.utils.Benchmark
@@ -82,17 +84,14 @@ abstract class CoreOpMode(val config: OpModeConfig) : DummyPlugOpMode(), Command
     val hubs = CoreHubs()
 
     /** Install a module into the system with priority-based execution order */
-    fun <T : CoreModule> cInstall(module: T, priority: Float): T =
-        cHubModules.install(module, priority)
-
-    /** Install a module into the system with priority-based execution order */
-    fun <T : CoreModule> eInstall(module: T, priority: Float): T =
-        eHubModules.install(module, priority)
-
-    /** Install a module into the system with priority-based execution order */
-    fun <T : CoreModule> iInstall(module: T, priority: Float): T =
-        independentModules.install(module, priority)
-
+    fun <T : CoreModule> install(hub: Hubs = Hubs.INDEPENDENT, module: T, priority: Float): T {
+        if (module is IsHardware) module.config!!.id = hub.id
+        return when (hub) {
+            Hubs.CONTROL -> cHubModules.install(module, priority)
+            Hubs.EXPANSION -> eHubModules.install(module, priority)
+            Hubs.INDEPENDENT -> independentModules.install(module, priority)
+        }
+    }
     /** Execute a command immediately (bypasses queue) */
     final override fun execute(command: BaseCommand) = queuer.execute(command)
 
@@ -155,7 +154,7 @@ abstract class CoreOpMode(val config: OpModeConfig) : DummyPlugOpMode(), Command
                 PhotonCore.enable()
             }
             PerformanceEngine.BLAZE -> {
-                registerConfig()
+                config.configSetup.get()()
                 initializeBlazeFTC()
                 engageMotorAcceleration()
 //                engageBulkReadAcceleration(Hub.CtrlHub,1,stuffToGetEncoderData)

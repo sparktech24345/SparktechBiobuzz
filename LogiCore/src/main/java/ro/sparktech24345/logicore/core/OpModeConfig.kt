@@ -13,6 +13,8 @@ class OpModeConfig {
     val useDriveTrain: ConfigVar<Boolean> = ConfigVar.of(true)
     val useFollower: ConfigVar<Boolean> = ConfigVar.of(true)
 
+    val configSetup: ConfigVar<() -> Unit> = ConfigVar.of({})
+
     constructor(p0: Configuration<OpModeConfig>) {
         p0.configure(this)
     }

@@ -6,7 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple
 import dev.anygeneric.blazeftc.BlazeFTC
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx
 import ro.sparktech24345.logicore.config.ConfigMap
-import ro.sparktech24345.logicore.config.MotorConfig
+import ro.sparktech24345.logicore.config.HardwareConfig
+import ro.sparktech24345.logicore.config.IsHardware
 import ro.sparktech24345.logicore.core.CoreModule
 import ro.sparktech24345.logicore.core.CoreOpMode
 import ro.sparktech24345.logicore.states.BaseStateSet
@@ -23,12 +24,14 @@ import ro.sparktech24345.logicore.utils.TickInterval
  * @param stateSet State definitions for this motor
  */
 class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Double = 1.0) : CoreModule,
-    HasStates<T> {
+    HasStates<T>, IsHardware {
+
+        override var config: HardwareConfig? = null
 
     lateinit var motor: CachingDcMotorEx
         private set
 
-    lateinit var mconf: MotorConfig
+    lateinit var mconf: HardwareConfig
 
     override val states: T = stateSet
 

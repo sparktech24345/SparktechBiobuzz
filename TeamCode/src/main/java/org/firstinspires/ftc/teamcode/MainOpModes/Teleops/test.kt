@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.MainOpModes.Teleops
 
-import ro.sparktech24345.logicore.commands.BaseCommand
+import org.firstinspires.ftc.teamcode.Components.Configs
 import ro.sparktech24345.logicore.core.CoreOpMode
 
 
-class test: CoreOpMode(MainTeleOP.cfg) {
+class test: CoreOpMode(Configs.teleopCfg) {
 
     val value = 0.0
 
