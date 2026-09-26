@@ -8,6 +8,8 @@ import dev.anygeneric.blazeftc.BlazeFTC
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx
 import ro.sparktech24345.logicore.core.CoreModule
 import ro.sparktech24345.logicore.core.CoreOpMode
+import ro.sparktech24345.logicore.core.OpModeType
+import ro.sparktech24345.logicore.core.PerformanceEngine
 
 /**
  * Mecanum drive train implementation with gamepad control.
@@ -49,7 +51,7 @@ class DriveTrain (
         set(value) { field = value.coerceIn(0.0..1.0) }
 
     override fun initCore() {
-        val map = CoreOpMode.instance!!.hardwareMap
+        val map = CoreOpMode.getInstance().hardwareMap
         rf = CachingDcMotorEx(map[rightFront] as DcMotorEx, 0.05)
         lf = CachingDcMotorEx(map[leftFront]  as DcMotorEx, 0.05)
         rb = CachingDcMotorEx(map[rightBack]  as DcMotorEx, 0.05)
@@ -70,7 +72,7 @@ class DriveTrain (
      * Implements holonomic drive with automatic power normalization.
      */
     override fun loopCore() = Benchmark.of("drivetrain calc") {
-        if (CoreOpMode.instance!!.config.type.get() == CoreOpMode.OpModeType.AUTONOMOUS) return@of
+        if (CoreOpMode.getInstance().config.type.get() == OpModeType.AUTONOMOUS) return@of
         var vertical   = -gamepad.left_stick_y.toDouble()
         var horizontal = -gamepad.left_stick_x.toDouble()
         val pivot      =  gamepad.right_stick_x.toDouble()
@@ -103,7 +105,7 @@ class DriveTrain (
     }
 
     override fun writeCore() = Benchmark.of("drivetrain") {
-        if (CoreOpMode.instance!!.config.type.get() == CoreOpMode.OpModeType.AUTONOMOUS) return@of
+        if (CoreOpMode.getInstance().type.get() == OpModeType.AUTONOMOUS) return@of
         // Apply slowdown multiplier and set motor powers
 
         //CoreOpMode.instance!!.coreTelemetry.addData("Motor rf", rf.portNumber)
@@ -111,7 +113,7 @@ class DriveTrain (
         //CoreOpMode.instance!!.coreTelemetry.addData("Motor lf", lf.portNumber)
         //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
 
-        if (CoreOpMode.instance!!.config.performanceEngine.get() == CoreOpMode.PerformanceEngine.BLAZE) {
+        if (CoreOpMode.instance!!.config.performanceEngine.get() == PerformanceEngine.BLAZE) {
             BlazeFTC.setMotorPower(173, rf.portNumber, rfp * slowdownMultiplier * (if (rf.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
             BlazeFTC.setMotorPower(173,lf.portNumber, lfp * slowdownMultiplier * (if (lf.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
             BlazeFTC.setMotorPower(173, lb.portNumber, lbp * slowdownMultiplier * (if (lb.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))

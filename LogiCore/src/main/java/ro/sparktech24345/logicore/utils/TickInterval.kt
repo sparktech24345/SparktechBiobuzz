@@ -17,7 +17,7 @@ class TickInterval(var interval: Double = 1.0, var delay: Double = 0.0) {
     private var firstTick = true
 
     var mode = IntervalMode.TICKS
-    var timeUnit = PreciseTimer.TimeUnit.MILLIS
+    var timeUnit = TimeUnit.MILLIS
 
     /**
      * Check if the current tick should trigger an update.

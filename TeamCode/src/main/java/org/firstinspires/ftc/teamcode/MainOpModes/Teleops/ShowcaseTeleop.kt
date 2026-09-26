@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.Components.Configs.Companion.teleopCfg
 import ro.sparktech24345.logicore.core.CoreOpMode
 import ro.sparktech24345.logicore.utils.PreciseTimer
+import ro.sparktech24345.logicore.utils.TimeUnit
 
 @TeleOp(name = "Showcase TeleOP", group = "AAA")
 class ShowcaseTeleop : CoreOpMode(teleopCfg) {
@@ -28,8 +29,8 @@ class ShowcaseTeleop : CoreOpMode(teleopCfg) {
 
     override fun onLoop() {
         coreTelemetry.addData("voltage", voltageSensor.voltage)
-        coreTelemetry.addData("Loop time", mainTimer.getTime().get(PreciseTimer.TimeUnit.MILLIS))
-        coreTelemetry.addData("pos", coreFollower.pose.toString())
+        coreTelemetry.addData("Loop time", mainTimer.getTime().get(TimeUnit.MILLIS))
+        coreTelemetry.addData("pos", coreFollower.pose().toString())
         mainTimer.start()
     }
 }

@@ -15,6 +15,7 @@ import ro.sparktech24345.logicore.hardware.CoreServo
 import ro.sparktech24345.logicore.states.BaseStateSet
 import ro.sparktech24345.logicore.states.CoreState
 import ro.sparktech24345.logicore.utils.PreciseTimer
+import ro.sparktech24345.logicore.utils.TimeUnit
 
 @TeleOp(name = "Test Op Mode", group = "Testing")
 class TestTeleOP: CoreOpMode(
@@ -53,7 +54,7 @@ class TestTeleOP: CoreOpMode(
     override fun onLoop() {
         telemetry.addData("Loop Time",
             "%.3f ms", // formatul doar zice ca floatul sa fie afisat cu 3 zecimale
-            timer.getTime().get(PreciseTimer.TimeUnit.MILLIS)) // getTime() returneaza o peroiada de timp (TimeSpec) si get() da valoarea numerica la scara preferata (mili, nano, sec etc.)
+            timer.getTime().get(TimeUnit.MILLIS)) // getTime() returneaza o peroiada de timp (TimeSpec) si get() da valoarea numerica la scara preferata (mili, nano, sec etc.)
         if (showMessage) telemetry.addLine("Secret message!")
     }
 

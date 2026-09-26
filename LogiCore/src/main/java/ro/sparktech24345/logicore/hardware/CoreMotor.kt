@@ -6,10 +6,11 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple
 import dev.anygeneric.blazeftc.BlazeFTC
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx
 import ro.sparktech24345.logicore.config.ConfigMap
-import ro.sparktech24345.logicore.config.HardwareConfig
+import ro.sparktech24345.logicore.config.`HardwareConfig.java`
 import ro.sparktech24345.logicore.config.IsHardware
 import ro.sparktech24345.logicore.core.CoreModule
 import ro.sparktech24345.logicore.core.CoreOpMode
+import ro.sparktech24345.logicore.core.PerformanceEngine
 import ro.sparktech24345.logicore.states.BaseStateSet
 import ro.sparktech24345.logicore.states.CoreState
 import ro.sparktech24345.logicore.states.HasStates
@@ -26,12 +27,12 @@ import ro.sparktech24345.logicore.utils.TickInterval
 class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Double = 1.0) : CoreModule,
     HasStates<T>, IsHardware {
 
-        override var config: HardwareConfig? = null
+        override var config: `HardwareConfig.java`? = null
 
     lateinit var motor: CachingDcMotorEx
         private set
 
-    lateinit var mconf: HardwareConfig
+    lateinit var mconf: `HardwareConfig.java`
 
     override val states: T = stateSet
 
@@ -107,7 +108,7 @@ class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Doubl
     override fun initCore() {
         states.own(this)
         motor = CachingDcMotorEx(CoreOpMode.instance!!.hardwareMap[name] as DcMotorImplEx)
-        if (CoreOpMode.instance!!.config.performanceEngine.get() == CoreOpMode.PerformanceEngine.BLAZE) mconf = ConfigMap[name]!!
+        if (CoreOpMode.instance!!.config.performanceEngine.get() == PerformanceEngine.BLAZE) mconf = ConfigMap[name]!!
         unitsPerRev =
             (motor.dcMotorEx as DcMotorImplEx?)?.controller?.getMotorType(motor.portNumber)?.ticksPerRev ?: Double.NaN
     }
@@ -135,7 +136,7 @@ class CoreMotor<T : BaseStateSet>(val name: String, stateSet: T, interval: Doubl
 
     override fun writeCore() {
         if (!tracker.shouldTick()) return
-        if (CoreOpMode.instance!!.config.performanceEngine.get() == CoreOpMode.PerformanceEngine.BLAZE)
+        if (CoreOpMode.instance!!.config.performanceEngine.get() == PerformanceEngine.BLAZE)
             BlazeFTC.setMotorPower(mconf.id, if (mconf.port >= 0) mconf.port else motor.portNumber, wantedPower.coerceIn(-1.0, 1.0))
         else motor.power = wantedPower.coerceIn(-1.0, 1.0)
     }
