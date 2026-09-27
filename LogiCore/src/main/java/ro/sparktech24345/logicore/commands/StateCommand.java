@@ -8,8 +8,8 @@ import ro.sparktech24345.logicore.states.CoreState;
  * Command that sets a specific state on its owning module.
  * Uses the state ownership system to automatically find the target module.
  */
-class StateCommand extends BaseCommand {
+public class StateCommand extends BaseCommand {
     public StateCommand(CoreState state) {
-        super(() -> state.getOwner().setState(state));
+        super(() -> Objects.requireNonNull(state.getOwner()).setState(state));
     }
 }

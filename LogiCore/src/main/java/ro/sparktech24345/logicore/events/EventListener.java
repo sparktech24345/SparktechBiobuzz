@@ -1,12 +1,11 @@
-package ro.sparktech24345.logicore.events
+package ro.sparktech24345.logicore.events;
 
 /**
  * Functional interface for event listeners.
  * Used with EventBus to handle events in a type-safe manner.
- *
- * @param T The event type this listener handles
  */
-fun interface EventListener<T : Event> {
+@FunctionalInterface
+public interface EventListener<T extends Event> {
     /** Called when an event of type T is emitted */
-    fun onEvent(event: T)
+    void onEvent(T event);
 }

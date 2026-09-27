@@ -6,7 +6,7 @@ import ro.sparktech24345.logicore.commands.BaseCommand;
  * Interface for command scheduling and execution systems.
  * Provides sequential command execution with queuing capabilities.
  */
-interface CommandQueuer extends CoreModule {
+public interface CommandQueuer extends CoreModule {
     /** Add a command to the execution queue */
     void queue(BaseCommand command);
 

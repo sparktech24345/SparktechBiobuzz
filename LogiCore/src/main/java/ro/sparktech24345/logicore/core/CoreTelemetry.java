@@ -14,16 +14,17 @@ import ro.sparktech24345.logicore.utils.TickInterval;
 public class CoreTelemetry extends MultipleTelemetry implements CoreModule {
 
     public CoreTelemetry() {
-        this(-1, -1);
+        this(1, 0);
     }
 
     public CoreTelemetry(double interval, double delay) {
         super();
-        this.tracker = new TickInterval(interval < 1 ? 1 : interval, delay < 0 ? 0 : delay);
+        this.ticker = new TickInterval(interval < 1 ? 1 : interval, delay < 0 ? 0 : delay);
     }
 
     /** Tick interval tracker for throttling telemetry updates */
-    private final TickInterval tracker;
+    private final TickInterval ticker;
+    public TickInterval getTicker() { return this.ticker; }
     public void initCore() {}
     public void loopCore() {}
 
@@ -33,7 +34,7 @@ public class CoreTelemetry extends MultipleTelemetry implements CoreModule {
      */
     public void writeCore() {
         Benchmark.of("telemetry", () -> {
-            if (tracker.shouldTick()) CoreOpMode.executor().submit(this::update);
+            if (ticker.shouldTick()) CoreOpMode.executor().submit(this::update);
         });
     }
 }

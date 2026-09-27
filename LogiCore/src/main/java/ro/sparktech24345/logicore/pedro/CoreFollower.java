@@ -23,7 +23,6 @@ public class CoreFollower<T extends FollowerConstants> implements CoreModule {
     public CoreFollower(T constants, Pose startPose) {
         this.constants = constants;
         this.startPose = startPose == null ? PoseStorage.lastPose : startPose;
-
     }
 
     private Follower follower;

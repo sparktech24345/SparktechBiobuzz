@@ -66,7 +66,7 @@ public class BlazePedroMecanum implements Drivetrain {
         for (int i = 0; i < wheelPowers.length; i++) {
             this.wheelPowers[i] = wheelPowers[i] / maxPower;
 //            motors[i].setPower(this.wheelPowers[i]);
-            BlazeFTC.setMotorPower(ConfigMap.INSTANCE.get(motors[i].raw().getDeviceName()).getId(),motors[i].raw().getPortNumber(),this.wheelPowers[i]);
+            BlazeFTC.setMotorPower(ConfigMap.get(motors[i].raw().getDeviceName()).getId(),motors[i].raw().getPortNumber(),this.wheelPowers[i]);
         }
     }
 
@@ -135,7 +135,7 @@ public class BlazePedroMecanum implements Drivetrain {
 
         for (CachedMotor motor : motors) {
 //            motor.setPower(0);
-            BlazeFTC.setMotorPower(ConfigMap.INSTANCE.get(motor.raw().getDeviceName()).getId(),motor.raw().getPortNumber(),0);
+            BlazeFTC.setMotorPower(ConfigMap.get(motor.raw().getDeviceName()).getId(),motor.raw().getPortNumber(),0);
         }
     }
 

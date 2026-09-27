@@ -1,6 +1,6 @@
 package ro.sparktech24345.logicore.core;
 
-enum Button {
+public enum Button {
     CROSS1, CIRCLE1, SQUARE1, TRIANGLE1,
     DPAD_UP1, DPAD_DOWN1, DPAD_RIGHT1, DPAD_LEFT1,
     LEFT_STICK_X1, LEFT_STICK_Y1,
@@ -17,5 +17,7 @@ enum Button {
     LEFT_TRIGGER2, RIGHT_TRIGGER2,
     LEFT_BUMPER2, RIGHT_BUMPER2,
     LEFT_STICK_BUTTON2, RIGHT_STICK_BUTTON2,
-    OPTIONS2, SHARE2
+    OPTIONS2, SHARE2,
+
+    NONE
 }

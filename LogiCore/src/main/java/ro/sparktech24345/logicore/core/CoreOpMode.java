@@ -22,13 +22,15 @@ import ro.sparktech24345.logicore.utils.DriveTrain;
  * Base class for all LogiCore OpModes. Provides unified lifecycle management,
  * module system, command queuing, and hardware access.
  */
-public abstract class CoreOpMode extends DummyPlugOpMode implements CommandQueuer {
+public abstract class CoreOpMode extends DummyPlugOpMode {
     public CoreOpMode(OpModeConfig config) {
         this.config = config;
         this.coreFollower = new CoreFollower<>(config.followerConstants.get(), config.type.get() == OpModeType.TELEOP ? null : config.startPose.get());
     }
 
     private OpModeConfig config;
+    public OpModeConfig getConfig() { return this.config; }
+    public void setConfig(OpModeConfig config) { this.config = config; }
 
     private final ModuleHandler cHubModules = new ModuleHandler();
     private final ModuleHandler eHubModules = new ModuleHandler();
@@ -50,18 +52,21 @@ public abstract class CoreOpMode extends DummyPlugOpMode implements CommandQueue
     public CoreTelemetry getTelemetry() { return this.coreTelemetry; }
 
     private CoreFollower<FollowerConstants> coreFollower;
-
-    private ElapsedTime elt = new ElapsedTime();
+    public CoreFollower<FollowerConstants> getFollower() { return coreFollower; }
     DriveTrain driveTrain;
+    public DriveTrain getDriveTrain() { return driveTrain; }
 
     /** Gamepad input processing with button state tracking */
     CoreGamepad gamepad;
+    public CoreGamepad getGamepad() { return gamepad; }
 
     /** Voltage monitoring for battery health tracking */
     CoreVoltageSensor voltageSensor = new CoreVoltageSensor();
+    public CoreVoltageSensor getVoltageSensor() { return voltageSensor; }
 
     /** Control Hub and Expansion Hub handlers for bulk reads */
     CoreHubs hubs = new CoreHubs();
+    public CoreHubs getHubs() { return hubs; }
 
     /** Install a module into the system with priority-based execution order */
     public <T extends CoreModule> T install(Hubs hub, T module, double priority) {

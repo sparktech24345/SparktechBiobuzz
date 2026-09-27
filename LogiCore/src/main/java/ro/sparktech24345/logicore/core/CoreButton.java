@@ -13,16 +13,20 @@ import ro.sparktech24345.logicore.utils.TimeSpec;
  * Enhanced button input processing with state tracking and event emission.
  * Supports both digital buttons and analog axes with configurable detection logic.
  */
-class CoreButton {
+public class CoreButton {
     public CoreButton() {}
     public CoreButton(DoubleSupplier pressedSup) {
         this.pressedSup = pressedSup;
     }
 
+    private Button actualButton = Button.NONE;
+    public Button getButton() { return this.actualButton; }
+    public void setButton(Button button) { this.actualButton = button; }
+
     private DoubleSupplier pressedSup = () -> 0.0;
 
     /** Event emitted when button is pressed */
-    static class ButtonPressEvent extends Event {
+    public static class ButtonPressEvent extends Event {
         private final CoreButton button;
         public CoreButton getButton() { return button; }
         public ButtonPressEvent(CoreButton button) {
@@ -31,7 +35,7 @@ class CoreButton {
     }
 
     /** Event emitted when button is released */
-    static class ButtonReleaseEvent extends Event {
+    public static class ButtonReleaseEvent extends Event {
         private final CoreButton button;
         public CoreButton getButton() { return button; }
         public ButtonReleaseEvent(CoreButton button) {
@@ -40,7 +44,7 @@ class CoreButton {
     }
 
     /** Event emitted when button toggle state changes */
-    static class ButtonToggleEvent extends Event {
+    public static class ButtonToggleEvent extends Event {
         private final CoreButton button;
         public CoreButton getButton() { return button; }
 
@@ -120,15 +124,15 @@ class CoreButton {
     void update() {
         boolean input = MathUtils.eval(pressedSup.getAsDouble());
         pressed = wasPressed.getAsBoolean();
-        if (pressed) EventBus.INSTANCE.emit(new ButtonPressEvent(this));
         released = wasReleased.getAsBoolean();
-        if (released) EventBus.INSTANCE.emit(new ButtonReleaseEvent(this));
         held = input;
         if (pressed) {
+            EventBus.emit(new ButtonPressEvent(this));
             heldTimer.start();
             toggledOnPress = !toggledOnPress;
         }
         if (released) {
+            EventBus.emit(new ButtonReleaseEvent(this));
             this.holdTime = heldTimer.getTime();
             toggledOnRelease = !toggledOnRelease;
         }
@@ -137,6 +141,6 @@ class CoreButton {
             case ON_PRESS: toggled = toggledOnPress;
             case ON_RELEASE: toggled = toggledOnRelease;
         }
-        if (toggled != lastToggle) EventBus.INSTANCE.emit(new ButtonToggleEvent(this, toggled));
+        if (toggled != lastToggle) EventBus.emit(new ButtonToggleEvent(this, toggled));
     }
 }

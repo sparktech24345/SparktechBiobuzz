@@ -1,4 +1,4 @@
-package ro.sparktech24345.logicore.states
+package ro.sparktech24345.logicore.states;
 
 /**
  * Interface for objects that can manage states.
@@ -6,9 +6,8 @@ package ro.sparktech24345.logicore.states
  *
  * @param T The type of state set this object manages
  */
-interface HasStates<T: BaseStateSet> {
-    /** The state set containing all available states for this object */
-    val states: T
+public interface HasStates<T extends BaseStateSet> {
+    T getStates();
 
     /**
      * Set the object to a specific state.
@@ -16,5 +15,5 @@ interface HasStates<T: BaseStateSet> {
      *
      * @param state The state to apply
      */
-    fun <S: CoreState> setState(state: S)
+    <S extends CoreState> void setState(S state);
 }

@@ -1,7 +1,6 @@
 package ro.sparktech24345.logicore.core;
 
 import com.qualcomm.hardware.lynx.LynxModule;
-
 import java.util.List;
 
 public class CoreHubs implements CoreModule {

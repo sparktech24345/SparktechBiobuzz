@@ -1,17 +1,15 @@
 package ro.sparktech24345.logicore.core;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import ro.sparktech24345.logicore.utils.Benchmark;
 
 /**
  * Enhanced gamepad input processing with button state tracking.
  * Supports two gamepads with comprehensive button/axis coverage and event emission.
  */
-class CoreGamepad implements CoreModule {
+public class CoreGamepad implements CoreModule {
     /**
      * Enumeration of all supported buttons across both gamepads
      */
@@ -33,7 +31,7 @@ class CoreGamepad implements CoreModule {
     public void loopCore() {}
     public void readCore() {
         Benchmark.of("gamepad", () -> {
-            if (CoreOpMode.getInstance().getConfig().getPerformanceEngine().get()
+            if (CoreOpMode.getInstance().getConfig().performanceEngine.get()
                     == PerformanceEngine.BLAZE)
                 CoreOpMode.getInstance().updateGamepads();
             for (CoreButton button : buttons.values()) button.update();
@@ -102,6 +100,8 @@ class CoreGamepad implements CoreModule {
         buttons.put(Button.RIGHT_STICK_BUTTON2, CoreButton.ofBool(() -> g2.right_stick_button, g2::rightStickButtonWasPressed, g2::rightStickButtonWasReleased));
 
         buttons.put(Button.OPTIONS2, CoreButton.ofBool(() -> g2.options, g2::optionsWasPressed, g2::optionsWasReleased));
-        buttons.put(Button.SHARE2, CoreButton.ofBool(() -> g2.share, g2::shareWasPressed, g2::shareWasReleased));    }
+        buttons.put(Button.SHARE2, CoreButton.ofBool(() -> g2.share, g2::shareWasPressed, g2::shareWasReleased));
+        buttons.forEach((button, coreButton) -> coreButton.setButton(button));
+    }
 }
 

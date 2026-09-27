@@ -1,18 +1,21 @@
-package ro.sparktech24345.logicore.states
+package ro.sparktech24345.logicore.states;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base class for state collections with ownership tracking.
  * Provides automatic state registration and module ownership assignment.
  */
-open class BaseStateSet {
+public class BaseStateSet {
     /** Track all states created through make() for ownership assignment */
-    var stateArray: MutableList<CoreState> = mutableListOf()
+    private final List<CoreState> stateArray = new ArrayList<>();
 
     /** Default zero state for convenience */
-    val ZERO = register(CoreState(0.0, "ZERO"))
+    public final CoreState ZERO = register(new CoreState(0.0, "ZERO"));
 
     /** Default state used when no specific state is requested */
-    open val DEFAULT = ZERO
+    public CoreState DEFAULT = ZERO;
 
     /**
      * Create and register a state in this set.
@@ -21,9 +24,9 @@ open class BaseStateSet {
      * @param state The state to register
      * @return The same state for chaining
      */
-    fun <T: CoreState> register(state: T): T {
-        stateArray += state
-        return state
+    public <T extends CoreState> T register(T state) {
+        stateArray.add(state);
+        return state;
     }
 
     /**
@@ -32,7 +35,7 @@ open class BaseStateSet {
      *
      * @param module The module that will own all states in this set
      */
-    fun <T: HasStates<out BaseStateSet>> own(module: T) {
-        for (state in stateArray) state.owner = module
+    public <T extends HasStates<? extends BaseStateSet>> void own(T module) {
+        for (CoreState state : stateArray) state.setOwner(module);
     }
 }

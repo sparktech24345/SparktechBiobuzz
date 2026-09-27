@@ -14,10 +14,10 @@ import ro.sparktech24345.logicore.commands.BaseCommand;
  */
 public class CoreQueuer implements CommandQueuer {
     /** Sequential command queue - executes one command at a time */
-    private ArrayDeque<BaseCommand> queuer = new ArrayDeque<>();
+    private final ArrayDeque<BaseCommand> queuer = new ArrayDeque<>();
 
     /** Parallel command executor - runs multiple commands simultaneously */
-    private List<BaseCommand> executor = new ArrayList<>();
+    private final List<BaseCommand> executor = new ArrayList<>();
 
     /** When true, all command processing is paused */
     private boolean pause = false;
