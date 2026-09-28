@@ -238,6 +238,7 @@ public abstract class CoreOpMode extends LinearOpMode {
     public void runOpMode() {
         long targetMs = 5;
         try {
+            System.out.println("Entering OpMode");
             initCore();
             while (opModeInInit()) maintainLoopRate(targetMs, this::init_loopCore);
             waitForStart();
@@ -255,7 +256,9 @@ public abstract class CoreOpMode extends LinearOpMode {
             System.out.println(e.getMessage());
             e.printStackTrace(System.out);
         } finally {
-            stopCore();
+            System.out.println("Exiting OpMode");
+            if (config.performanceEngine.get() == PerformanceEngine.BLAZE)
+                BlazeDummyPlug.closeBlazeFTC();
         }
     }
 
