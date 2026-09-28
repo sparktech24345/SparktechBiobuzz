@@ -16,7 +16,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.jetbrains.annotations.NotNull;
 
+import ro.sparktech24345.logicore.core.CoreOpMode;
+import ro.sparktech24345.logicore.core.PerformanceEngine;
 import ro.sparktech24345.logicore.pedro.FollowerConstants;
+import ro.sparktech24345.logicore.utils.SparkMecanum;
 
 public class ConstantsDecode implements FollowerConstants {
 
@@ -64,6 +67,8 @@ public class ConstantsDecode implements FollowerConstants {
         c.backRightDirection.set(DcMotorSimple.Direction.FORWARD);
         c.frontLeftDirection.set(DcMotorSimple.Direction.REVERSE);
         c.backLeftDirection.set(DcMotorSimple.Direction.REVERSE);
+
+        c.manualBrakeMode.set(true);
         // useVoltageCompensation/nominalVoltage — no equivalent field in 3.0's MecanumConfig at all.
     });
 
@@ -91,9 +96,9 @@ public class ConstantsDecode implements FollowerConstants {
         return new Follower(localizer, drivetrain, algorithm);
     }
 
-    public static Follower createFollowerDecodeFarAuto(HardwareMap hardwareMap) {
+    public static Follower createBlazeFollower(HardwareMap hardwareMap) {
         applyYawScalar(hardwareMap);
-        Mecanum drivetrain = new Mecanum(hardwareMap, drivetrainConfig);
+        SparkMecanum drivetrain = new SparkMecanum(hardwareMap, drivetrainConfig);
         PinpointLocalizer localizer = new PinpointLocalizer(hardwareMap, localizerConfig);
         Foresight algorithm = new Foresight(foresightConfigFarAuto);
         return new Follower(localizer, drivetrain, algorithm);
@@ -101,11 +106,13 @@ public class ConstantsDecode implements FollowerConstants {
 
     @Override
     public @NotNull Follower create(@NotNull HardwareMap hardwareMap) {
-        return createFollowerDecode(hardwareMap);
+        if (CoreOpMode.getInstance().getConfig().performanceEngine.get() == PerformanceEngine.BLAZE)
+            return createBlazeFollower(hardwareMap);
+        else return createFollowerDecode(hardwareMap);
     }
 
     @Override
     public double getVelocityConstraint() {
-        return 4.0; // hey dont ask why 4.0 thats also in the main class so ima leave it be
+        return 4.0; // hey don't ask why 4.0 that's also in the main class so ima leave it be
     }
 }

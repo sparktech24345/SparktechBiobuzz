@@ -3,6 +3,8 @@ package ro.sparktech24345.logicore.core;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import java.util.HashMap;
 import java.util.Map;
+
+import dev.anygeneric.blazeftc.BlazeFTC;
 import ro.sparktech24345.logicore.utils.Benchmark;
 
 /**
@@ -33,7 +35,7 @@ public class CoreGamepad implements CoreModule {
         Benchmark.of("gamepad", () -> {
             if (CoreOpMode.getInstance().getConfig().performanceEngine.get()
                     == PerformanceEngine.BLAZE)
-                CoreOpMode.getInstance().updateGamepads();
+                BlazeFTC.gamepad(g1.toByteArray(), g2.toByteArray());
             for (CoreButton button : buttons.values()) button.update();
         });
     }

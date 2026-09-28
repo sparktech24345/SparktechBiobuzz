@@ -31,7 +31,7 @@ public class MathUtils {
         static public double min(double... nums) {
         if (nums.length == 0) return 0.0;
         double mx = nums[0];
-        for (double num : nums) mx = mx < num ? num : mx;
+        for (double num : nums) mx = mx > num ? num : mx;
         return mx;
         }
 

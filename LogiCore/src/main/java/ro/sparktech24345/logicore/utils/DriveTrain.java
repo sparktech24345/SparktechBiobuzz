@@ -29,19 +29,19 @@ public class DriveTrain implements CoreModule {
         this.rbn = rightBack;
         this.lbn = leftBack;
     }
-    private final Gamepad gamepad;
-    private final String rbn;
-    private final String lbn;
-    private final String rfn;
-    private final String lfn;
+    protected final Gamepad gamepad;
+    protected final String rbn;
+    protected final String lbn;
+    protected final String rfn;
+    protected final String lfn;
 
-    private CachingDcMotorEx rf;
-    private CachingDcMotorEx lf;
-    private CachingDcMotorEx rb;
-    private CachingDcMotorEx lb;
+    protected CachingDcMotorEx rf;
+    protected CachingDcMotorEx lf;
+    protected CachingDcMotorEx rb;
+    protected CachingDcMotorEx lb;
 
     /** Zero power behavior for all motors (applied to all motors when set) */
-    private DcMotor.ZeroPowerBehavior zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE;
+    protected DcMotor.ZeroPowerBehavior zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE;
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior value) {
         this.zeroPowerBehavior = value;
         rf.setZeroPowerBehavior(value);
@@ -52,7 +52,7 @@ public class DriveTrain implements CoreModule {
     public DcMotor.ZeroPowerBehavior getZeroPowerBehavior() { return this.zeroPowerBehavior; }
 
     /** Reverse the driving direction (useful for driving from different orientations) */
-    private boolean directionFlip = false;
+    protected boolean directionFlip = false;
     public void setDirectionFlip(boolean v) { this.directionFlip = v; }
     public boolean getDirectionFlip() { return this.directionFlip; }
 
@@ -75,10 +75,10 @@ public class DriveTrain implements CoreModule {
         this.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    private double rfp = 0;
-    private double rbp = 0;
-    private double lfp = 0;
-    private double lbp = 0;
+    protected double rfp = 0;
+    protected double rbp = 0;
+    protected double lfp = 0;
+    protected double lbp = 0;
 
     /**
      * Update drive train with mecanum drive calculations.
@@ -128,34 +128,10 @@ public class DriveTrain implements CoreModule {
         //CoreOpMode.instance!!.coreTelemetry.addData("Motor rb", rb.portNumber)
         //CoreOpMode.instance!!.coreTelemetry.addData("Motor lf", lf.portNumber)
         //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
-
-        if (CoreOpMode.getInstance().getConfig().performanceEngine.get() == PerformanceEngine.BLAZE) {
-            BlazeFTC.setMotorPower(
-                ConfigMap.get(rfn).getId(),
-                rf.getPortNumber(),
-                rfp * slowdownMultiplier * (rf.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1)
-            );
-            BlazeFTC.setMotorPower(
-                ConfigMap.get(lfn).getId(),
-                lf.getPortNumber(),
-                rfp * slowdownMultiplier * (lf.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1)
-            );
-            BlazeFTC.setMotorPower(
-                ConfigMap.get(lbn).getId(),
-                lb.getPortNumber(),
-                lbp * slowdownMultiplier * (lb.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1)
-            );
-            BlazeFTC.setMotorPower(
-                ConfigMap.get(rbn).getId(),
-                rb.getPortNumber(),
-                rbp * slowdownMultiplier * (rb.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1)
-            );
-        } else {
-            rf.setPower(rfp * slowdownMultiplier);
-            rb.setPower(rbp * slowdownMultiplier);
-            lf.setPower(lfp * slowdownMultiplier);
-            lb.setPower(lbp * slowdownMultiplier);
-        }
+        rf.setPower(rfp * slowdownMultiplier);
+        rb.setPower(rbp * slowdownMultiplier);
+        lf.setPower(lfp * slowdownMultiplier);
+        lb.setPower(lbp * slowdownMultiplier);
     });
     }
 }
