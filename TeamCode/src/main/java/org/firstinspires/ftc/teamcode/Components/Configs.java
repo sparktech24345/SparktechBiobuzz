@@ -36,7 +36,7 @@ public class Configs {
         // motors
 
         public static final CoreMotor<TestTeleOP.MotorTestStateSet> exampleMotor =
-                null;// new CoreMotor<>("motorleft", new TestTeleOP.MotorTestStateSet());
+                new CoreMotor<>("motorleft", new TestTeleOP.MotorTestStateSet());
                     // pls don't do this, do it like TurretComponent
 
 
@@ -47,6 +47,6 @@ public class Configs {
 
         public static void installBot() {
             CoreOpMode instance = CoreOpMode.getInstance();
-            // instance.install(Hubs.CONTROL, exampleMotor, 1.0); // cInstall - instaleaza module specifice control hub-ului
+            // instance.install(Hubs.CONTROL, exampleMotor, 1.0);
         }
 }

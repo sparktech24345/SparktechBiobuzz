@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
     id 'maven-publish'
 }
 
@@ -26,10 +25,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-
     // Removed resolutionStrategy to avoid polluting the root project
 
     publishing {
@@ -46,18 +41,17 @@ dependencies {
     compileOnly 'org.firstinspires.ftc:FtcCommon:12.0.0'
     compileOnly 'org.firstinspires.ftc:Vision:12.0.0'
 
-    implementation 'dev.frozenmilk.dairy:CachingHardware:1.0.0'
-    implementation 'org.solverslib:photon:0.3.5'
+    compileOnly 'dev.frozenmilk.dairy:CachingHardware:1.0.0'
+    compileOnly 'org.solverslib:photon:0.3.5'
 
     // Blaze FTC
-    implementation "dev.anygeneric:blazeftc:0.1.63"
-    implementation 'dev.anygeneric:blazeftc_pedro3:0.1.63'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0'
+    compileOnly 'dev.anygeneric:blazeftc:0.1.63'
+    compileOnly 'dev.anygeneric:blazeftc_pedro3:0.1.63'
 
     compileOnly 'com.pedropathing:revhub:3.0.1'
     compileOnly 'com.pedropathing:tuning:1.0.1'
-    compileOnly "dev.frozenmilk.sinister:Sloth:0.3.2"
-    compileOnly "com.acmerobotics.slothboard:dashboard:0.3.2+0.6.0"
+    compileOnly 'dev.frozenmilk.sinister:Sloth:0.3.2'
+    compileOnly 'com.acmerobotics.slothboard:dashboard:0.3.2+0.6.0'
 }
 
 

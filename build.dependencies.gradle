@@ -6,13 +6,9 @@ repositories {
 
     maven { url = 'https://maven.brott.dev/' } //2
     maven { url = 'https://maven.pedropathing.com' } //3
-    maven { url = "https://mymaven.bylazar.com/releases" } //4
+    maven { url = 'https://mymaven.bylazar.com/releases' } //4
     maven { url 'https://repo.dairy.foundation/releases/'}//5
     maven { url = 'https://jitpack.io' } //6
-    maven {
-        name "dairyReleases"
-        url "https://repo.dairy.foundation/releases"
-    }
 
 }
 
@@ -28,17 +24,15 @@ dependencies {
     implementation 'org.firstinspires.ftc:Vision:12.0.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
-    //Dashboard
-    // implementation "com.acmerobotics.dashboard:dashboard:0.6.0"
-    implementation "com.acmerobotics.slothboard:dashboard:0.3.2+0.6.0"
-
     //Pedro
     implementation 'com.pedropathing:revhub:3.0.1'
     implementation 'com.pedropathing:tuning:1.0.1'
     implementation "dev.frozenmilk.sinister:Sloth:0.3.2"
+
+    // Dashboard
     implementation "com.acmerobotics.slothboard:dashboard:0.3.2+0.6.0"
 
-//    //Photon
+    // Photon
     implementation 'org.solverslib:photon:0.3.5'
 
     //Blaze FTC
