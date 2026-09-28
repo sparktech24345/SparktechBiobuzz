@@ -50,7 +50,7 @@ public class CoreColorSensor implements CoreModule {
      */
     public void readCore() {
         if (!ticker.shouldTick()) return;
-        CoreOpMode.executor().submit(() -> {
+        CoreOpMode.schedule(() -> {
             color = sensor.argb();
             a = (color >> 24) & 0xFF;
             r = (color >> 16) & 0xFF;

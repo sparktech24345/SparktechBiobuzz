@@ -51,7 +51,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     private final CoreTelemetry coreTelemetry = new CoreTelemetry();
     public CoreTelemetry getTelemetry() { return this.coreTelemetry; }
 
-    private CoreFollower<FollowerConstants> coreFollower;
+    private final CoreFollower<FollowerConstants> coreFollower;
     public CoreFollower<FollowerConstants> getFollower() { return coreFollower; }
     DriveTrain driveTrain;
     public DriveTrain getDriveTrain() { return driveTrain; }
@@ -87,8 +87,9 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     /** Clear all pending and executing commands */
     final public void clear() { queuer.clear(); }
 
-    private static ExecutorService executor = null;
-    public static ExecutorService executor() { return executor; }
+    // private static ExecutorService executor = null;
+//    public static ExecutorService executor() { return executor; }
+    public static void schedule(Runnable run) { run.run(); }
 
     /**
      * Central update function that coordinates all system updates in the correct order:
@@ -132,7 +133,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 
     final public void initCore() {
         instance = this;
-        executor = Executors.newFixedThreadPool(4);
+        // executor = Executors.newSingleThreadExecutor();
         
         // ============ PERFORMANCE ENGINE SETUP ============
         switch (config.performanceEngine.get()) {
@@ -154,7 +155,8 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         }
 
         // ====== GAMEPAD + TELEMETRY SETUP =======
-        gamepad = internalModules.install(new CoreGamepad(gamepad1, gamepad2), 1);
+        gamepad = new CoreGamepad(gamepad1, gamepad2);
+//        gamepad = internalModules.install(gamepad, 1);
         if (config.useDriveTrain.get())
             driveTrain = internalModules.install(new DriveTrain(gamepad1), 1);
         coreTelemetry.addTelemetry(super.telemetry);
@@ -190,7 +192,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             closeBlazeFTC();
         }
         instance = null;
-        executor.shutdownNow();
+        // executor.shutdownNow();
     }
 
     /** User-defined initialization logic - called once during init stage */
@@ -208,9 +210,9 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     /** Optional user cleanup logic - called when OpMode stops */
     public void onStop() {}
 
-    public void runOpMode() {
+    public void runOpModeInBlaze() {
         if (config.performanceEngine.get() == PerformanceEngine.BLAZE) {
-            runOpModeInBlaze();
+            blaze();
         } else { // normal op mode
             try {
                 initCore();
@@ -228,38 +230,32 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             } catch (Throwable e) {
                 System.out.println("Error in OpMode!!!");
                 System.out.println(e.getMessage());
+                e.printStackTrace(System.out);
             } finally {
                 stopCore();
             }
         }
     }
 
-    public void runOpModeInBlaze() {
+    public void blaze() {
+        // dont need try catch since DummyPlugOpMode already wraps the whole runOpModeInBlaze in a try catch
         long targetMs = 5;
-
-        try {
-            initCore();
-            while (opModeInInit()) {
-                maintainLoopRate(targetMs, this::init_loopCore);
-            }
-
-            waitForStart();
-
-            if (opModeIsActive()) {
-                runBlazeFTC(0);
-                startCore();
-
-                while (opModeIsActive()) {
-                    maintainLoopRate(targetMs, this::loopCore);
-                }
-            }
-            stopCore();
-        } catch (Throwable e) {
-            System.out.println("Error in OpMode!!!");
-            System.out.println(e.getMessage());
-        } finally {
-            stopCore();
+        initCore();
+        while (opModeInInit()) {
+            maintainLoopRate(targetMs, this::init_loopCore);
         }
+
+        waitForStart();
+
+        if (opModeIsActive()) {
+            runBlazeFTC(0);
+            startCore();
+
+            while (opModeIsActive()) {
+                maintainLoopRate(targetMs, this::loopCore);
+            }
+        }
+        stopCore();
     }
 
     /**

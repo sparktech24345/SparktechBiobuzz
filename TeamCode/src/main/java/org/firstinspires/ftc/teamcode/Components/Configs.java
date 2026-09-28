@@ -14,9 +14,9 @@ import ro.sparktech24345.logicore.hardware.CoreMotor;
 public class Configs {
         public static final OpModeConfig teleopCfg = new OpModeConfig((opModeConfig) -> {
             opModeConfig.type.set(OpModeType.TELEOP);
-            opModeConfig.performanceEngine.set(PerformanceEngine.BLAZE);
-            opModeConfig.useFollower.set(true);
-            opModeConfig.useDriveTrain.set(true);
+            opModeConfig.performanceEngine.set(PerformanceEngine.NONE);
+            opModeConfig.useFollower.set(false);
+            opModeConfig.useDriveTrain.set(false);
             opModeConfig.followerConstants.set(new ConstantsDecode());
             opModeConfig.configSetup.set(() -> {
                 ConfigMap.set("frontleft", new HardwareConfig(Hubs.EXPANSION, -1));
@@ -36,7 +36,7 @@ public class Configs {
         // motors
 
         public static final CoreMotor<TestTeleOP.MotorTestStateSet> exampleMotor =
-                new CoreMotor<>("motorleft", new TestTeleOP.MotorTestStateSet());
+                null;// new CoreMotor<>("motorleft", new TestTeleOP.MotorTestStateSet());
                     // pls don't do this, do it like TurretComponent
 
 
@@ -47,6 +47,6 @@ public class Configs {
 
         public static void installBot() {
             CoreOpMode instance = CoreOpMode.getInstance();
-            instance.install(Hubs.CONTROL, exampleMotor, 1.0); // cInstall - instaleaza module specifice control hub-ului
+            // instance.install(Hubs.CONTROL, exampleMotor, 1.0); // cInstall - instaleaza module specifice control hub-ului
         }
 }

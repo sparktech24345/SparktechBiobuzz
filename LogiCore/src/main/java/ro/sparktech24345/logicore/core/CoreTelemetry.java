@@ -34,7 +34,7 @@ public class CoreTelemetry extends MultipleTelemetry implements CoreModule {
      */
     public void writeCore() {
         Benchmark.of("telemetry", () -> {
-            if (ticker.shouldTick()) CoreOpMode.executor().submit(this::update);
+            if (ticker.shouldTick()) CoreOpMode.schedule(this::update);
         });
     }
 }

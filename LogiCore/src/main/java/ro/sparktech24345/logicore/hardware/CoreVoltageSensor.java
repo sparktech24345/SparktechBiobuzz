@@ -34,7 +34,7 @@ public class CoreVoltageSensor implements CoreModule {
     /** Update voltage reading at throttled rate */
     public void readCore() {
         Benchmark.of("voltage sensor", () ->  {
-            if (ticker.shouldTick()) CoreOpMode.executor().submit(() -> voltage = sensor.getVoltage());
+            if (ticker.shouldTick()) CoreOpMode.schedule(() -> voltage = sensor.getVoltage());
         });
     }
 
