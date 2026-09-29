@@ -1,15 +1,9 @@
 package ro.sparktech24345.logicore.core;
 
-import static dev.anygeneric.blazeftc.BlazeDummyPlug.closeBlazeFTC;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.photon.PhotonCore;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import dev.anygeneric.blazeftc.AcceleratedMotor;
 import dev.anygeneric.blazeftc.BlazeDummyPlug;
@@ -24,14 +18,13 @@ import ro.sparktech24345.logicore.hardware.CoreVoltageSensor;
 import ro.sparktech24345.logicore.pedro.CoreFollower;
 import ro.sparktech24345.logicore.pedro.FollowerConstants;
 import ro.sparktech24345.logicore.utils.Benchmark;
-import ro.sparktech24345.logicore.utils.BlazeDriveTrain;
 import ro.sparktech24345.logicore.utils.DriveTrain;
 
 /**
  * Base class for all LogiCore OpModes. Provides unified lifecycle management,
  * module system, command queuing, and hardware access.
  */
-public abstract class CoreOpMode extends LinearOpMode {
+public abstract class CoreOpMode extends DummyPlugOpMode {
     public CoreOpMode(OpModeConfig config) {
         this.config = config;
         this.coreFollower = new CoreFollower<>(config.followerConstants.get(), config.type.get() == OpModeType.TELEOP ? null : config.startPose.get());
@@ -53,28 +46,28 @@ public abstract class CoreOpMode extends LinearOpMode {
         public static CoreOpMode getInstance() { return instance; }
 
     /** Current stage of the OpMode lifecycle */
-    private GameStage stage = GameStage.INIT;
+    protected GameStage stage = GameStage.INIT;
     public GameStage getStage() { return this.stage; }
 
     /** Telemetry system with update throttling and multi-output support */
-    private final CoreTelemetry coreTelemetry = new CoreTelemetry();
+    protected final CoreTelemetry coreTelemetry = new CoreTelemetry();
     public CoreTelemetry getTelemetry() { return this.coreTelemetry; }
 
-    private final CoreFollower<FollowerConstants> coreFollower;
+    protected final CoreFollower<FollowerConstants> coreFollower;
     public CoreFollower<FollowerConstants> getFollower() { return coreFollower; }
-    DriveTrain driveTrain;
+    protected DriveTrain driveTrain;
     public DriveTrain getDriveTrain() { return driveTrain; }
 
     /** Gamepad input processing with button state tracking */
-    CoreGamepad gamepad;
+    protected CoreGamepad gamepad;
     public CoreGamepad getGamepad() { return gamepad; }
 
     /** Voltage monitoring for battery health tracking */
-    CoreVoltageSensor voltageSensor = new CoreVoltageSensor();
+    protected CoreVoltageSensor voltageSensor = new CoreVoltageSensor();
     public CoreVoltageSensor getVoltageSensor() { return voltageSensor; }
 
     /** Control Hub and Expansion Hub handlers for bulk reads */
-    CoreHubs hubs = new CoreHubs();
+    protected CoreHubs hubs = new CoreHubs();
     public CoreHubs getHubs() { return hubs; }
 
     /** Install a module into the system with priority-based execution order */
@@ -150,6 +143,7 @@ public abstract class CoreOpMode extends LinearOpMode {
 
     final public void initCore() {
         instance = this;
+        // ====== GAMEPAD + TELEMETRY SETUP =======
         // executor = Executors.newSingleThreadExecutor();
 
         // ============ PERFORMANCE ENGINE SETUP ============
@@ -165,10 +159,12 @@ public abstract class CoreOpMode extends LinearOpMode {
                 BlazeDummyPlug.engageMotorAccel(hardwareMap); // maybe not needed but use getMotor wrapper also
                 BlazeDummyPlug.engageBulkReadAcceleration(hardwareMap, Hub.CtrlHub, 1, () -> {
                     if (stage != GameStage.INIT) cHubModules.readCore();
+                    System.out.println("Read on control hub" + Hub.CtrlHub);
                     return Unit.INSTANCE;
                 });
                 BlazeDummyPlug.engageBulkReadAcceleration(hardwareMap, Hub.ExHub, 1, () -> {
                     if (stage != GameStage.INIT) eHubModules.readCore();
+                    System.out.println("Read on expansion hub" + Hub.ExHub);
                     return Unit.INSTANCE;
                 });
 //                engageBulkReadAcceleration(Hub.CtrlHub,1,stuffToGetEncoderData)
@@ -179,15 +175,12 @@ public abstract class CoreOpMode extends LinearOpMode {
             }
         }
 
-        // ====== GAMEPAD + TELEMETRY SETUP =======
+        coreTelemetry.addTelemetry(super.telemetry);
         gamepad = new CoreGamepad(gamepad1, gamepad2);
         gamepad = internalModules.install(gamepad, 1);
         if (config.useDriveTrain.get()) {
-            if (config.performanceEngine.get() == PerformanceEngine.BLAZE)
-                driveTrain = internalModules.install(new BlazeDriveTrain(gamepad1), 1);
-            else driveTrain = internalModules.install(new DriveTrain(gamepad1), 1);
+            driveTrain = internalModules.install(new DriveTrain(gamepad1), 1);
         }
-        coreTelemetry.addTelemetry(super.telemetry);
         internalModules.install(coreTelemetry, 1);
         internalModules.install(voltageSensor, 1);
         internalModules.install(hubs, Float.POSITIVE_INFINITY);
@@ -200,7 +193,7 @@ public abstract class CoreOpMode extends LinearOpMode {
     }
 
     final public void init_loopCore() {
-        update(this::init_loopCore);
+        update(this::onInitLoop);
     }
 
     final public void startCore() {
@@ -216,7 +209,7 @@ public abstract class CoreOpMode extends LinearOpMode {
     final public void stopCore() {
         stage = GameStage.STOP;
         update(this::onStop);
-        instance = null;
+        // instance = null;
         // executor.shutdownNow();
     }
 
@@ -235,9 +228,9 @@ public abstract class CoreOpMode extends LinearOpMode {
     /** Optional user cleanup logic - called when OpMode stops */
     public void onStop() {}
 
-    public void runOpMode() {
-        long targetMs = 5;
+    public void runOpModeInBlaze() {
         try {
+            long targetMs = 5;
             System.out.println("Entering OpMode");
             initCore();
             while (opModeInInit()) maintainLoopRate(targetMs, this::init_loopCore);
@@ -247,18 +240,18 @@ public abstract class CoreOpMode extends LinearOpMode {
                 if (config.performanceEngine.get() == PerformanceEngine.BLAZE)
                     BlazeFTC.run(0);
                 startCore();
-
                 while (opModeIsActive()) maintainLoopRate(targetMs, this::loopCore);
             }
             stopCore();
+            System.out.println("Exiting OpMode");
         } catch (Throwable e) {
             System.out.println("Error in OpMode!!!");
             System.out.println(e.getMessage());
             e.printStackTrace(System.out);
+            throw e;
         } finally {
-            System.out.println("Exiting OpMode");
-            if (config.performanceEngine.get() == PerformanceEngine.BLAZE)
-                BlazeDummyPlug.closeBlazeFTC();
+            // executor.shutdownNow();
+            instance = null;
         }
     }
 
@@ -276,6 +269,7 @@ public abstract class CoreOpMode extends LinearOpMode {
                 Thread.sleep(sleepTime);
             } catch (InterruptedException e) {
                 System.out.println(e.getMessage());
+                e.printStackTrace(System.out);
             }
         }
     }

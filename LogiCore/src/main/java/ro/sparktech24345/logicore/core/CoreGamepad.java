@@ -35,7 +35,7 @@ public class CoreGamepad implements CoreModule {
         Benchmark.of("gamepad", () -> {
             if (CoreOpMode.getInstance().getConfig().performanceEngine.get()
                     == PerformanceEngine.BLAZE)
-                BlazeFTC.gamepad(g1.toByteArray(), g2.toByteArray());
+                CoreOpMode.getInstance().updateGamepads();
             for (CoreButton button : buttons.values()) button.update();
         });
     }

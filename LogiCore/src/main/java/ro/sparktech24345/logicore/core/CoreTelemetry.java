@@ -7,8 +7,6 @@ import ro.sparktech24345.logicore.utils.TickInterval;
 /**
  * Enhanced telemetry system with update throttling and multi-output support.
  * Extends MultipleTelemetry to support both FTC SDK and FTC Dashboard output simultaneously.
- *
- * @param interval Update interval in ticks (default: 3, updates every 3rd loop cycle)
  */
 
 public class CoreTelemetry extends MultipleTelemetry implements CoreModule {
@@ -25,7 +23,9 @@ public class CoreTelemetry extends MultipleTelemetry implements CoreModule {
     /** Tick interval tracker for throttling telemetry updates */
     private final TickInterval ticker;
     public TickInterval getTicker() { return this.ticker; }
-    public void initCore() {}
+    public void initCore() {
+        addTelemetry(CoreOpMode.getInstance().telemetry);
+    }
     public void loopCore() {}
 
     /**
@@ -33,8 +33,8 @@ public class CoreTelemetry extends MultipleTelemetry implements CoreModule {
      * This prevents excessive CPU usage from frequent telemetry updates.
      */
     public void writeCore() {
-        Benchmark.of("telemetry", () -> {
-            if (ticker.shouldTick()) CoreOpMode.schedule(this::update);
-        });
+        if (ticker.shouldTick()) {
+            update();
+        }
     }
 }

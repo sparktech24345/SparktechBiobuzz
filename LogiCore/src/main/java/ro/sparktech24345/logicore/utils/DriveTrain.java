@@ -6,11 +6,13 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import dev.anygeneric.blazeftc.AcceleratedMotor;
 import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import ro.sparktech24345.logicore.config.ConfigMap;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
+import ro.sparktech24345.logicore.core.OpModeConfig;
 import ro.sparktech24345.logicore.core.OpModeType;
 import ro.sparktech24345.logicore.core.PerformanceEngine;
 
@@ -39,6 +41,10 @@ public class DriveTrain implements CoreModule {
     protected CachingDcMotorEx lf;
     protected CachingDcMotorEx rb;
     protected CachingDcMotorEx lb;
+    protected AcceleratedMotor arf = null;
+    protected AcceleratedMotor alf = null;
+    protected AcceleratedMotor arb = null;
+    protected AcceleratedMotor alb = null;
 
     /** Zero power behavior for all motors (applied to all motors when set) */
     protected DcMotor.ZeroPowerBehavior zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE;
@@ -65,10 +71,26 @@ public class DriveTrain implements CoreModule {
 
     public void initCore() {
         HardwareMap map = CoreOpMode.getInstance().hardwareMap;
-        rf = new CachingDcMotorEx(map.get(DcMotorEx.class, rfn), 0.05);
-        lf = new CachingDcMotorEx(map.get(DcMotorEx.class, lfn), 0.05);
-        rb = new CachingDcMotorEx(map.get(DcMotorEx.class, rbn), 0.05);
-        lb = new CachingDcMotorEx(map.get(DcMotorEx.class, lbn), 0.05);
+        DcMotorEx rfm = map.get(DcMotorEx.class, rfn);
+        DcMotorEx lfm = map.get(DcMotorEx.class, lfn);
+        DcMotorEx rbm = map.get(DcMotorEx.class, rbn);
+        DcMotorEx lbm = map.get(DcMotorEx.class, lbn);
+
+        rf = new CachingDcMotorEx(rfm, 0.05);
+        lf = new CachingDcMotorEx(lfm, 0.05);
+        rb = new CachingDcMotorEx(rbm, 0.05);
+        lb = new CachingDcMotorEx(lbm, 0.05);
+
+        if (CoreOpMode.getInstance().getConfig().performanceEngine.get() == PerformanceEngine.BLAZE) {
+            if (rfm instanceof AcceleratedMotor) arf = (AcceleratedMotor) rfm;
+            else arf = new AcceleratedMotor(rf);
+            if (lfm instanceof AcceleratedMotor) alf = (AcceleratedMotor) lfm;
+            else alf = new AcceleratedMotor(lf);
+            if (rbm instanceof AcceleratedMotor) arb = (AcceleratedMotor) rbm;
+            else arb = new AcceleratedMotor(rb);
+            if (lbm instanceof AcceleratedMotor) alb = (AcceleratedMotor) lbm;
+            else alb = new AcceleratedMotor(lb);
+        }
 
         lf.setDirection(DcMotorSimple.Direction.REVERSE);
         lb.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -121,17 +143,23 @@ public class DriveTrain implements CoreModule {
 
     public void writeCore() {
         Benchmark.of("drivetrain", () -> {
-        if (CoreOpMode.getInstance().getConfig().type.get() == OpModeType.AUTONOMOUS) return;
-        // Apply slowdown multiplier and set motor powers
+            if (CoreOpMode.getInstance().getConfig().type.get() == OpModeType.AUTONOMOUS) return;
+            // Apply slowdown multiplier and set motor powers
 
-        //CoreOpMode.instance!!.coreTelemetry.addData("Motor rf", rf.portNumber)
-        //CoreOpMode.instance!!.coreTelemetry.addData("Motor rb", rb.portNumber)
-        //CoreOpMode.instance!!.coreTelemetry.addData("Motor lf", lf.portNumber)
-        //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
-        rf.setPower(rfp * slowdownMultiplier);
-        rb.setPower(rbp * slowdownMultiplier);
-        lf.setPower(lfp * slowdownMultiplier);
-        lb.setPower(lbp * slowdownMultiplier);
-    });
+            //CoreOpMode.instance!!.coreTelemetry.addData("Motor rf", rf.portNumber)
+            //CoreOpMode.instance!!.coreTelemetry.addData("Motor rb", rb.portNumber)
+            //CoreOpMode.instance!!.coreTelemetry.addData("Motor lf", lf.portNumber)
+            //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
+
+            OpModeConfig cfg = CoreOpMode.getInstance().getConfig();
+            if (cfg.performanceEngine.get() == PerformanceEngine.BLAZE && arf != null) arf.setPower(rfp * slowdownMultiplier);
+            else rf.setPower(rfp * slowdownMultiplier);
+            if (cfg.performanceEngine.get() == PerformanceEngine.BLAZE && arb != null) arf.setPower(rbp * slowdownMultiplier);
+            else rb.setPower(rbp * slowdownMultiplier);
+            if (cfg.performanceEngine.get() == PerformanceEngine.BLAZE && alf != null) arf.setPower(lfp * slowdownMultiplier);
+            else lf.setPower(lfp * slowdownMultiplier);
+            if (cfg.performanceEngine.get() == PerformanceEngine.BLAZE && alb != null) arf.setPower(lbp * slowdownMultiplier);
+            else lb.setPower(lbp * slowdownMultiplier);
+        });
     }
 }

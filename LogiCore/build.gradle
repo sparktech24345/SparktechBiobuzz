@@ -41,7 +41,7 @@ dependencies {
     compileOnly 'org.firstinspires.ftc:FtcCommon:12.0.0'
     compileOnly 'org.firstinspires.ftc:Vision:12.0.0'
 
-    compileOnly 'dev.frozenmilk.dairy:CachingHardware:1.0.0'
+    implementation 'dev.frozenmilk.dairy:CachingHardware:1.0.0'
     compileOnly 'org.solverslib:photon:0.3.5'
 
     // Blaze FTC

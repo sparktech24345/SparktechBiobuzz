@@ -17,7 +17,7 @@ public class ShowcaseTeleop extends CoreOpMode {
 
     private final PreciseTimer mainTimer = new PreciseTimer();
     public void onInit() {
-        getTelemetry().addTelemetry(FtcDashboard.getInstance().getTelemetry());
+        coreTelemetry.addTelemetry(FtcDashboard.getInstance().getTelemetry());
     }
 
     /**TO DO
@@ -31,9 +31,10 @@ public class ShowcaseTeleop extends CoreOpMode {
     }
 
     public void onLoop() {
-        getTelemetry().addData("voltage", getVoltageSensor().getVoltage());
-        getTelemetry().addData("Loop time", mainTimer.getTime().get(TimeUnit.MILLIS));
-//        getTelemetry().addData("pos", getFollower().pose());
+        telemetry.addData("voltage", voltageSensor.getVoltage());
+        telemetry.addData("Loop time", mainTimer.getTime().get(TimeUnit.MILLIS));
+        telemetry.update();
+//        coreTelemetry.addData("pos", getFollower().pose());
         mainTimer.start();
     }
 }
