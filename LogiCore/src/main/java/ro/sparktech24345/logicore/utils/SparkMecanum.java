@@ -3,6 +3,7 @@ package ro.sparktech24345.logicore.utils;
 import android.annotation.SuppressLint;
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.drivetrain.Drivetrain;
+import com.pedropathing.revhub.drivetrains.CachedMotor;
 import com.pedropathing.revhub.drivetrains.MecanumConfig;
 import com.pedropathing.utils.Utils;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,11 +14,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import dev.anygeneric.blazeftc.AcceleratedMotor;
+import dev.anygeneric.blazeftc.BlazeFTC;
+import ro.sparktech24345.logicore.config.ConfigMap;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 
 public class SparkMecanum implements Drivetrain {
     public final MecanumConfig config;
-    private final AcceleratedMotor[] motors;
+    private final DcMotorEx[] motors;
     public final double[] wheelPowers = new double[4];
 
     private static final int FL = 0;
@@ -31,11 +34,11 @@ public class SparkMecanum implements Drivetrain {
     public SparkMecanum(HardwareMap map, MecanumConfig config) {
         this.config = config;
 
-        motors = new AcceleratedMotor[]{
-                CoreOpMode.getMotor(map, config.frontLeftName.get()),
-                CoreOpMode.getMotor(map, config.frontRightName.get()),
-                CoreOpMode.getMotor(map, config.backLeftName.get()),
-                CoreOpMode.getMotor(map, config.backRightName.get())
+        motors = new DcMotorEx[]{
+                map.get(DcMotorEx.class, config.frontLeftName.get()),
+                map.get(DcMotorEx.class, config.frontRightName.get()),
+                map.get(DcMotorEx.class, config.backLeftName.get()),
+                map.get(DcMotorEx.class, config.backRightName.get())
         };
 
         motors[FL].setDirection(config.frontLeftDirection.get());
@@ -128,8 +131,8 @@ public class SparkMecanum implements Drivetrain {
             setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         }
 
-        for (AcceleratedMotor motor : motors) {
-            motor.setPower(0);
+        for (DcMotorEx motor : motors) {
+            BlazeFTC.setMotorPower(ConfigMap.get(motor.getDeviceName()).getId(), motor.getPortNumber(), 0);
         }
     }
 
@@ -150,7 +153,7 @@ public class SparkMecanum implements Drivetrain {
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
-        for(AcceleratedMotor motor : motors) {
+        for(DcMotorEx motor : motors) {
             motor.setZeroPowerBehavior(behavior);
         }
     }
@@ -160,7 +163,7 @@ public class SparkMecanum implements Drivetrain {
      */
     public double currentAmps() {
         double total = 0;
-        for (AcceleratedMotor motor : motors) {
+        for (DcMotorEx motor : motors) {
             total += motor.getCurrent(CurrentUnit.AMPS);
         }
         return total;

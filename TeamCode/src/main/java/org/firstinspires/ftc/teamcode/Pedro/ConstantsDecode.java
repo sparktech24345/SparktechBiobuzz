@@ -106,9 +106,10 @@ public class ConstantsDecode implements FollowerConstants {
 
     @Override
     public @NotNull Follower create(@NotNull HardwareMap hardwareMap) {
-        if (CoreOpMode.getInstance().getConfig().performanceEngine.get() == PerformanceEngine.BLAZE)
-            return createBlazeFollower(hardwareMap);
-        else return createFollowerDecode(hardwareMap);
+        return createFollowerDecode(hardwareMap);
+//        if (CoreOpMode.getInstance().getConfig().performanceEngine.get() == PerformanceEngine.BLAZE)
+//            return createBlazeFollower(hardwareMap);
+//        else return createFollowerDecode(hardwareMap);
     }
 
     @Override

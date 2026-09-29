@@ -1,6 +1,6 @@
 package ro.sparktech24345.logicore.core;
 
-import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
 
 import ro.sparktech24345.logicore.utils.WeightedArray;
 
@@ -10,10 +10,10 @@ import ro.sparktech24345.logicore.utils.WeightedArray;
  */
 public class ModuleHandler implements ModuleContainer {
 
-    private WeightedArray<CoreModule> modules = new WeightedArray<>();
+    private ArrayList<CoreModule> modules = new ArrayList<>();
 
     /** Number of modules currently managed */
-    public int getSize() { return modules.getSize(); }
+    public int getSize() { return modules.size(); }
 
     /** Prevents module installation after start() is called */
     private boolean lock = false;
@@ -26,7 +26,7 @@ public class ModuleHandler implements ModuleContainer {
      */
     public <T extends CoreModule> T install(T module, double priority) {
         if (lock) throw new RuntimeException("Cannot install modules after start!");
-        modules.add(module, priority);
+        modules.add(module);
         module.initCore();
         return module;
     }
@@ -35,31 +35,37 @@ public class ModuleHandler implements ModuleContainer {
 
     /** Update all modules during init_loop stage, in priority order */
     public void init_loopCore() {
-        for (WeightedArray.Weighted<CoreModule> module : modules.list()) module.value.init_loopCore();
+        for (CoreModule module : modules) module.init_loopCore();
     }
 
     /** Lock the handler and start all modules */
     public void startCore() {
         lock = true;
-        for (WeightedArray.Weighted<CoreModule> module : modules.list()) module.value.startCore();
+        for (CoreModule module : modules) module.startCore();
     }
 
     /** Update all modules during main loop, in priority order */
     public void loopCore() {
-        for (WeightedArray.Weighted<CoreModule> module : modules.list()) module.value.loopCore();
+        for (CoreModule module : modules){
+            module.loopCore();
+        }
     }
 
     /** Stop all modules and clear the module list */
     public void stopCore() {
-        for (WeightedArray.Weighted<CoreModule> module : modules.list()) module.value.stopCore();
+        for (CoreModule module : modules) module.stopCore();
         modules.clear();
     }
 
     public void readCore() {
-        for (WeightedArray.Weighted<CoreModule> module : modules.list()) module.value.readCore();
+        for (CoreModule module : modules) {
+            module.readCore();
+        }
     }
 
     public void writeCore() {
-        for (WeightedArray.Weighted<CoreModule> module : modules.list()) module.value.writeCore();
+        for (CoreModule module : modules) {
+            module.writeCore();
+        }
     }
 }

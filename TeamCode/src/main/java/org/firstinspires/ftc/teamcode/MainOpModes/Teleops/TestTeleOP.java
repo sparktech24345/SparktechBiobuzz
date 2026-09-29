@@ -15,7 +15,6 @@ import ro.sparktech24345.logicore.hardware.CoreServo;
 import ro.sparktech24345.logicore.states.BaseStateSet;
 import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.utils.PreciseTimer;
-import ro.sparktech24345.logicore.utils.TimeUnit;
 
 @TeleOp(name = "Test Op Mode", group = "Testing")
 public class TestTeleOP extends CoreOpMode {
@@ -49,7 +48,7 @@ public class TestTeleOP extends CoreOpMode {
             // practic eventurile trimit un semnal atunci cand ele se intampla iar acel semnal e interceptat in mai multe locuri
             // ex: eventul de button press e interceptat, verifica daca butonul apasat e CROSS1 si atunci scrie ceva in telemetry
             if (event.getButton().getButton() == Button.CROSS1)
-                getTelemetry().addData("Salut", timer.getTime().getMs());
+                getCoreTelemetry().tel.addData("Salut", timer.getTime().getMs());
         });
     }
 

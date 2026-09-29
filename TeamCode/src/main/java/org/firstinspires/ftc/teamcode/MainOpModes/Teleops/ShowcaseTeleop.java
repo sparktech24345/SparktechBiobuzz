@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Components.Configs;
 import ro.sparktech24345.logicore.core.CoreOpMode;
+import ro.sparktech24345.logicore.core.CoreTelemetry;
 import ro.sparktech24345.logicore.utils.PreciseTimer;
 import ro.sparktech24345.logicore.utils.TimeUnit;
 
@@ -17,7 +18,6 @@ public class ShowcaseTeleop extends CoreOpMode {
 
     private final PreciseTimer mainTimer = new PreciseTimer();
     public void onInit() {
-        coreTelemetry.addTelemetry(FtcDashboard.getInstance().getTelemetry());
     }
 
     /**TO DO
@@ -31,9 +31,8 @@ public class ShowcaseTeleop extends CoreOpMode {
     }
 
     public void onLoop() {
-        telemetry.addData("voltage", voltageSensor.getVoltage());
-        telemetry.addData("Loop time", mainTimer.getTime().get(TimeUnit.MILLIS));
-        telemetry.update();
+        coreTelemetry.tel.addData("voltage", voltageSensor.getVoltage());
+        coreTelemetry.tel.addData("Loop time", mainTimer.getTime().get(TimeUnit.MILLIS));
 //        coreTelemetry.addData("pos", getFollower().pose());
         mainTimer.start();
     }

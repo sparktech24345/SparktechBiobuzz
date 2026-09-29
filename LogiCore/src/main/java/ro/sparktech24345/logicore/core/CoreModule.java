@@ -33,11 +33,11 @@ public interface CoreModule {
      */
     default void doUpdate(GameStage stage) {
         switch(stage) {
-            case INIT: initCore();
-            case INIT_LOOP: init_loopCore();
-            case START: startCore();
-            case LOOP: loopCore();
-            case STOP: stopCore();
+            case INIT: initCore(); break;
+            case INIT_LOOP: init_loopCore(); break;
+            case START: startCore(); break;
+            case LOOP: loopCore(); break;
+            case STOP: stopCore(); break;
         }
     }
 }

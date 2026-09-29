@@ -44,7 +44,7 @@ public class PreciseTimer {
     public void log(CoreTelemetry telemetry, TimeUnit unit) {
         String caption = "Timer: " + name + " -- [ms]";
         double time = getTime().get(unit);
-        if (telemetry != null) telemetry.addData(caption, time);
+        if (telemetry != null) telemetry.tel.addData(caption, time);
         System.out.println(caption + " " + time);
     }
 

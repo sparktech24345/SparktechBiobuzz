@@ -16,12 +16,10 @@ public class CoreGamepad implements CoreModule {
      * Enumeration of all supported buttons across both gamepads
      */
 
-    private final Gamepad g1;
-    private final Gamepad g2;
+    private Gamepad g1;
+    private Gamepad g2;
 
-    public CoreGamepad(Gamepad g1, Gamepad g2) {
-        this.g1 = g1;
-        this.g2 = g2;
+    public CoreGamepad() {
     }
 
     /** Access button state using array-like syntax: gamepad[Button.CROSS1] */
@@ -44,6 +42,8 @@ public class CoreGamepad implements CoreModule {
     private final Map<Button, CoreButton> buttons = new HashMap<>();
 
     public void initCore() {
+        g1 = CoreOpMode.getInstance().gamepad1;
+        g2 = CoreOpMode.getInstance().gamepad2;
         // =========================== GAMEPAD 1 =================================
 
         buttons.put(Button.CROSS1, CoreButton.ofBool(() -> g1.cross, g1::aWasPressed, g1::aWasReleased));

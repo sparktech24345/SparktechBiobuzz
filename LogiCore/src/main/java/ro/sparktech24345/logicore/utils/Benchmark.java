@@ -10,6 +10,6 @@ public class Benchmark {
     public static void of(String name, Runnable run) {
         PreciseTimer bm = new PreciseTimer(name).start();
         run.run();
-        bm.log(CoreOpMode.getInstance().getTelemetry());
+        bm.log(CoreOpMode.getInstance().getCoreTelemetry());
     }
 }

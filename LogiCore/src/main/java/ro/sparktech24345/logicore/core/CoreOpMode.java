@@ -1,6 +1,6 @@
 package ro.sparktech24345.logicore.core;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.photon.PhotonCore;
@@ -9,8 +9,6 @@ import dev.anygeneric.blazeftc.AcceleratedMotor;
 import dev.anygeneric.blazeftc.BlazeDummyPlug;
 import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.anygeneric.blazeftc.DummyPlugOpMode;
-import dev.anygeneric.blazeftc.Hub;
-import kotlin.Unit;
 import ro.sparktech24345.logicore.commands.BaseCommand;
 import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.config.IsHardware;
@@ -50,8 +48,8 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     public GameStage getStage() { return this.stage; }
 
     /** Telemetry system with update throttling and multi-output support */
-    protected final CoreTelemetry coreTelemetry = new CoreTelemetry();
-    public CoreTelemetry getTelemetry() { return this.coreTelemetry; }
+    protected CoreTelemetry coreTelemetry;
+    public CoreTelemetry getCoreTelemetry() { return this.coreTelemetry; }
 
     protected final CoreFollower<FollowerConstants> coreFollower;
     public CoreFollower<FollowerConstants> getFollower() { return coreFollower; }
@@ -59,7 +57,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     public DriveTrain getDriveTrain() { return driveTrain; }
 
     /** Gamepad input processing with button state tracking */
-    protected CoreGamepad gamepad;
+    protected CoreGamepad gamepad = new CoreGamepad();
     public CoreGamepad getGamepad() { return gamepad; }
 
     /** Voltage monitoring for battery health tracking */
@@ -74,9 +72,9 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     public <T extends CoreModule> T install(Hubs hub, T module, double priority) {
         if (module instanceof IsHardware) ((IsHardware)module).getConfig().setId(hub.getId());
         switch (hub) {
-            case CONTROL: cHubModules.install(module, priority);
-            case EXPANSION: eHubModules.install(module, priority);
-            case INDEPENDENT: independentModules.install(module, priority);
+            case CONTROL: cHubModules.install(module, priority); break;
+            case EXPANSION: eHubModules.install(module, priority); break;
+            case INDEPENDENT: independentModules.install(module, priority); break;
         }
         return module;
     }
@@ -110,15 +108,13 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
      */
     private void update(Runnable fn) {
         // read control hub motors, exp motors, senzori, processing, write controlhub, motors exp, motors all servos
-        Benchmark.of("inputs", () -> {
-            if (stage != GameStage.INIT) {
+        if (CoreOpMode.getInstance().stage != GameStage.INIT) Benchmark.of("inputs", () -> {
                 internalModules.readCore();
-                if (config.performanceEngine.get() != PerformanceEngine.BLAZE) {
+//                if (config.performanceEngine.get() != PerformanceEngine.BLAZE) {
                     cHubModules.readCore();
                     eHubModules.readCore();
-                }
+//                }
                 independentModules.readCore();
-            }
             // end of input stuff
         });
 
@@ -131,13 +127,11 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             // end of processing
         });
 
-        Benchmark.of("outputs", () -> {
-            if (stage != GameStage.INIT) {
+        if (CoreOpMode.getInstance().stage != GameStage.INIT) Benchmark.of("outputs", () -> {
                 internalModules.writeCore();
                 cHubModules.writeCore();
                 eHubModules.writeCore();
                 independentModules.writeCore();
-            }
         });
     }
 
@@ -155,18 +149,18 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             }
             case BLAZE: {
                 config.configSetup.get().run();
-                BlazeDummyPlug.initializeBlazeFTC(telemetry, hardwareMap);
-                BlazeDummyPlug.engageMotorAccel(hardwareMap); // maybe not needed but use getMotor wrapper also
-                BlazeDummyPlug.engageBulkReadAcceleration(hardwareMap, Hub.CtrlHub, 1, () -> {
-                    if (stage != GameStage.INIT) cHubModules.readCore();
-                    System.out.println("Read on control hub" + Hub.CtrlHub);
-                    return Unit.INSTANCE;
-                });
-                BlazeDummyPlug.engageBulkReadAcceleration(hardwareMap, Hub.ExHub, 1, () -> {
-                    if (stage != GameStage.INIT) eHubModules.readCore();
-                    System.out.println("Read on expansion hub" + Hub.ExHub);
-                    return Unit.INSTANCE;
-                });
+                BlazeDummyPlug.initializeBlazeFTC(hardwareMap);
+//                BlazeDummyPlug.engageMotorAccel(hardwareMap); // maybe not needed but use getMotor wrapper also
+//                BlazeDummyPlug.engageBulkReadAcceleration(hardwareMap, Hub.CtrlHub, 1, () -> {
+//                    if (stage != GameStage.INIT) cHubModules.readCore();
+//                    System.out.println("Read on control hub" + Hub.CtrlHub);
+//                    return Unit.INSTANCE;
+//                });
+//                BlazeDummyPlug.engageBulkReadAcceleration(hardwareMap, Hub.ExHub, 1, () -> {
+//                    if (stage != GameStage.INIT) eHubModules.readCore();
+//                    System.out.println("Read on expansion hub" + Hub.ExHub);
+//                    return Unit.INSTANCE;
+//                });
 //                engageBulkReadAcceleration(Hub.CtrlHub,1,stuffToGetEncoderData)
                 //ima just do the stuff in the blaze Op mode ig
             }
@@ -175,16 +169,15 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             }
         }
 
-        coreTelemetry.addTelemetry(super.telemetry);
-        gamepad = new CoreGamepad(gamepad1, gamepad2);
-        gamepad = internalModules.install(gamepad, 1);
+        coreTelemetry = new CoreTelemetry(telemetry,FtcDashboard.getInstance().getTelemetry());
+        gamepad = internalModules.install(gamepad, 1.5);
         if (config.useDriveTrain.get()) {
-            driveTrain = internalModules.install(new DriveTrain(gamepad1), 1);
+            driveTrain = internalModules.install(new DriveTrain(gamepad1), 1.4);
         }
-        internalModules.install(coreTelemetry, 1);
-        internalModules.install(voltageSensor, 1);
+        internalModules.install(coreTelemetry, 1.3);
+        internalModules.install(voltageSensor, 1.2);
         internalModules.install(hubs, Float.POSITIVE_INFINITY);
-        internalModules.install(queuer, 1);
+        internalModules.install(queuer, 1.1);
         if (config.useFollower.get()) internalModules.install(coreFollower, 1);
 
         // ============================ EXECUTING THE USER WRITTEN CODE ============================
@@ -193,7 +186,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     final public void init_loopCore() {
-        coreTelemetry.addData("stage", stage);
+        coreTelemetry.tel.addData("stage", stage);
         update(this::onInitLoop);
     }
 
@@ -204,7 +197,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     final public void loopCore() {
-        coreTelemetry.addData("stage", stage);
+        coreTelemetry.tel.addData("stage", stage);
         update(this::onLoop);
     }
 

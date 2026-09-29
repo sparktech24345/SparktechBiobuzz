@@ -5,8 +5,10 @@ import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import dev.anygeneric.blazeftc.AcceleratedMotor;
+import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import kotlin.jvm.functions.Function2;
+import ro.sparktech24345.logicore.config.ConfigMap;
 import ro.sparktech24345.logicore.config.HardwareConfig;
 import ro.sparktech24345.logicore.config.IsHardware;
 import ro.sparktech24345.logicore.core.CoreModule;
@@ -38,7 +40,6 @@ public class CoreMotor<T extends BaseStateSet> implements CoreModule, HasStates<
     public HardwareConfig getConfig() { return this.config; }
 
     private CachingDcMotorEx motor;
-    private AcceleratedMotor aMotor = null;
     public CachingDcMotorEx getMotor() { return this.motor; }
 
     private final T states;
@@ -119,8 +120,6 @@ public class CoreMotor<T extends BaseStateSet> implements CoreModule, HasStates<
     public void initCore() {
         states.own(this);
         motor = new CachingDcMotorEx(CoreOpMode.getInstance().hardwareMap.get(DcMotorImplEx.class, name));
-        if (CoreOpMode.getInstance().getConfig().performanceEngine.get() == PerformanceEngine.BLAZE)
-            aMotor = CoreOpMode.getMotor(CoreOpMode.getInstance().hardwareMap, name);
         unitsPerRev = (motor.getDcMotorEx()).getController().getMotorType(motor.getPortNumber()).getTicksPerRev();
     }
 
@@ -146,8 +145,8 @@ public class CoreMotor<T extends BaseStateSet> implements CoreModule, HasStates<
 
     public void writeCore() {
         if (!ticker.shouldTick()) return;
-        if (CoreOpMode.getInstance().getConfig().performanceEngine.get() == PerformanceEngine.BLAZE
-            && aMotor != null) aMotor.setPower(MathUtils.clip(wantedPower, -1.0, 1.0));
+        if (CoreOpMode.getInstance().getConfig().performanceEngine.get() == PerformanceEngine.BLAZE)
+            BlazeFTC.setMotorPower(ConfigMap.get(name).getId(), motor.getPortNumber(), wantedPower);
         else motor.setPower(MathUtils.clip(wantedPower, -1.0, 1.0));
     }
 

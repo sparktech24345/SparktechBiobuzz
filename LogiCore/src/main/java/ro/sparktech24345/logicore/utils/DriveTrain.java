@@ -41,10 +41,6 @@ public class DriveTrain implements CoreModule {
     protected CachingDcMotorEx lf;
     protected CachingDcMotorEx rb;
     protected CachingDcMotorEx lb;
-    protected AcceleratedMotor arf = null;
-    protected AcceleratedMotor alf = null;
-    protected AcceleratedMotor arb = null;
-    protected AcceleratedMotor alb = null;
 
     /** Zero power behavior for all motors (applied to all motors when set) */
     protected DcMotor.ZeroPowerBehavior zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE;
@@ -80,17 +76,6 @@ public class DriveTrain implements CoreModule {
         lf = new CachingDcMotorEx(lfm, 0.05);
         rb = new CachingDcMotorEx(rbm, 0.05);
         lb = new CachingDcMotorEx(lbm, 0.05);
-
-        if (CoreOpMode.getInstance().getConfig().performanceEngine.get() == PerformanceEngine.BLAZE) {
-            if (rfm instanceof AcceleratedMotor) arf = (AcceleratedMotor) rfm;
-            else arf = new AcceleratedMotor(rf);
-            if (lfm instanceof AcceleratedMotor) alf = (AcceleratedMotor) lfm;
-            else alf = new AcceleratedMotor(lf);
-            if (rbm instanceof AcceleratedMotor) arb = (AcceleratedMotor) rbm;
-            else arb = new AcceleratedMotor(rb);
-            if (lbm instanceof AcceleratedMotor) alb = (AcceleratedMotor) lbm;
-            else alb = new AcceleratedMotor(lb);
-        }
 
         lf.setDirection(DcMotorSimple.Direction.REVERSE);
         lb.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -152,14 +137,29 @@ public class DriveTrain implements CoreModule {
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
 
             OpModeConfig cfg = CoreOpMode.getInstance().getConfig();
-            if (cfg.performanceEngine.get() == PerformanceEngine.BLAZE && arf != null) arf.setPower(rfp * slowdownMultiplier);
-            else rf.setPower(rfp * slowdownMultiplier);
-            if (cfg.performanceEngine.get() == PerformanceEngine.BLAZE && arb != null) arf.setPower(rbp * slowdownMultiplier);
-            else rb.setPower(rbp * slowdownMultiplier);
-            if (cfg.performanceEngine.get() == PerformanceEngine.BLAZE && alf != null) arf.setPower(lfp * slowdownMultiplier);
-            else lf.setPower(lfp * slowdownMultiplier);
-            if (cfg.performanceEngine.get() == PerformanceEngine.BLAZE && alb != null) arf.setPower(lbp * slowdownMultiplier);
-            else lb.setPower(lbp * slowdownMultiplier);
+            if (cfg.performanceEngine.get() == PerformanceEngine.BLAZE) {
+                BlazeFTC.setMotorPower(
+                        ConfigMap.get(rfn).getId(),
+                        rf.getPortNumber(),
+                        rfp * slowdownMultiplier * (rf.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1));
+                BlazeFTC.setMotorPower(
+                        ConfigMap.get(rbn).getId(),
+                        rb.getPortNumber(),
+                        rbp * slowdownMultiplier * (rb.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1));
+                BlazeFTC.setMotorPower(
+                        ConfigMap.get(lbn).getId(),
+                        lb.getPortNumber(),
+                        lbp * slowdownMultiplier * (lb.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1));
+                BlazeFTC.setMotorPower(
+                        ConfigMap.get(lfn).getId(),
+                        lf.getPortNumber(),
+                        lfp * slowdownMultiplier * (lf.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1));
+            } else {
+                rb.setPower(rbp * slowdownMultiplier);
+                lf.setPower(lfp * slowdownMultiplier);
+                lb.setPower(lbp * slowdownMultiplier);
+                rf.setPower(rfp * slowdownMultiplier);
+            }
         });
     }
 }
