@@ -193,6 +193,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     final public void init_loopCore() {
+        coreTelemetry.addData("stage", stage);
         update(this::onInitLoop);
     }
 
@@ -203,6 +204,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     final public void loopCore() {
+        coreTelemetry.addData("stage", stage);
         update(this::onLoop);
     }
 
