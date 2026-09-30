@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.Pedro.ConstantsBiobuzz;
 import org.firstinspires.ftc.teamcode.Pedro.ConstantsDecode;
 
 import dev.anygeneric.blazeftc.DummyPlugOpMode;
-import dev.anygeneric.blazeftc_pedro.PedroSingleDataLocalizer;
+import dev.anygeneric.blazeftc_pedro.Pedro3SingleDataLocalizer;
 
 @TeleOp(name = "Example Pedro High Speed Localization")
 public class ExamplePedroSpeedLocalization extends DummyPlugOpMode {
@@ -21,7 +21,7 @@ public class ExamplePedroSpeedLocalization extends DummyPlugOpMode {
         Follower follower = ConstantsDecode.createFollowerDecode(hardwareMap); // lets just pretend this exists for now
         waitForStart();
         ElapsedTime elt = new ElapsedTime();
-        PedroSingleDataLocalizer.setup(follower, () -> {
+        Pedro3SingleDataLocalizer.setup(follower, () -> {
             telemetry.addData("pedro loop time (ms)", elt.milliseconds());
             elt.reset();
             follower.update();

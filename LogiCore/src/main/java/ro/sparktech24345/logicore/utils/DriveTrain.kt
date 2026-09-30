@@ -112,10 +112,10 @@ class DriveTrain (
         //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
 
         if (CoreOpMode.instance!!.config.performanceEngine.get() == CoreOpMode.PerformanceEngine.BLAZE) {
-            BlazeFTC.setMotorPower(173, rf.portNumber, rfp * slowdownMultiplier * (if (rf.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
-            BlazeFTC.setMotorPower(173,lf.portNumber, lfp * slowdownMultiplier * (if (lf.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
-            BlazeFTC.setMotorPower(173, lb.portNumber, lbp * slowdownMultiplier * (if (lb.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
-            BlazeFTC.setMotorPower(173, rb.portNumber, rbp * slowdownMultiplier * (if (rb.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
+            BlazeFTC.setMotorPower(2, rf.portNumber, rfp * slowdownMultiplier * (if (rf.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
+            BlazeFTC.setMotorPower(2,lf.portNumber, lfp * slowdownMultiplier * (if (lf.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
+            BlazeFTC.setMotorPower(2, lb.portNumber, lbp * slowdownMultiplier * (if (lb.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
+            BlazeFTC.setMotorPower(2, rb.portNumber, rbp * slowdownMultiplier * (if (rb.direction == DcMotorSimple.Direction.REVERSE) -1 else 1))
         } else {
             rf.power = rfp * slowdownMultiplier
             rb.power = rbp * slowdownMultiplier

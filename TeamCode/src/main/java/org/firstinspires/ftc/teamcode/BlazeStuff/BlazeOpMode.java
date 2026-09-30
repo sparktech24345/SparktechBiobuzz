@@ -18,7 +18,7 @@ import java.util.zip.ZipInputStream;
 import dev.anygeneric.blazeftc.BlazeDummyPlug;
 import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.anygeneric.blazeftc.Hub;
-import dev.anygeneric.blazeftc_pedro.PedroSingleDataLocalizer;
+import dev.anygeneric.blazeftc_pedro.Pedro3SingleDataLocalizer;
 
 @TeleOp(name = "BlazeOpMode", group = "teleops")
 public class BlazeOpMode extends OpMode {
@@ -34,7 +34,7 @@ public class BlazeOpMode extends OpMode {
         DcMotor motor = hardwareMap.get(DcMotor.class, "intakeMotor");
         //do whatever else init stuff you need to here
         ElapsedTime elt = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        PedroSingleDataLocalizer.setup(follower, () -> {
+        Pedro3SingleDataLocalizer.setup(follower, () -> {
             telemetry.addData("pedro loop time (ms)", elt.milliseconds());
             elt.reset();
             telemetry.addData(

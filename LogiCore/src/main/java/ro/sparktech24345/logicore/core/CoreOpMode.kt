@@ -6,7 +6,7 @@ import com.seattlesolvers.solverslib.photon.PhotonCore
 import dev.anygeneric.blazeftc.BlazeDummyPlug.closeBlazeFTC
 import dev.anygeneric.blazeftc.BlazeFTC
 import dev.anygeneric.blazeftc.DummyPlugOpMode
-import dev.anygeneric.blazeftc_pedro.PedroSingleDataLocalizer
+import dev.anygeneric.blazeftc_pedro.Pedro3SingleDataLocalizer
 import ro.sparktech24345.logicore.commands.BaseCommand
 import ro.sparktech24345.logicore.config.Hubs
 import ro.sparktech24345.logicore.config.IsHardware
