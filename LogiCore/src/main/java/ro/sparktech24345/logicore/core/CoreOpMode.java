@@ -43,8 +43,8 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 
 
         /** Global instance accessor for hardware components that need OpMode context */
-        private static CoreOpMode instance = null;
-        public static CoreOpMode getInstance() { return instance; }
+    private static CoreOpMode instance = null;
+    public static CoreOpMode getInstance() { return instance; }
 
     /** Current stage of the OpMode lifecycle */
     protected GameStage stage = GameStage.INIT;
@@ -139,7 +139,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     public void setMotorPower(String name, DcMotorEx motor, double power) {
-        if (config.performanceEngine.get() == PerformanceEngine.BLAZE) {
+        if (config.performanceEngine.get() == PerformanceEngine.BLAZE && !config.accelerateMotors.get()) {
             int id = ConfigMap.get(name).getId();
             int port = motor.getPortNumber();
             double direction = motor.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1;
@@ -166,7 +166,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             case BLAZE: {
                 config.configSetup.get().run();
                 BlazeDummyPlug.initializeBlazeFTC(hardwareMap);
-//                BlazeDummyPlug.engageMotorAccel(hardwareMap); // maybe not needed but use getMotor wrapper also
+                if (config.accelerateMotors.get()) BlazeDummyPlug.engageMotorAccel(hardwareMap); // maybe not needed but use getMotor wrapper also
 //                BlazeDummyPlug.engageBulkReadAcceleration(hardwareMap, Hub.CtrlHub, 1, () -> {
 //                    if (stage != GameStage.INIT) cHubModules.readCore();
 //                    System.out.println("Read on control hub" + Hub.CtrlHub);
