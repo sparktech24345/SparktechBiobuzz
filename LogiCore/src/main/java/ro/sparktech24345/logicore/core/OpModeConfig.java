@@ -12,6 +12,7 @@ public class OpModeConfig {
     public final ConfigVar<PerformanceEngine> performanceEngine = ConfigVar.required();
     public final ConfigVar<Boolean> useDriveTrain = ConfigVar.of(true);
     public final ConfigVar<Boolean> useFollower = ConfigVar.of(true);
+    public final ConfigVar<Boolean> useVoltageSensor = ConfigVar.of(true);
     public final ConfigVar<Runnable> configSetup = ConfigVar.of(() -> {});
     public final ConfigVar<Pose> startPose = ConfigVar.of(Pose.zero());
 

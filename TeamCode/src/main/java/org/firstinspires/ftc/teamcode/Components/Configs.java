@@ -15,7 +15,7 @@ public class Configs {
         public static final OpModeConfig teleopCfg = new OpModeConfig((opModeConfig) -> {
             opModeConfig.type.set(OpModeType.TELEOP);
             opModeConfig.performanceEngine.set(PerformanceEngine.BLAZE);
-            opModeConfig.useFollower.set(false);
+            opModeConfig.useFollower.set(true);
             opModeConfig.useDriveTrain.set(true);
             opModeConfig.followerConstants.set(new ConstantsDecode());
             opModeConfig.configSetup.set(() -> {

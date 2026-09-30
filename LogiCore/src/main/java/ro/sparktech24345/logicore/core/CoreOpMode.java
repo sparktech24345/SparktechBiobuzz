@@ -2,6 +2,7 @@ package ro.sparktech24345.logicore.core;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.photon.PhotonCore;
 
@@ -10,6 +11,7 @@ import dev.anygeneric.blazeftc.BlazeDummyPlug;
 import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.anygeneric.blazeftc.DummyPlugOpMode;
 import ro.sparktech24345.logicore.commands.BaseCommand;
+import ro.sparktech24345.logicore.config.ConfigMap;
 import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.config.IsHardware;
 import ro.sparktech24345.logicore.hardware.CoreVoltageSensor;
@@ -17,6 +19,7 @@ import ro.sparktech24345.logicore.pedro.CoreFollower;
 import ro.sparktech24345.logicore.pedro.FollowerConstants;
 import ro.sparktech24345.logicore.utils.Benchmark;
 import ro.sparktech24345.logicore.utils.DriveTrain;
+import ro.sparktech24345.logicore.utils.MathUtils;
 
 /**
  * Base class for all LogiCore OpModes. Provides unified lifecycle management,
@@ -135,6 +138,19 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         });
     }
 
+    public void setMotorPower(String name, DcMotorEx motor, double power) {
+        if (config.performanceEngine.get() == PerformanceEngine.BLAZE) {
+            int id = ConfigMap.get(name).getId();
+            int port = motor.getPortNumber();
+            double direction = motor.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1;
+            BlazeFTC.setMotorPower(id, port,
+                    MathUtils.clip(power, -1, 1) * direction
+            );
+        } else {
+            motor.setPower(MathUtils.clip(power, -1, 1));
+        }
+    }
+
     final public void initCore() {
         instance = this;
         // ====== GAMEPAD + TELEMETRY SETUP =======
@@ -169,15 +185,15 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             }
         }
 
-        coreTelemetry = new CoreTelemetry(telemetry,FtcDashboard.getInstance().getTelemetry());
-        gamepad = internalModules.install(gamepad, 1.5);
-        if (config.useDriveTrain.get()) {
-            driveTrain = internalModules.install(new DriveTrain(gamepad1), 1.4);
-        }
-        internalModules.install(coreTelemetry, 1.3);
-        internalModules.install(voltageSensor, 1.2);
+        coreTelemetry = new CoreTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        internalModules.install(gamepad, 1);
+        if (config.useDriveTrain.get())
+            driveTrain = internalModules.install(new DriveTrain(gamepad1), 1);
+        internalModules.install(coreTelemetry, 1);
+        if (config.useVoltageSensor.get())
+            internalModules.install(voltageSensor, 1);
         internalModules.install(hubs, Float.POSITIVE_INFINITY);
-        internalModules.install(queuer, 1.1);
+        internalModules.install(queuer, 1);
         if (config.useFollower.get()) internalModules.install(coreFollower, 1);
 
         // ============================ EXECUTING THE USER WRITTEN CODE ============================
@@ -225,7 +241,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 
     public void runOpModeInBlaze() {
         try {
-            long targetMs = 5;
+            long targetMs = 10;
             System.out.println("Entering OpMode");
             initCore();
             while (opModeInInit()) maintainLoopRate(targetMs, this::init_loopCore);

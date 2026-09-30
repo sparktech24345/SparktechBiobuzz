@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import java.io.Writer;
+
 import dev.anygeneric.blazeftc.AcceleratedMotor;
 import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
@@ -94,9 +96,9 @@ public class DriveTrain implements CoreModule {
     public void loopCore() {
         Benchmark.of("drivetrain calc", () -> {
             if (CoreOpMode.getInstance().getConfig().type.get() == OpModeType.AUTONOMOUS) return;
-            double vertical   = -gamepad.left_stick_y;
-            double horizontal = -gamepad.left_stick_x;
-            double pivot      =  gamepad.right_stick_x;
+            double vertical   = gamepad.left_stick_y;
+            double horizontal = gamepad.left_stick_x;
+            double pivot      = gamepad.right_stick_x;
 
             if (directionFlip) {
                 horizontal *= -1;
@@ -104,10 +106,10 @@ public class DriveTrain implements CoreModule {
             }
 
             // Mecanum drive calculations
-            rfp = vertical + horizontal - pivot;
-            rbp = vertical - horizontal - pivot;
-            lfp = vertical - horizontal + pivot;
-            lbp = vertical + horizontal + pivot;
+            rfp = vertical + horizontal + pivot;
+            rbp = vertical - horizontal + pivot;
+            lfp = vertical - horizontal - pivot;
+            lbp = vertical + horizontal - pivot;
 
             // Normalize power to prevent saturation
             double div = MathUtils.max(
@@ -123,7 +125,15 @@ public class DriveTrain implements CoreModule {
                 lfp /= div;
                 lbp /= div;
             }
+            writePowers();
         });
+    }
+
+    public void writePowers() {
+        System.out.println("Has power in rf:" + rfp);
+        System.out.println("Has power in rb:" + rbp);
+        System.out.println("Has power in lb:" + lbp);
+        System.out.println("Has power in lf:" + lfp);
     }
 
     public void writeCore() {
@@ -136,30 +146,10 @@ public class DriveTrain implements CoreModule {
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor lf", lf.portNumber)
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
 
-            OpModeConfig cfg = CoreOpMode.getInstance().getConfig();
-            if (cfg.performanceEngine.get() == PerformanceEngine.BLAZE) {
-                BlazeFTC.setMotorPower(
-                        ConfigMap.get(rfn).getId(),
-                        rf.getPortNumber(),
-                        rfp * slowdownMultiplier * (rf.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1));
-                BlazeFTC.setMotorPower(
-                        ConfigMap.get(rbn).getId(),
-                        rb.getPortNumber(),
-                        rbp * slowdownMultiplier * (rb.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1));
-                BlazeFTC.setMotorPower(
-                        ConfigMap.get(lbn).getId(),
-                        lb.getPortNumber(),
-                        lbp * slowdownMultiplier * (lb.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1));
-                BlazeFTC.setMotorPower(
-                        ConfigMap.get(lfn).getId(),
-                        lf.getPortNumber(),
-                        lfp * slowdownMultiplier * (lf.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1));
-            } else {
-                rb.setPower(rbp * slowdownMultiplier);
-                lf.setPower(lfp * slowdownMultiplier);
-                lb.setPower(lbp * slowdownMultiplier);
-                rf.setPower(rfp * slowdownMultiplier);
-            }
+            CoreOpMode.getInstance().setMotorPower(rfn, rf, rfp);
+            CoreOpMode.getInstance().setMotorPower(rbn, rb, rbp);
+            CoreOpMode.getInstance().setMotorPower(lbn, lb, lbp);
+            CoreOpMode.getInstance().setMotorPower(lfn, lf, lfp);
         });
     }
 }

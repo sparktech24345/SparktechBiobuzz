@@ -64,8 +64,11 @@ public class SparkMecanum implements Drivetrain {
 
         for (int i = 0; i < wheelPowers.length; i++) {
             this.wheelPowers[i] = wheelPowers[i] / maxPower;
-            motors[i].setPower(this.wheelPowers[i]);
         }
+        CoreOpMode.getInstance().setMotorPower(config.frontLeftName.get(),  motors[FL], this.wheelPowers[FL]);
+        CoreOpMode.getInstance().setMotorPower(config.frontRightName.get(), motors[FR], this.wheelPowers[FR]);
+        CoreOpMode.getInstance().setMotorPower(config.backRightName.get(),  motors[BR], this.wheelPowers[BR]);
+        CoreOpMode.getInstance().setMotorPower(config.backLeftName.get(),   motors[BL], this.wheelPowers[BL]);
     }
 
     public double[] computeWheelPowersUnnormalized(DrivePowers powers) {
@@ -131,9 +134,10 @@ public class SparkMecanum implements Drivetrain {
             setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         }
 
-        for (DcMotorEx motor : motors) {
-            BlazeFTC.setMotorPower(ConfigMap.get(motor.getDeviceName()).getId(), motor.getPortNumber(), 0);
-        }
+        CoreOpMode.getInstance().setMotorPower(config.frontLeftName.get(),  motors[FL], 0);
+        CoreOpMode.getInstance().setMotorPower(config.frontRightName.get(), motors[FR], 0);
+        CoreOpMode.getInstance().setMotorPower(config.backRightName.get(),  motors[BR], 0);
+        CoreOpMode.getInstance().setMotorPower(config.backLeftName.get(),   motors[BL], 0);
     }
 
     @Override

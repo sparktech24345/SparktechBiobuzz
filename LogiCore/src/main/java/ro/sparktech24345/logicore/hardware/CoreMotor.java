@@ -145,9 +145,7 @@ public class CoreMotor<T extends BaseStateSet> implements CoreModule, HasStates<
 
     public void writeCore() {
         if (!ticker.shouldTick()) return;
-        if (CoreOpMode.getInstance().getConfig().performanceEngine.get() == PerformanceEngine.BLAZE)
-            BlazeFTC.setMotorPower(ConfigMap.get(name).getId(), motor.getPortNumber(), wantedPower);
-        else motor.setPower(MathUtils.clip(wantedPower, -1.0, 1.0));
+        CoreOpMode.getInstance().setMotorPower(name, motor.getDcMotorEx(), wantedPower);
     }
 
     public T getStates() {
