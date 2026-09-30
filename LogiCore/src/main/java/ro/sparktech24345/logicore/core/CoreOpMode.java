@@ -147,7 +147,8 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
                     MathUtils.clip(power, -1, 1) * direction
             );
         } else {
-            motor.setPower(MathUtils.clip(power, -1, 1));
+            double direction = motor.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1;
+            motor.setPower(MathUtils.clip(power, -1, 1)*direction);
         }
     }
 

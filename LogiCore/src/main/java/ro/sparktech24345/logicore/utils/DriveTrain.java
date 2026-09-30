@@ -56,7 +56,7 @@ public class DriveTrain implements CoreModule {
     public DcMotor.ZeroPowerBehavior getZeroPowerBehavior() { return this.zeroPowerBehavior; }
 
     /** Reverse the driving direction (useful for driving from different orientations) */
-    protected boolean directionFlip = false;
+    protected boolean directionFlip = true;
     public void setDirectionFlip(boolean v) { this.directionFlip = v; }
     public boolean getDirectionFlip() { return this.directionFlip; }
 
