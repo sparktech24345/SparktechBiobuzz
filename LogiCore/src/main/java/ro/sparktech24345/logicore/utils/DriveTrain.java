@@ -56,7 +56,7 @@ public class DriveTrain implements CoreModule {
     public DcMotor.ZeroPowerBehavior getZeroPowerBehavior() { return this.zeroPowerBehavior; }
 
     /** Reverse the driving direction (useful for driving from different orientations) */
-    protected boolean directionFlip = true;
+    protected boolean directionFlip = false;
     public void setDirectionFlip(boolean v) { this.directionFlip = v; }
     public boolean getDirectionFlip() { return this.directionFlip; }
 
@@ -96,14 +96,10 @@ public class DriveTrain implements CoreModule {
     public void loopCore() {
         Benchmark.of("drivetrain calc", () -> {
             if (CoreOpMode.getInstance().getConfig().type.get() == OpModeType.AUTONOMOUS) return;
-            double vertical   = gamepad.left_stick_y;
-            double horizontal = gamepad.left_stick_x;
+            double flip = directionFlip ? -1 : 1;
+            double vertical   = gamepad.left_stick_y * flip;
+            double horizontal = gamepad.left_stick_x * flip;
             double pivot      = gamepad.right_stick_x;
-
-            if (directionFlip) {
-                horizontal *= -1;
-                vertical *= -1;
-            }
 
             // Mecanum drive calculations
             rfp = vertical + horizontal + pivot;
