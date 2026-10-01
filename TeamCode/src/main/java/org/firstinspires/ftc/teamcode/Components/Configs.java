@@ -38,7 +38,10 @@ public class Configs {
 
         public static final CoreMotor<TestTeleOP.MotorTestStateSet> exampleMotor =
                 new CoreMotor<>("motorleft", new TestTeleOP.MotorTestStateSet());
-                    // pls don't do this, do it like TurretComponent
+                    // pls don't do this, do it like TurretComponent\
+        public static final CoreMotor<TestTeleOP.MotorTestStateSet> intakeMotor =
+                new CoreMotor<>("intakeMotor", new TestTeleOP.MotorTestStateSet());
+        // pls don't do this, do it like TurretComponent
 
 
         // components

@@ -15,6 +15,7 @@ public class GlobalStorage {
     public static String leftIntakeMotorName = "leftintakemotor";
     public static String rightOuttakeMotorName = "rightouttakemotor";
     public static String leftOuttakeMotorName = "leftouttakemotor";
+    public static String intakeMotorName = "intakeMotor";
 
 
     /// =============================== Servos ===============================
