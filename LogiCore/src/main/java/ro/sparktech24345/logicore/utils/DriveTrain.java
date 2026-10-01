@@ -79,8 +79,8 @@ public class DriveTrain implements CoreModule {
         rb = new CachingDcMotorEx(rbm, 0.05);
         lb = new CachingDcMotorEx(lbm, 0.05);
 
-        lf.setDirection(DcMotorSimple.Direction.REVERSE);
-        lb.setDirection(DcMotorSimple.Direction.REVERSE);
+//        lf.setDirection(DcMotorSimple.Direction.REVERSE);
+//        lb.setDirection(DcMotorSimple.Direction.REVERSE);
         this.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
