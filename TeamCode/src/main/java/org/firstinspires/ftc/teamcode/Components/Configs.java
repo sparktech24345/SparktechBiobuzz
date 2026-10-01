@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Components;
 
+import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
 import org.firstinspires.ftc.teamcode.MainOpModes.Teleops.TestTeleOP;
 import org.firstinspires.ftc.teamcode.Pedro.ConstantsDecode;
 import ro.sparktech24345.logicore.config.ConfigMap;
@@ -20,28 +21,24 @@ public class Configs {
             opModeConfig.accelerateMotors.set(true);
             opModeConfig.followerConstants.set(new ConstantsDecode());
             opModeConfig.configSetup.set(() -> {
-                ConfigMap.set("frontleft", new HardwareConfig(Hubs.EXPANSION, -1));
-                ConfigMap.set("backleft", new HardwareConfig(Hubs.EXPANSION, -1));
-                ConfigMap.set("backright", new HardwareConfig(Hubs.EXPANSION, -1));
-                ConfigMap.set("frontright", new HardwareConfig(Hubs.EXPANSION, -1));
+                ConfigMap.set(GlobalStorage.frontLeftMotorName, new HardwareConfig(Hubs.EXPANSION, -1));
+                ConfigMap.set(GlobalStorage.backLeftMotorName, new HardwareConfig(Hubs.EXPANSION, -1));
+                ConfigMap.set(GlobalStorage.backRightMotorName, new HardwareConfig(Hubs.EXPANSION, -1));
+                ConfigMap.set(GlobalStorage.frontRightMotorName, new HardwareConfig(Hubs.EXPANSION, -1));
 
-                ConfigMap.set("rightintakemotor", new HardwareConfig(Hubs.CONTROL, -1));
-                ConfigMap.set("leftintakemotor", new HardwareConfig(Hubs.CONTROL, -1));
-
-                ConfigMap.set("rightouttakemotor", new HardwareConfig(Hubs.CONTROL, -1));
-                ConfigMap.set("leftouttakemotor", new HardwareConfig(Hubs.CONTROL, -1));
+                ConfigMap.set(GlobalStorage.intakeMotorName, new HardwareConfig(Hubs.CONTROL, -1));
+                ConfigMap.set(GlobalStorage.turretRotationMotorName, new HardwareConfig(Hubs.CONTROL, -1));
+                ConfigMap.set(GlobalStorage.turretFlyWheelMotorLeftName, new HardwareConfig(Hubs.CONTROL, -1));
+                ConfigMap.set(GlobalStorage.turretFlyWheelMotorRightName, new HardwareConfig(Hubs.CONTROL, -1));
             });
-
         });
 
         // motors
 
         public static final CoreMotor<TestTeleOP.MotorTestStateSet> exampleMotor =
                 new CoreMotor<>("motorleft", new TestTeleOP.MotorTestStateSet());
-                    // pls don't do this, do it like TurretComponent\
-        public static final CoreMotor<TestTeleOP.MotorTestStateSet> intakeMotor =
-                new CoreMotor<>("intakeMotor", new TestTeleOP.MotorTestStateSet());
-        // pls don't do this, do it like TurretComponent
+
+        // pls don't put static final motors/components and don't make a universal installBot method
 
 
         // components
