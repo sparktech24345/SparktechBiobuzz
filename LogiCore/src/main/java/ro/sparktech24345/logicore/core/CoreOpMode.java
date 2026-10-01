@@ -139,16 +139,18 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     public void setMotorPower(String name, DcMotorEx motor, double power) {
-        if (config.performanceEngine.get() == PerformanceEngine.BLAZE && !config.accelerateMotors.get()) {
+        CoreOpMode.getInstance().getCoreTelemetry().tel.addData("Motor: " + motor,motor.getDirection());
+        if (config.performanceEngine.get() == PerformanceEngine.BLAZE && !config.accelerateMotors.get())     {
             int id = ConfigMap.get(name).getId();
             int port = motor.getPortNumber();
-            double direction = motor.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1;
+            double direction = motor.getDirection() == DcMotorEx.Direction.REVERSE ? -1 : 1;
             BlazeFTC.setMotorPower(id, port,
                     MathUtils.clip(power, -1, 1) * direction
             );
         } else {
-            double direction = motor.getDirection() == DcMotorSimple.Direction.REVERSE ? -1 : 1;
-            motor.setPower(MathUtils.clip(power, -1, 1)*direction);
+            double direction = motor.getDirection() == DcMotorEx.Direction.REVERSE ? -1 : 1;
+            CoreOpMode.getInstance().getCoreTelemetry().tel.addData("Dir: " + motor.getDirection(),direction);
+            motor.setPower(MathUtils.clip(power, -1, 1)); // reverse should by itself make it negative
         }
     }
 
@@ -163,6 +165,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
                 PhotonCore.experimental.setMaximumParallelCommands(6);
                 PhotonCore.PARALLELIZE_SERVOS = true;
                 PhotonCore.enable();
+                break;
             }
             case BLAZE: {
                 config.configSetup.get().run();
@@ -180,13 +183,15 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 //                });
 //                engageBulkReadAcceleration(Hub.CtrlHub,1,stuffToGetEncoderData)
                 //ima just do the stuff in the blaze Op mode ig
+                break;
             }
             case NONE: {
                 // Default OpMode behavior
+                break;
             }
         }
 
-        coreTelemetry = new CoreTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         internalModules.install(gamepad, 1);
         if (config.useDriveTrain.get())
             driveTrain = internalModules.install(new DriveTrain(gamepad1), 1);
@@ -239,6 +244,42 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 
     /** Optional user cleanup logic - called when OpMode stops */
     public void onStop() {}
+
+
+    @Override
+    public void runOpMode() {
+        try {
+            coreTelemetry = new CoreTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+            coreTelemetry.tel.addData("STARTED USING",config.performanceEngine.get());
+
+
+            if (config.performanceEngine.get() == PerformanceEngine.BLAZE) super.runOpMode();
+            /// RUNNING CODE WITHOUT BLAZE
+            else {
+                System.out.println("Entering OpMode");
+
+                initCore();
+                while (opModeInInit()) this.init_loopCore();
+                waitForStart();
+
+                if (opModeIsActive()) {
+                    startCore();
+                    while (opModeIsActive()) this.loopCore();
+                }
+                stopCore();
+                System.out.println("Exiting OpMode");
+            }
+        }
+        catch (Throwable e) {
+            System.out.println("Error in OpMode!!!");
+            System.out.println(e.getMessage());
+            e.printStackTrace(System.out);
+            throw e;
+        } finally {
+            // executor.shutdownNow();
+            instance = null;
+        }
+    }
 
     public void runOpModeInBlaze() {
         try {

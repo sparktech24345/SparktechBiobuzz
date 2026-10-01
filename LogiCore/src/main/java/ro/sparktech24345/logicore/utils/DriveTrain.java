@@ -56,7 +56,7 @@ public class DriveTrain implements CoreModule {
     public DcMotor.ZeroPowerBehavior getZeroPowerBehavior() { return this.zeroPowerBehavior; }
 
     /** Reverse the driving direction (useful for driving from different orientations) */
-    protected boolean directionFlip = false;
+    protected boolean directionFlip = false; // ts by default true
     public void setDirectionFlip(boolean v) { this.directionFlip = v; }
     public boolean getDirectionFlip() { return this.directionFlip; }
 
@@ -74,13 +74,20 @@ public class DriveTrain implements CoreModule {
         DcMotorEx rbm = map.get(DcMotorEx.class, rbn);
         DcMotorEx lbm = map.get(DcMotorEx.class, lbn);
 
-        rf = new CachingDcMotorEx(rfm, 0.05);
+
+        lfm.setDirection(DcMotorSimple.Direction.FORWARD);
         lf = new CachingDcMotorEx(lfm, 0.05);
+
+        rfm.setDirection(DcMotorSimple.Direction.FORWARD);
+        rf = new CachingDcMotorEx(rfm, 0.05);
+
+        rbm.setDirection(DcMotorSimple.Direction.FORWARD);
         rb = new CachingDcMotorEx(rbm, 0.05);
+
+        lbm.setDirection(DcMotorSimple.Direction.FORWARD);
         lb = new CachingDcMotorEx(lbm, 0.05);
 
-//        lf.setDirection(DcMotorSimple.Direction.REVERSE);
-//        lb.setDirection(DcMotorSimple.Direction.REVERSE);
+
         this.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
@@ -98,14 +105,15 @@ public class DriveTrain implements CoreModule {
             if (CoreOpMode.getInstance().getConfig().type.get() == OpModeType.AUTONOMOUS) return;
             double flip = directionFlip ? -1 : 1;
             double vertical   = gamepad.left_stick_y * flip;
-            double horizontal = gamepad.left_stick_x * flip;
+            double horizontal = gamepad.left_stick_x * flip; // dont judge my minuses
             double pivot      = gamepad.right_stick_x;
 
             // Mecanum drive calculations
-            rfp = vertical + horizontal + pivot;
-            rbp = vertical - horizontal + pivot;
-            lfp = vertical - horizontal - pivot;
-            lbp = vertical + horizontal - pivot;
+            rfp = - (vertical + horizontal + pivot); // dont mi d the minuses
+            rbp = - (vertical - horizontal + pivot);
+            lfp = - (vertical - horizontal - pivot);
+            lbp = - (vertical + horizontal - pivot);
+            // BE WARNED PEDRO ALSO INITS THIS so for example if you set reversed or not Pedro Overrides
 
             // Normalize power to prevent saturation
             double div = MathUtils.max(
