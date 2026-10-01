@@ -30,33 +30,33 @@ public class BlazeOpMode extends OpMode {
     public void init() {
         BlazeDummyPlug.initializeBlazeFTC(hardwareMap);
         BlazeDummyPlug.engageMotorAccel(hardwareMap);
-        follower = ConstantsDecode.createFollowerDecode(hardwareMap);
+//        follower = ConstantsDecode.createFollowerDecode(hardwareMap);
         DcMotor motor = hardwareMap.get(DcMotor.class, "intakeMotor");
         //do whatever else init stuff you need to here
         ElapsedTime elt = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        Pedro3SingleDataLocalizer.setup(follower, () -> {
-            telemetry.addData("pedro loop time (ms)", elt.milliseconds());
-            elt.reset();
-            telemetry.addData(
-                    "x,y",
-                    follower.pose().x() + ", " + follower.pose().y()
-            );
-            if (follower.currentPath() != pathToFollow) {
-                follower.follow(pathToFollow);
-            }
-        });
+//        Pedro3SingleDataLocalizer.setup(follower, () -> {
+//            telemetry.addData("pedro loop time (ms)", elt.milliseconds());
+//            elt.reset();
+//            telemetry.addData(
+//                    "x,y",
+//                    follower.pose().x() + ", " + follower.pose().y()
+//            );
+//            if (follower.currentPath() != pathToFollow) {
+//                follower.follow(pathToFollow);
+//            }
+//        });
 
         ElapsedTime elt2 = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        BlazeDummyPlug.engageBulkReadAcceleration(hardwareMap, Hub.ExHub, 1, () -> {
-            //Every time this function is called, you should have new encoder data available in your motors. Run PID loops here.
-            //I recommend doing it like this, report your data do not do computation here:
-            if (motor.getCurrentPosition() == target) {
-                motorInPlace = true;
-            }
-            telemetry.addData("bulk loop time (ms)", elt2.milliseconds());
-            elt2.reset();
-            return null;
-        });
+//        BlazeDummyPlug.engageBulkReadAcceleration(hardwareMap, Hub.ExHub, 1, () -> {
+//            //Every time this function is called, you should have new encoder data available in your motors. Run PID loops here.
+//            //I recommend doing it like this, report your data do not do computation here:
+//            if (motor.getCurrentPosition() == target) {
+//                motorInPlace = true;
+//            }
+//            telemetry.addData("bulk loop time (ms)", elt2.milliseconds());
+//            elt2.reset();
+//            return null;
+//        });
     }
 
     @Override
