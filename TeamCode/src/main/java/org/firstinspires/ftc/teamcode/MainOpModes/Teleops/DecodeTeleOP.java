@@ -1,24 +1,14 @@
 package org.firstinspires.ftc.teamcode.MainOpModes.Teleops;
 
-import static org.firstinspires.ftc.teamcode.Components.Configs.exampleMotor;
-import static org.firstinspires.ftc.teamcode.Components.Configs.installBot;
-import static org.firstinspires.ftc.teamcode.Components.Configs.intakeMotor;
-
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
 import org.firstinspires.ftc.teamcode.Components.Configs;
 import org.firstinspires.ftc.teamcode.Components.IntakeComponent;
-import org.firstinspires.ftc.teamcode.Components.TurretComponent;
-
 import ro.sparktech24345.logicore.commands.StateCommand;
 import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.Button;
 import ro.sparktech24345.logicore.core.CoreButton;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.events.EventBus;
-import ro.sparktech24345.logicore.hardware.CoreServo;
-import ro.sparktech24345.logicore.states.BaseStateSet;
-import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.utils.PreciseTimer;
 
 @TeleOp(name = "Decode TeleOP", group = "Testing")
@@ -39,7 +29,7 @@ public class DecodeTeleOP extends CoreOpMode {
 //    public final CoreServo<BaseStateSet> servo =
 //            new CoreServo<>("sample_servo", new BaseStateSet());
 //    public final TurretComponent turret = new TurretComponent();
-    public final IntakeComponent <IntakeComponent.IntakeMotorStateSet> intake = new IntakeComponent<>(new IntakeComponent.IntakeMotorStateSet());
+    public final IntakeComponent intake = new IntakeComponent();
 
     public void onInit() {
         timer.start(); // doar reseteaza timerul
