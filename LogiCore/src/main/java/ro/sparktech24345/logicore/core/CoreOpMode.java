@@ -139,7 +139,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     public void setMotorPower(String name, DcMotorEx motor, double power) {
-        CoreOpMode.getInstance().getCoreTelemetry().tel.addData("Motor: " + motor,motor.getDirection());
+        CoreOpMode.getInstance().getCoreTelemetry().tel.addData("Motor: " + motor, motor.getDirection());
         if (config.performanceEngine.get() == PerformanceEngine.BLAZE && !config.accelerateMotors.get())     {
             int id = ConfigMap.get(name).getId();
             int port = motor.getPortNumber();
@@ -149,7 +149,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             );
         } else {
             double direction = motor.getDirection() == DcMotorEx.Direction.REVERSE ? -1 : 1;
-            CoreOpMode.getInstance().getCoreTelemetry().tel.addData("Dir: " + motor.getDirection(),direction);
+            CoreOpMode.getInstance().getCoreTelemetry().tel.addData("Dir: " + motor.getDirection(), direction);
             motor.setPower(MathUtils.clip(power, -1, 1)); // reverse should by itself make it negative
         }
     }
@@ -193,14 +193,14 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 
 
         internalModules.install(gamepad, 1);
-        if (config.useDriveTrain.get())
+        if (config.useFollower.get()) internalModules.install(coreFollower, 1);
+        if (config.useDriveTrain.get() && config.type.get() == OpModeType.TELEOP)
             driveTrain = internalModules.install(new DriveTrain(gamepad1), 1);
         internalModules.install(coreTelemetry, 1);
         if (config.useVoltageSensor.get())
             internalModules.install(voltageSensor, 1);
         internalModules.install(hubs, Float.POSITIVE_INFINITY);
         internalModules.install(queuer, 1);
-        if (config.useFollower.get()) internalModules.install(coreFollower, 1);
 
         // ============================ EXECUTING THE USER WRITTEN CODE ============================
         update(this::onInit);

@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Components.Configs;
 import static org.firstinspires.ftc.teamcode.Components.Configs.exampleMotor;
 import static org.firstinspires.ftc.teamcode.Components.Configs.installBot;
+import static ro.sparktech24345.logicore.commands.BaseCommand.command;
+
 import org.firstinspires.ftc.teamcode.Components.TurretComponent;
 import ro.sparktech24345.logicore.commands.StateCommand;
 import ro.sparktech24345.logicore.config.Hubs;
@@ -22,17 +24,19 @@ public class TestTeleOP extends CoreOpMode {
         super(Configs.teleopCfg);
     }
 
-    public static class MotorTestStateSet extends BaseStateSet {
+    public static class MotorTestStateSet extends BaseStateSet<Double> {
         public MotorTestStateSet() { super(); }
-        public final CoreState FULL = register(new CoreState(1, "FULL"));
+        public final CoreState<Double> ZERO = state(.0, "ZERO");
+        public final CoreState<Double> DEFAULT = ZERO;
+        public final CoreState<Double> FULL = state(1.0, "FULL");
         // register() face ca state-ul sa fie detinut de motorul care foloseste StateSet-ul
-        public final CoreState HALF = register(new CoreState( .5, "HALF"));
+        public final CoreState<Double> HALF = state( .5, "HALF");
         // adica state-ul poate sa tina minte ownerul state-ului
     }
 
     public final PreciseTimer timer = new PreciseTimer();
-    public final CoreServo<BaseStateSet> servo =
-            new CoreServo<>("sample_servo", new BaseStateSet());
+    public final CoreServo<BaseStateSet<Double>> servo =
+            new CoreServo<>("sample_servo", new BaseStateSet<>());
     public final TurretComponent turret = new TurretComponent();
 
     public void onInit() {
@@ -48,12 +52,12 @@ public class TestTeleOP extends CoreOpMode {
             // practic eventurile trimit un semnal atunci cand ele se intampla iar acel semnal e interceptat in mai multe locuri
             // ex: eventul de button press e interceptat, verifica daca butonul apasat e CROSS1 si atunci scrie ceva in telemetry
             if (event.getButton().getButton() == Button.CROSS1)
-                getCoreTelemetry().tel.addData("Salut", timer.getTime().getMs());
+                coreTelemetry.tel.addData("Salut", timer.getTime().getMs());
         });
     }
 
     public void onStart() {
-        queue(new StateCommand(exampleMotor.getStates().FULL)); // seteaza target-ul motorului la FULL aka 1 in cazul asta
+        queue(command(exampleMotor.getStates().FULL)); // seteaza target-ul motorului la FULL aka 1 in cazul asta
     }
 
     public void onLoop() {

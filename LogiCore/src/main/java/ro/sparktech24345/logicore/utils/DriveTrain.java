@@ -75,7 +75,7 @@ public class DriveTrain implements CoreModule {
         DcMotorEx lbm = map.get(DcMotorEx.class, lbn);
 
 
-        lfm.setDirection(DcMotorSimple.Direction.FORWARD);
+        lfm.setDirection(DcMotorSimple.Direction.REVERSE);
         lf = new CachingDcMotorEx(lfm, 0.05);
 
         rfm.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -84,7 +84,7 @@ public class DriveTrain implements CoreModule {
         rbm.setDirection(DcMotorSimple.Direction.FORWARD);
         rb = new CachingDcMotorEx(rbm, 0.05);
 
-        lbm.setDirection(DcMotorSimple.Direction.FORWARD);
+        lbm.setDirection(DcMotorSimple.Direction.REVERSE);
         lb = new CachingDcMotorEx(lbm, 0.05);
 
 
@@ -104,15 +104,15 @@ public class DriveTrain implements CoreModule {
         Benchmark.of("drivetrain calc", () -> {
             if (CoreOpMode.getInstance().getConfig().type.get() == OpModeType.AUTONOMOUS) return;
             double flip = directionFlip ? -1 : 1;
-            double vertical   = gamepad.left_stick_y * flip;
-            double horizontal = gamepad.left_stick_x * flip; // dont judge my minuses
-            double pivot      = gamepad.right_stick_x;
+            double vertical   = - gamepad.left_stick_y * flip;
+            double horizontal = - gamepad.left_stick_x * flip; // dont judge my minuses
+            double pivot      = - gamepad.right_stick_x;
 
             // Mecanum drive calculations
-            rfp = - (vertical + horizontal + pivot); // dont mi d the minuses
-            rbp = - (vertical - horizontal + pivot);
-            lfp = - (vertical - horizontal - pivot);
-            lbp = - (vertical + horizontal - pivot);
+            lfp = vertical - horizontal - pivot;
+            rfp = vertical + horizontal + pivot; // dont mi d the minuses
+            lbp = vertical + horizontal - pivot;
+            rbp = vertical - horizontal + pivot;
             // BE WARNED PEDRO ALSO INITS THIS so for example if you set reversed or not Pedro Overrides
 
             // Normalize power to prevent saturation

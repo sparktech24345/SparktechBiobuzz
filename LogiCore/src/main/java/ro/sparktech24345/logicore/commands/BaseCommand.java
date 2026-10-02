@@ -1,6 +1,11 @@
 package ro.sparktech24345.logicore.commands;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+
+import ro.sparktech24345.logicore.core.CoreQueuer;
+import ro.sparktech24345.logicore.states.CoreState;
+import ro.sparktech24345.logicore.utils.TimeSpec;
 
 /**
  * Base class for all commands in the LogiCore command system.
@@ -9,7 +14,7 @@ import java.util.function.BooleanSupplier;
  */
 public class BaseCommand {
 
-    protected Runnable command = () -> {};
+    protected Runnable command;
 
     public BaseCommand(Runnable command) {
         this.command = command;
@@ -71,5 +76,20 @@ public class BaseCommand {
     public void cleanup() {
         started = false;
         finished = false;
+    }
+
+    public static StateCommand command(CoreState<?> state) {
+        return new StateCommand(state);
+    }
+    public static DelayCommand command(TimeSpec t) {
+        return new DelayCommand(t);
+    }
+
+    public static SequenceCommand command(Consumer<CoreQueuer> c) {
+        return new SequenceCommand(c);
+    }
+
+    public static BaseCommand command(Runnable r) {
+        return new BaseCommand(r);
     }
 }

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.Components;
 
 import static org.firstinspires.ftc.teamcode.Components.Configs.exampleMotor;
+import static ro.sparktech24345.logicore.commands.BaseCommand.command;
+
 import com.pedropathing.controllers.PIDController;
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
 import ro.sparktech24345.logicore.commands.StateCommand;
@@ -13,14 +15,14 @@ import ro.sparktech24345.logicore.states.BaseStateSet;
 
 public class TurretComponent implements CoreModule {
 
-    public static final CoreMotor<BaseStateSet> rightOuttakeMotor =
-            new CoreMotor<>(GlobalStorage.rightOuttakeMotorName, new BaseStateSet());
+    public static final CoreMotor<BaseStateSet<Double>> rightOuttakeMotor =
+            new CoreMotor<>(GlobalStorage.rightOuttakeMotorName, new BaseStateSet<>());
                 // BaseStateSet e placeholderul default pentru o clasa de state-uri
-    public static final CoreMotor<BaseStateSet> leftIntakeMotor =
-                        new CoreMotor<>(GlobalStorage.leftIntakeMotorName, new BaseStateSet());
+    public static final CoreMotor<BaseStateSet<Double>> leftIntakeMotor =
+                        new CoreMotor<>(GlobalStorage.leftIntakeMotorName, new BaseStateSet<>());
                 // BaseStateSet e placeholderul default pentru o clasa de state-uri
-    public static final CoreServo<BaseStateSet> angleServo =
-                        new CoreServo<>(GlobalStorage.angleServoName, new BaseStateSet());
+    public static final CoreServo<BaseStateSet<Double>> angleServo =
+                        new CoreServo<>(GlobalStorage.angleServoName, new BaseStateSet<>());
                         // vezi TestTeleOP pentru un exemplu de clasa de state-uri
     public CoreOpMode instance = null;
 
@@ -46,6 +48,6 @@ public class TurretComponent implements CoreModule {
             exampleMotor.loop((motor, target) -> target * .5);
         }
 
-        instance.queue(new StateCommand(exampleMotor.getStates().ZERO)); // asa setezi target-ul motorului care ti se da in functia de customLoop
+        instance.queue(command(exampleMotor.getStates().DEFAULT)); // asa setezi target-ul motorului care ti se da in functia de customLoop
     }
 }
