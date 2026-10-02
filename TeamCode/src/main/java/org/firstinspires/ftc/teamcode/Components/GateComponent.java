@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.Components;
 
+import android.util.Pair;
+
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
 
+import ro.sparktech24345.logicore.commands.BaseCommand;
 import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
@@ -10,13 +13,12 @@ import ro.sparktech24345.logicore.states.BaseStateSet;
 import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.states.HasStates;
 
-public class GateComponent<T extends BaseStateSet> implements CoreModule, HasStates<T> {
+public class GateComponent<T extends BaseStateSet<Pair<CoreState<Double>, CoreState<Double>>>> implements CoreModule, HasStates<Pair<CoreState<Double>, CoreState<Double>>, T> {
+    public final CoreServo<LeftGateServoStateSet> leftGateServo =
+            new CoreServo<>(GlobalStorage.leftGateServoName, new LeftGateServoStateSet());
 
-    public final CoreServo<BaseStateSet> leftGateServo =
-            new CoreServo<>(GlobalStorage.leftGateServoName, new BaseStateSet());
-
-    public final CoreServo<BaseStateSet> rightGateServo =
-            new CoreServo<>(GlobalStorage.rightGateServoName, new BaseStateSet());
+    public final CoreServo<RightGateServoStateSet> rightGateServo =
+            new CoreServo<>(GlobalStorage.rightGateServoName, new RightGateServoStateSet());
     public CoreOpMode instance = null;
 
     public GateComponent(T states) {
@@ -37,20 +39,27 @@ public class GateComponent<T extends BaseStateSet> implements CoreModule, HasSta
 //
     }
 
-    private T states;
+    private final T states;
 
-    public static class IntakeMotorStateSet extends BaseStateSet {
-        public IntakeMotorStateSet() { super(); }
-        public final CoreState COUPLED = register(new CoreState(0.14 * 360, "COUPLED"));
-        public final CoreState DECOUPLED = register(new CoreState( 0.25 * 360, "DECOUPLED"));
+    public static class LeftGateServoStateSet extends BaseStateSet<Double> {
+        public LeftGateServoStateSet() { super(); }
+        public final CoreState<Double> OPEN = state(.0, "L_OPEN");
+        public final CoreState<Double> CLOSED = state(1.0, "L_CLOSED");
     }
+    public static class RightGateServoStateSet extends BaseStateSet<Double> {
+        public RightGateServoStateSet() { super(); }
+        public final CoreState<Double> OPEN = state(.5, "R_OPEN");
+        public final CoreState<Double> CLOSED = state(.67, "R_CLOSED");
+    }
+
     @Override
     public T getStates() {
         return states;
     }
 
     @Override
-    public <S extends CoreState> void setState(S state) {
-        leftGateServo.setState(state);
+    public <S extends CoreState<Pair<CoreState<Double>, CoreState<Double>>>> void setState(S state) {
+        leftGateServo.setState(state.getValue().first);
+        rightGateServo.setState(state.getValue().second);
     }
 }

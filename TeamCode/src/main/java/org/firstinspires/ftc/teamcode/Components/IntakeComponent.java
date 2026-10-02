@@ -1,24 +1,30 @@
 package org.firstinspires.ftc.teamcode.Components;
 
+import android.util.Pair;
+
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
 
 import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.hardware.CoreMotor;
+import ro.sparktech24345.logicore.hardware.CoreServo;
 import ro.sparktech24345.logicore.states.BaseStateSet;
 import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.states.HasStates;
 
-public class IntakeComponent implements CoreModule, HasStates<IntakeMotorStateSet> {
+public class IntakeComponent implements CoreModule, HasStates<Pair<CoreState<Double>, CoreState<Double>>, IntakeStateSet> {
 
-    public final CoreMotor<BaseStateSet> intakeMotor =
-            new CoreMotor<>(GlobalStorage.intakeMotorName, new BaseStateSet());
+
+    public final CoreServo<CoupleServoStateSet> coupleServo =
+            new CoreServo<>(GlobalStorage.coupleServo, new CoupleServoStateSet());
+    public final CoreMotor<IntakeMotorStateSet> intakeMotor =
+            new CoreMotor<>(GlobalStorage.intakeMotorName, new IntakeMotorStateSet());
     // BaseStateSet e placeholderul default pentru o clasa de state-uri
     public CoreOpMode instance = null;
 
     public IntakeComponent() {
-        this.states = new IntakeMotorStateSet();
+        this.states = new IntakeStateSet(intakeMotor.getStates(), coupleServo.getStates());
         states.own(this);
     }
 
@@ -44,15 +50,16 @@ public class IntakeComponent implements CoreModule, HasStates<IntakeMotorStateSe
 //        instance.queue(new StateCommand(exampleMotor.getStates().ZERO)); // asa setezi target-ul motorului care ti se da in functia de customLoop
     }
 
-    private final IntakeMotorStateSet states;
+    private final IntakeStateSet states;
 
     @Override
-    public IntakeMotorStateSet getStates() {
+    public IntakeStateSet getStates() {
         return states;
     }
 
     @Override
-    public <S extends CoreState> void setState(S state) {
-        intakeMotor.setState(state);
+    public <S extends CoreState<Pair<CoreState<Double>, CoreState<Double>>>> void setState(S state) {
+        intakeMotor.setState(state.getValue().first);
+        coupleServo.setState(state.getValue().second);
     }
 }
