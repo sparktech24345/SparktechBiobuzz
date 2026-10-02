@@ -6,8 +6,8 @@ package ro.sparktech24345.logicore.states;
  *
  * @param T The type of state set this object manages
  */
-public interface HasStates<T extends BaseStateSet> {
-    T getStates();
+public interface HasStates<Dt, St extends BaseStateSet<Dt>> {
+    St getStates();
 
     /**
      * Set the object to a specific state.
@@ -15,5 +15,5 @@ public interface HasStates<T extends BaseStateSet> {
      *
      * @param state The state to apply
      */
-    <S extends CoreState> void setState(S state);
+    <S extends CoreState<Dt>> void setState(S state);
 }

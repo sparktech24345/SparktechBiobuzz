@@ -7,15 +7,12 @@ import java.util.List;
  * Base class for state collections with ownership tracking.
  * Provides automatic state registration and module ownership assignment.
  */
-public class BaseStateSet {
+public class BaseStateSet<T> {
     /** Track all states created through make() for ownership assignment */
-    private final List<CoreState> stateArray = new ArrayList<>();
-
-    /** Default zero state for convenience */
-    public final CoreState ZERO = register(new CoreState(0.0, "ZERO"));
+    private final List<CoreState<T>> stateArray = new ArrayList<>();
 
     /** Default state used when no specific state is requested */
-    public CoreState DEFAULT = ZERO;
+    public CoreState<T> DEFAULT;
 
     /**
      * Create and register a state in this set.
@@ -24,7 +21,7 @@ public class BaseStateSet {
      * @param state The state to register
      * @return The same state for chaining
      */
-    public <T extends CoreState> T register(T state) {
+    public <Ty extends CoreState<T>> Ty register(Ty state) {
         stateArray.add(state);
         return state;
     }
@@ -35,7 +32,11 @@ public class BaseStateSet {
      *
      * @param module The module that will own all states in this set
      */
-    public <T extends HasStates<? extends BaseStateSet>> void own(T module) {
-        for (CoreState state : stateArray) state.setOwner(module);
+    public <Ty extends HasStates<T, ? extends BaseStateSet<T>>> void own(Ty module) {
+        for (CoreState<T> state : stateArray) state.setOwner(module);
+    }
+
+    public final CoreState<T> state(T data, String name) {
+        return register(new CoreState<>(data, name));
     }
 }

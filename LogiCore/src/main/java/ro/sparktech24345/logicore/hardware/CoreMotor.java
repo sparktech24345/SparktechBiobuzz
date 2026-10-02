@@ -24,7 +24,7 @@ import ro.sparktech24345.logicore.utils.TickInterval;
  * Enhanced motor control with state management, PID control, and multiple run modes.
  * Supports power, position, velocity, and custom control modes with encoder integration.
  */
-public class CoreMotor<T extends BaseStateSet> implements CoreModule, HasStates<T>, IsHardware {
+public class CoreMotor<T extends BaseStateSet<Double>> implements CoreModule, HasStates<Double, T>, IsHardware {
     public CoreMotor(String name, T stateSet) {
         this(name, stateSet, 1);
     }
@@ -51,7 +51,8 @@ public class CoreMotor<T extends BaseStateSet> implements CoreModule, HasStates<
      * Set the motor to a specific state.
      * Automatically handles run mode switching based on state type.
      */
-    public <Ty extends CoreState> void setState(Ty state) {
+    @Override
+    public <S extends CoreState<Double>> void setState(S state) {
         this.target = state.getValue();
     }
 
@@ -100,11 +101,11 @@ public class CoreMotor<T extends BaseStateSet> implements CoreModule, HasStates<
         }
     private boolean directionChanged = false;
 
-    private static final Function2<CoreMotor<?>, Double, Double> DEFAULT_LOOP = (m, t) -> t;
+    private final Function2<CoreMotor<T>, Double, Double> DEFAULT_LOOP = (m, t) -> t;
 
     /** Custom control loop function for advanced motor control */
-    private Function2<CoreMotor<?>, Double, Double> customLoop = DEFAULT_LOOP;
-    public void loop(Function2<CoreMotor<?>, Double, Double> fn) {
+    private Function2<CoreMotor<T>, Double, Double> customLoop = DEFAULT_LOOP;
+    public void loop(Function2<CoreMotor<T>, Double, Double> fn) {
         this.customLoop = fn;
     }
     public void resetLoop() {

@@ -15,4 +15,6 @@ public class HardwareConfig {
     public HardwareConfig(Hubs hub, int port) {
         this(hub.getId(), port);
     }
+    public HardwareConfig(Hubs hub) { this(hub.getId()); }
+    public HardwareConfig(int hubId) { this(hubId, -1); }
 }

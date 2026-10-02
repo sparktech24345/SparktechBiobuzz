@@ -14,7 +14,7 @@ import ro.sparktech24345.logicore.utils.TickInterval;
  * Enhanced servo control with position mapping and state management.
  * Supports custom position ranges and automatic servo position clamping.
  */
-public class CoreServo<T extends BaseStateSet> implements CoreModule, HasStates<T> {
+public class CoreServo<T extends BaseStateSet<Double>> implements CoreModule, HasStates<Double, T> {
     public CoreServo(String name, T stateSet) {
         this(name, stateSet, 1);
     }
@@ -32,8 +32,8 @@ public class CoreServo<T extends BaseStateSet> implements CoreModule, HasStates<
     private final T states;
 
     /** Set servo to a specific state position */
-    public <Ty extends CoreState> void setState(Ty state) {
-        setPosition(state.getValue());
+    public <S extends CoreState<Double>> void setState(S state) {
+        this.realPosition = state.getValue();
     }
 
     public T getStates() { return this.states; }
