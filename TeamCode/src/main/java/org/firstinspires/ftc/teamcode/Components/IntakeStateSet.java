@@ -7,22 +7,27 @@ import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.states.HasStates;
 
 public class IntakeStateSet extends BaseStateSet<Pair<CoreState<Double>, CoreState<Double>>> {
-    public final IntakeMotorStateSet motorStates;
-    public final CoupleServoStateSet servoStates;
-    public IntakeStateSet(IntakeMotorStateSet mStates, CoupleServoStateSet sStates) {
-        super();
-        this.motorStates = mStates;
-        this.servoStates = sStates;
-        HALF_REVERSED = state(new Pair<>(motorStates.FULL, servoStates.DECOUPLED), "HALF_REVERSED");
-        HALF          = state(new Pair<>(motorStates.FULL_REVERSED, servoStates.DECOUPLED), "HALF");
-        FULL          = state(new Pair<>(motorStates.FULL, servoStates.COUPLED), "FULL");
-        FULL_REVERSED = state(new Pair<>(motorStates.FULL_REVERSED, servoStates.COUPLED), "FULL_REVERSED");
+    public IntakeStateSet(IntakeMotorStateSet ms, CoupleServoStateSet ss) {
+        super(); // ms inseamna motor states si ss inseamna servo states (pt intake / coupling)
+        FULL_DECOUPLED = state(new Pair<>(ms.FULL, ss.DECOUPLED), "FULL_DECOUPLED");
+        HALF_DECOUPLED = state(new Pair<>(ms.HALF, ss.DECOUPLED), "HALF_DECOUPLED");
+        FULL_COUPLED   = state(new Pair<>(ms.FULL, ss.COUPLED  ), "FULL_COUPLED");
+        HALF_COUPLED   = state(new Pair<>(ms.HALF, ss.COUPLED  ), "HALF_COUPLED");
+        ZERO           = state(new Pair<>(ms.ZERO, ss.COUPLED  ), "ZERO");
+        // ^ aici astea le faci tu cum vrei
+        DEFAULT = ZERO;
     }
 
-    // register() face ca state-ul sa fie detinut de motorul care foloseste StateSet-ul
-    // adica state-ul poate sa tina minte ownerul state-ului
-    public final CoreState<Pair<CoreState<Double>, CoreState<Double>>> HALF_REVERSED;
-    public final CoreState<Pair<CoreState<Double>, CoreState<Double>>> HALF         ;
-    public final CoreState<Pair<CoreState<Double>, CoreState<Double>>> FULL         ;
-    public final CoreState<Pair<CoreState<Double>, CoreState<Double>>> FULL_REVERSED;
+    public IntakeStateSet(CoupleServoStateSet ss, IntakeMotorStateSet ms) { this(ms, ss); }
+    // la fel, ^ facut ca sa poti sa le pui si invers
+
+    // si aici le declari
+    public final CoreState<Pair<CoreState<Double>, CoreState<Double>>> FULL_DECOUPLED;
+    public final CoreState<Pair<CoreState<Double>, CoreState<Double>>> HALF_DECOUPLED;
+    public final CoreState<Pair<CoreState<Double>, CoreState<Double>>> FULL_COUPLED;
+    public final CoreState<Pair<CoreState<Double>, CoreState<Double>>> HALF_COUPLED;
+    public final CoreState<Pair<CoreState<Double>, CoreState<Double>>> ZERO;
+    // also `CoreState<Pair<CoreState<Double>, CoreState<Double>>>` pare complicat, dar e practic un
+    // state care tine o pereche de state-uri care fiecare tine un Double
+    // si pt. motor + servo ai state-ul motorului + state-ul servoului = state-ul componentei
 }

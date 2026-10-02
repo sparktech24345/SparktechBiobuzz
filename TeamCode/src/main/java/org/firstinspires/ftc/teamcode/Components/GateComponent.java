@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode.Components;
 
+import static ro.sparktech24345.logicore.commands.BaseCommand.command;
+
 import android.util.Pair;
 
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
 
-import ro.sparktech24345.logicore.commands.BaseCommand;
 import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
@@ -13,16 +14,16 @@ import ro.sparktech24345.logicore.states.BaseStateSet;
 import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.states.HasStates;
 
-public class GateComponent<T extends BaseStateSet<Pair<CoreState<Double>, CoreState<Double>>>> implements CoreModule, HasStates<Pair<CoreState<Double>, CoreState<Double>>, T> {
-    public final CoreServo<LeftGateServoStateSet> leftGateServo =
-            new CoreServo<>(GlobalStorage.leftGateServoName, new LeftGateServoStateSet());
+public class GateComponent implements CoreModule, HasStates<Pair<CoreState<Double>, CoreState<Double>>, GateStateSet> {
+    public final CoreServo<LeftGateServoStateSet> leftGateServo;
 
-    public final CoreServo<RightGateServoStateSet> rightGateServo =
-            new CoreServo<>(GlobalStorage.rightGateServoName, new RightGateServoStateSet());
-    public CoreOpMode instance = null;
+    public final CoreServo<RightGateServoStateSet> rightGateServo;
+    private CoreOpMode instance = null;
 
-    public GateComponent(T states) {
-        this.states = states;
+    public GateComponent() {
+        leftGateServo = new CoreServo<>(GlobalStorage.leftGateServoName, new LeftGateServoStateSet());
+        rightGateServo = new CoreServo<>(GlobalStorage.rightGateServoName, new RightGateServoStateSet());
+        this.states = new GateStateSet(leftGateServo.getStates(), rightGateServo.getStates());
         states.own(this);
     }
 
@@ -32,34 +33,23 @@ public class GateComponent<T extends BaseStateSet<Pair<CoreState<Double>, CoreSt
         instance = CoreOpMode.getInstance();
         instance.install(Hubs.CONTROL, leftGateServo, 1);
         instance.install(Hubs.CONTROL, rightGateServo, 1);
+        instance.execute(command(states.DEFAULT)); // nu e necesar dar recomand sa puneti asta
     }
 
     /** Called every loop cycle - update module logic */
-    public void loopCore() {
-//
-    }
+    public void loopCore() {}
 
-    private final T states;
-
-    public static class LeftGateServoStateSet extends BaseStateSet<Double> {
-        public LeftGateServoStateSet() { super(); }
-        public final CoreState<Double> OPEN = state(.0, "L_OPEN");
-        public final CoreState<Double> CLOSED = state(1.0, "L_CLOSED");
-    }
-    public static class RightGateServoStateSet extends BaseStateSet<Double> {
-        public RightGateServoStateSet() { super(); }
-        public final CoreState<Double> OPEN = state(.5, "R_OPEN");
-        public final CoreState<Double> CLOSED = state(.67, "R_CLOSED");
-    }
-
+    private final GateStateSet states;
     @Override
-    public T getStates() {
+    public GateStateSet getStates() {
         return states;
     }
 
     @Override
     public <S extends CoreState<Pair<CoreState<Double>, CoreState<Double>>>> void setState(S state) {
-        leftGateServo.setState(state.getValue().first);
-        rightGateServo.setState(state.getValue().second);
+        CoreState<Double> fv = state.getValue().first;
+        CoreState<Double> sv = state.getValue().second;
+        fv.getOwner().setState(fv);
+        sv.getOwner().setState(sv);
     }
 }

@@ -1,7 +1,11 @@
 package org.firstinspires.ftc.teamcode.MainOpModes.Teleops;
 
+import static ro.sparktech24345.logicore.commands.BaseCommand.command;
+
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Components.Configs;
+import org.firstinspires.ftc.teamcode.Components.ConfigsDecode;
+import org.firstinspires.ftc.teamcode.Components.GateComponent;
 import org.firstinspires.ftc.teamcode.Components.IntakeComponent;
 import ro.sparktech24345.logicore.commands.StateCommand;
 import ro.sparktech24345.logicore.config.Hubs;
@@ -14,7 +18,7 @@ import ro.sparktech24345.logicore.utils.PreciseTimer;
 @TeleOp(name = "Decode TeleOP", group = "Testing")
 public class DecodeTeleOP extends CoreOpMode {
     public DecodeTeleOP() {
-        super(Configs.teleopCfg);
+        super(ConfigsDecode.decodeCfg);
     }
 
 //    public static class MotorTestStateSet extends BaseStateSet {
@@ -30,26 +34,30 @@ public class DecodeTeleOP extends CoreOpMode {
 //            new CoreServo<>("sample_servo", new BaseStateSet());
 //    public final TurretComponent turret = new TurretComponent();
     public final IntakeComponent intake = new IntakeComponent();
+    public final GateComponent gates = new GateComponent();
 
     public void onInit() {
         timer.start(); // doar reseteaza timerul
 //        install(Hubs.EXPANSION, servo, 1);
 //        install(Hubs.INDEPENDENT, turret, 1);
-        install(Hubs.CONTROL, intake.intakeMotor, 1);
+        install(Hubs.INDEPENDENT, intake, 1);
+        install(Hubs.INDEPENDENT, gates, 1);
 
 
         EventBus.subscribe(CoreButton.ButtonPressEvent.class, (event) -> {
-            // eventurile sunt cam niche, nu prea conteaza si nici nu (cred) ca ajuta la looptime-uri
-            // practic eventurile trimit un semnal atunci cand ele se intampla iar acel semnal e interceptat in mai multe locuri
-            // ex: eventul de button press e interceptat, verifica daca butonul apasat e CROSS1 si atunci scrie ceva in telemetry
-            if (event.getButton().getButton() == Button.CROSS1)
-                getCoreTelemetry().tel.addData("Salut", timer.getTime().getMs());
+            CoreButton buttonInstance = event.getButton();
+            Button buttonEnum = buttonInstance.getButton();
+            switch (buttonEnum) {
+                case CROSS1: coreTelemetry.tel.addData("Hello, world!", timer.getTime().getMs()); break;
+                case TRIANGLE1: coreTelemetry.tel.addLine("Secret message!"); break;
+                default: System.out.println("got button " + buttonEnum); break;
+            }
         });
     }
 
     public void onStart() {
 //        queue(new StateCommand(exampleMotor.getStates().FULL)); // seteaza target-ul motorului la FULL aka 1 in cazul asta
-        queue(new StateCommand(intake.getStates().HALF));
+        queue(command(intake.getStates().HALF_DECOUPLED));
     }
 
     public void onLoop() {

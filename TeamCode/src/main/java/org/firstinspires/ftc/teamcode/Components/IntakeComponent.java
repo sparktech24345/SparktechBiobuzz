@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Components;
 
+import static ro.sparktech24345.logicore.commands.BaseCommand.command;
+
 import android.util.Pair;
 
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
@@ -16,14 +18,13 @@ import ro.sparktech24345.logicore.states.HasStates;
 public class IntakeComponent implements CoreModule, HasStates<Pair<CoreState<Double>, CoreState<Double>>, IntakeStateSet> {
 
 
-    public final CoreServo<CoupleServoStateSet> coupleServo =
-            new CoreServo<>(GlobalStorage.coupleServo, new CoupleServoStateSet());
-    public final CoreMotor<IntakeMotorStateSet> intakeMotor =
-            new CoreMotor<>(GlobalStorage.intakeMotorName, new IntakeMotorStateSet());
-    // BaseStateSet e placeholderul default pentru o clasa de state-uri
-    public CoreOpMode instance = null;
+    public final CoreServo<CoupleServoStateSet> coupleServo;
+    public final CoreMotor<IntakeMotorStateSet> intakeMotor;
+    private CoreOpMode instance = null;
 
     public IntakeComponent() {
+        intakeMotor = new CoreMotor<>(GlobalStorage.intakeMotorName, new IntakeMotorStateSet());
+        coupleServo = new CoreServo<>(GlobalStorage.coupleServo, new CoupleServoStateSet());
         this.states = new IntakeStateSet(intakeMotor.getStates(), coupleServo.getStates());
         states.own(this);
     }
@@ -33,6 +34,10 @@ public class IntakeComponent implements CoreModule, HasStates<Pair<CoreState<Dou
     public void initCore() {
         instance = CoreOpMode.getInstance();
         instance.install(Hubs.CONTROL, intakeMotor, 1);
+        instance.install(Hubs.CONTROL, coupleServo, 1);
+        instance.execute(command(states.DEFAULT)); // nu e necesar dar recomand sa puneti asta
+
+
 //        exampleMotor.loop((motor, target) -> target); // loop este functia f(x) : (-inf, +inf) -> [-1, 1]
         // adica ia un target si returneaza puterea data la motor ca sa se ajunga la target
         // in cazul asta parametrul _ reprezinta instanta motorului, iar functia returneaza acelasi target dat, adica practic functia este f(x) = x
@@ -59,7 +64,9 @@ public class IntakeComponent implements CoreModule, HasStates<Pair<CoreState<Dou
 
     @Override
     public <S extends CoreState<Pair<CoreState<Double>, CoreState<Double>>>> void setState(S state) {
-        intakeMotor.setState(state.getValue().first);
-        coupleServo.setState(state.getValue().second);
+        CoreState<Double> fv = state.getValue().first;
+        CoreState<Double> sv = state.getValue().second;
+        fv.getOwner().setState(fv);
+        sv.getOwner().setState(sv);
     }
 }
