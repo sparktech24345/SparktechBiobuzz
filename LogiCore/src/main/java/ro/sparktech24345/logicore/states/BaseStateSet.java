@@ -39,4 +39,8 @@ public class BaseStateSet<T> {
     public final CoreState<T> state(T data, String name) {
         return register(new CoreState<>(data, name));
     }
+
+    public final CoreState<T> wildState(T data, String name) {
+        return new CoreState<>(data, name);
+    }
 }

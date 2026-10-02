@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import ro.sparktech24345.logicore.core.CoreQueuer;
 import ro.sparktech24345.logicore.states.CoreState;
+import ro.sparktech24345.logicore.states.HasStates;
 import ro.sparktech24345.logicore.utils.TimeSpec;
 
 /**
@@ -78,8 +79,11 @@ public class BaseCommand {
         finished = false;
     }
 
-    public static StateCommand command(CoreState<?> state) {
-        return new StateCommand(state);
+    public static <Dt> StateCommand<Dt> command(CoreState<Dt> state) {
+        return new StateCommand<>(state);
+    }
+    public static <Dt> StateCommand<Dt> command(HasStates<Dt, ?> comp, CoreState<Dt> state) {
+        return new StateCommand<>(comp, state);
     }
     public static DelayCommand command(TimeSpec t) {
         return new DelayCommand(t);
