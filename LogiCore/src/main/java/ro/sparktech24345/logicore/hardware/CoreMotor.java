@@ -30,7 +30,7 @@ public class CoreMotor<T extends BaseStateSet<Double>> implements CoreModule, Ha
     }
 
     public CoreMotor(String name, T stateSet, double interval) {
-            this.name = name;
+        this.name = name;
         this.states = stateSet;
         this.ticker = new TickInterval(interval);
     }
@@ -52,8 +52,9 @@ public class CoreMotor<T extends BaseStateSet<Double>> implements CoreModule, Ha
      * Automatically handles run mode switching based on state type.
      */
     @Override
-    public <S extends CoreState<Double>> void setState(S state) {
+    public void setState(CoreState<Double> state) {
         this.target = state.getValue();
+        this.currState = state;
     }
 
     private double target = 0;
@@ -151,5 +152,12 @@ public class CoreMotor<T extends BaseStateSet<Double>> implements CoreModule, Ha
 
     public T getStates() {
         return states;
+    }
+
+    private CoreState<Double> currState = null;
+
+    @Override
+    public CoreState<Double> currentState() {
+        return currState;
     }
 }

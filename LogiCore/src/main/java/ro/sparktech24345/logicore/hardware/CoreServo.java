@@ -32,11 +32,18 @@ public class CoreServo<T extends BaseStateSet<Double>> implements CoreModule, Ha
     private final T states;
 
     /** Set servo to a specific state position */
-    public <S extends CoreState<Double>> void setState(S state) {
+    public void setState(CoreState<Double> state) {
         this.realPosition = state.getValue();
+        this.currState = state;
     }
 
     public T getStates() { return this.states; }
+
+    private CoreState<Double> currState;
+    @Override
+    public CoreState<Double> currentState() {
+        return currState;
+    }
 
     /** Internal servo position */
     private double realPosition = 0;
