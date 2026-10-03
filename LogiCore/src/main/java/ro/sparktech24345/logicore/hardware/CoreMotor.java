@@ -10,6 +10,7 @@ import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import kotlin.jvm.functions.Function2;
 import ro.sparktech24345.logicore.config.ConfigMap;
 import ro.sparktech24345.logicore.config.HardwareConfig;
+import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.config.IsHardware;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
@@ -35,7 +36,7 @@ public class CoreMotor<T extends BaseStateSet<Double>> implements CoreModule, Ha
         this.ticker = new TickInterval(interval);
     }
     private final String name;
-    private HardwareConfig config = null;
+    private HardwareConfig config = new HardwareConfig(Hubs.INDEPENDENT, -1);
     public void setConfig(HardwareConfig cfg) { this.config = cfg; }
     public HardwareConfig getConfig() { return this.config; }
 
