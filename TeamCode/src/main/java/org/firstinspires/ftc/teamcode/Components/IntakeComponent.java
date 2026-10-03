@@ -62,11 +62,18 @@ public class IntakeComponent implements CoreModule, HasStates<Pair<CoreState<Dou
         return states;
     }
 
+    private CoreState<Pair<CoreState<Double>, CoreState<Double>>> currState = null;
     @Override
-    public <S extends CoreState<Pair<CoreState<Double>, CoreState<Double>>>> void setState(S state) {
+    public CoreState<Pair<CoreState<Double>, CoreState<Double>>> currentState() {
+        return currState;
+    }
+
+    @Override
+    public void setState(CoreState<Pair<CoreState<Double>, CoreState<Double>>> state) {
         CoreState<Double> fv = state.getValue().first;
         CoreState<Double> sv = state.getValue().second;
         fv.getOwner().setState(fv);
         sv.getOwner().setState(sv);
+        currState = state;
     }
 }
