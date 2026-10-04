@@ -30,8 +30,8 @@ public class ShowcaseTeleop extends CoreOpMode {
     }
 
     public void onLoop() {
-        coreTelemetry.tel.addData("voltage", voltageSensor.getVoltage());
-        coreTelemetry.tel.addData("Loop time", mainTimer.getTime().get(TimeUnit.MILLIS));
+        coreTelemetry.addData("voltage", voltageSensor.getVoltage());
+        coreTelemetry.addData("Loop time", mainTimer.getTime().get(TimeUnit.MILLIS));
 //        coreTelemetry.addData("pos", getFollower().pose());
         mainTimer.start();
     }

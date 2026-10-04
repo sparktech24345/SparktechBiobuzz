@@ -53,6 +53,8 @@ public class ColorSensorReactionTest extends LinearOpMode {
     private double totalLoopMls = 0;
     private int loopCount = 0;
     volatile boolean shouldMoveCameraServo = false;
+    volatile boolean hasBallLeft = false;
+    volatile boolean hasBallRight = false;
     @Override
     public void runOpMode() throws InterruptedException {
         // Bulk caching setup
@@ -68,7 +70,9 @@ public class ColorSensorReactionTest extends LinearOpMode {
         ElapsedTime telTimer = new ElapsedTime();
 
         /// servo time
-        Servo CameraRotateServo = hardwareMap.get(Servo.class, "CameraRotateServo");
+        Servo leftGateServo = hardwareMap.get(Servo.class, "leftGateServo");
+        Servo rightGateServo = hardwareMap.get(Servo.class, "rightGateServo");
+        DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
 
         colorSensorRight = hardwareMap.get(NormalizedColorSensor.class, "colorSensorRight");
         colorSensorLeft = hardwareMap.get(NormalizedColorSensor.class, "colorSensorLeft");
@@ -94,6 +98,9 @@ public class ColorSensorReactionTest extends LinearOpMode {
             shouldMoveCameraServo =
                     BallColorSet_Decode.getColorForStorage(rightSensorColors) != BallColorSet_Decode.NoBall
                     || BallColorSet_Decode.getColorForStorage(leftSensorColors,true) != BallColorSet_Decode.NoBall;
+
+            hasBallLeft = BallColorSet_Decode.getColorForStorage(leftSensorColors,true) != BallColorSet_Decode.NoBall;
+            hasBallRight = BallColorSet_Decode.getColorForStorage(rightSensorColors) != BallColorSet_Decode.NoBall;
         }, 0, 3, TimeUnit.MILLISECONDS);
 
         lastFrameTimeNanos = System.nanoTime();
@@ -116,9 +123,17 @@ public class ColorSensorReactionTest extends LinearOpMode {
             minLoopMls = Math.min(minLoopMls, currentLoopMls);
             totalLoopMls += currentLoopMls;
             loopCount++;
-            if (CameraRotateServo != null)
-                if(shouldMoveCameraServo)CameraRotateServo.setPosition(0.6);
-            else CameraRotateServo.setPosition(0.5);
+            if (leftGateServo != null) {
+                if (shouldMoveCameraServo) leftGateServo.setPosition(0.64); // allow ball
+                else leftGateServo.setPosition(0.38);
+            }
+
+            if (rightGateServo != null) {
+                if (shouldMoveCameraServo) rightGateServo.setPosition(0.42); // allow ball
+                else rightGateServo.setPosition(0.68);
+            }
+
+            if(intakeMotor != null) intakeMotor.setPower(motorPowe);
 
             // --- TELEMETRY AGGREGATION (Capped at ~30 Hz / 33 ms) ---
             if (telTimer.milliseconds() >= 33) {
@@ -141,6 +156,8 @@ public class ColorSensorReactionTest extends LinearOpMode {
                     tel.addData("Min Loop Time (ms)", "%.2f", snapshotMin);
                     tel.addData("Max Loop Spike (ms)", "%.2f", snapshotMax);
                     tel.addData("Loops in 33ms Window", snapshotLoopCount);
+                    tel.addData("has ball left", hasBallLeft);
+                    tel.addData("has ball right", hasBallRight);
 
                     if (rightColors != null) {
                         tel.addData("Right Red", "%.3f", rightColors.red);
