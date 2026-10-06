@@ -6,6 +6,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.photon.PhotonCore;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import dev.anygeneric.blazeftc.AcceleratedMotor;
 import dev.anygeneric.blazeftc.BlazeDummyPlug;
 import dev.anygeneric.blazeftc.BlazeFTC;
@@ -89,10 +92,12 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 
     /** Clear all pending and executing commands */
     final public void clear() { queuer.clear(); }
-
-    // private static ExecutorService executor = null;
-//    public static ExecutorService executor() { return executor; }
-    public static void schedule(Runnable run) { run.run(); }
+    public static ExecutorService executor;
+    public static void schedule(Runnable run) {
+        if (run == null) return;
+        executor.execute(run);
+//        run.run();
+    }
 
     public static AcceleratedMotor getMotor(HardwareMap map, String name) {
         DcMotorEx motor = map.get(DcMotorEx.class, name);
@@ -131,15 +136,17 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         });
 
         if (CoreOpMode.getInstance().stage != GameStage.INIT) Benchmark.of("outputs", () -> {
-                internalModules.writeCore();
-                cHubModules.writeCore();
-                eHubModules.writeCore();
-                independentModules.writeCore();
+                Benchmark.of("internal modules output", internalModules::writeCore);
+                Benchmark.of("motors and servos output", () -> {
+                    cHubModules.writeCore();
+                    eHubModules.writeCore();
+                });
+            Benchmark.of("independent modules output", independentModules::writeCore);
         });
     }
 
     public void setMotorPower(String name, DcMotorEx motor, double power) {
-        CoreOpMode.getInstance().getCoreTelemetry().tel.addData("Motor: " + motor, motor.getDirection());
+        CoreOpMode.getInstance().getCoreTelemetry().addData("Motor: " + motor, motor.getDirection());
         if (config.performanceEngine.get() == PerformanceEngine.BLAZE && !config.accelerateMotors.get())     {
             int id = ConfigMap.get(name).getId();
             int port = motor.getPortNumber();
@@ -149,7 +156,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             );
         } else {
             double direction = motor.getDirection() == DcMotorEx.Direction.REVERSE ? -1 : 1;
-            CoreOpMode.getInstance().getCoreTelemetry().tel.addData("Dir: " + motor.getDirection(), direction);
+            CoreOpMode.getInstance().getCoreTelemetry().addData("Dir: " + motor.getDirection(), direction);
             motor.setPower(MathUtils.clip(power, -1, 1)); // reverse should by itself make it negative
         }
     }
@@ -191,6 +198,12 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             }
         }
 
+        // init stuff
+
+        if (executor == null || executor.isShutdown()) {
+            executor = Executors.newSingleThreadExecutor();
+        }
+
 
         internalModules.install(gamepad, 1);
         if (config.useFollower.get()) internalModules.install(coreFollower, 1);
@@ -208,7 +221,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     final public void init_loopCore() {
-        coreTelemetry.tel.addData("stage", stage);
+        coreTelemetry.addData("stage", stage);
         update(this::onInitLoop);
     }
 
@@ -219,7 +232,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     final public void loopCore() {
-        coreTelemetry.tel.addData("stage", stage);
+        coreTelemetry.addData("stage", stage);
         update(this::onLoop);
     }
 
@@ -227,7 +240,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         stage = GameStage.STOP;
         update(this::onStop);
         // instance = null;
-        // executor.shutdownNow();
+         executor.shutdownNow();
     }
 
     /** User-defined initialization logic - called once during init stage */
@@ -250,7 +263,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     public void runOpMode() {
         try {
             coreTelemetry = new CoreTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-            coreTelemetry.tel.addData("STARTED USING",config.performanceEngine.get());
+            coreTelemetry.addData("STARTED USING",config.performanceEngine.get());
 
 
             if (config.performanceEngine.get() == PerformanceEngine.BLAZE) super.runOpMode();
@@ -276,7 +289,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             e.printStackTrace(System.out);
             throw e;
         } finally {
-            // executor.shutdownNow();
+             executor.shutdownNow();
             instance = null;
         }
     }
@@ -303,7 +316,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             e.printStackTrace(System.out);
             throw e;
         } finally {
-            // executor.shutdownNow();
+             executor.shutdownNow();
             instance = null;
         }
     }

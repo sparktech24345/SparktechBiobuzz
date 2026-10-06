@@ -1,9 +1,8 @@
-package ro.sparktech24345.logicore.utils;
+package ro.sparktech24345.logicore.pedro;
 
 import android.annotation.SuppressLint;
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.drivetrain.Drivetrain;
-import com.pedropathing.revhub.drivetrains.CachedMotor;
 import com.pedropathing.revhub.drivetrains.MecanumConfig;
 import com.pedropathing.utils.Utils;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,9 +12,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import java.util.HashMap;
 import java.util.Map;
 
-import dev.anygeneric.blazeftc.AcceleratedMotor;
-import dev.anygeneric.blazeftc.BlazeFTC;
-import ro.sparktech24345.logicore.config.ConfigMap;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 
 public class SparkMecanum implements Drivetrain {

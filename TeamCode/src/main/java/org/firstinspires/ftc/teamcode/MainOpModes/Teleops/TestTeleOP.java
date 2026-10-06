@@ -52,7 +52,7 @@ public class TestTeleOP extends CoreOpMode {
             // practic eventurile trimit un semnal atunci cand ele se intampla iar acel semnal e interceptat in mai multe locuri
             // ex: eventul de button press e interceptat, verifica daca butonul apasat e CROSS1 si atunci scrie ceva in telemetry
             if (event.getButton().getButton() == Button.CROSS1)
-                coreTelemetry.tel.addData("Salut", timer.getTime().getMs());
+                coreTelemetry.addData("Salut", timer.getTime().getMs());
         });
     }
 
