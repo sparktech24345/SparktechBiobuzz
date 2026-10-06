@@ -12,11 +12,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import java.util.HashMap;
 import java.util.Map;
 
+import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 
 public class SparkMecanum implements Drivetrain {
     public final MecanumConfig config;
-    private final DcMotorEx[] motors;
+    private final CachingDcMotorEx[] motors;
     public final double[] wheelPowers = new double[4];
 
     private static final int FL = 0;
@@ -30,11 +31,11 @@ public class SparkMecanum implements Drivetrain {
     public SparkMecanum(HardwareMap map, MecanumConfig config) {
         this.config = config;
 
-        motors = new DcMotorEx[]{
-                map.get(DcMotorEx.class, config.frontLeftName.get()),
-                map.get(DcMotorEx.class, config.frontRightName.get()),
-                map.get(DcMotorEx.class, config.backLeftName.get()),
-                map.get(DcMotorEx.class, config.backRightName.get())
+        motors = new CachingDcMotorEx[]{
+                map.get(CachingDcMotorEx.class, config.frontLeftName.get()),
+                map.get(CachingDcMotorEx.class, config.frontRightName.get()),
+                map.get(CachingDcMotorEx.class, config.backLeftName.get()),
+                map.get(CachingDcMotorEx.class, config.backRightName.get())
         };
 
         motors[FL].setDirection(config.frontLeftDirection.get());

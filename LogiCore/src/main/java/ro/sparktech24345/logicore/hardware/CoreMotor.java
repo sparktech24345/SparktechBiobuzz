@@ -148,7 +148,7 @@ public class CoreMotor<T extends BaseStateSet<Double>> implements CoreModule, Ha
 
     public void writeCore() {
         if (!ticker.shouldTick()) return;
-        CoreOpMode.getInstance().setMotorPower(name, motor.getDcMotorEx(), wantedPower);
+        CoreOpMode.getInstance().setMotorPower(name, motor, wantedPower);
     }
 
     public T getStates() {

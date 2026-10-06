@@ -2,7 +2,6 @@ package ro.sparktech24345.logicore.core;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.photon.PhotonCore;
 
@@ -13,11 +12,13 @@ import dev.anygeneric.blazeftc.AcceleratedMotor;
 import dev.anygeneric.blazeftc.BlazeDummyPlug;
 import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.anygeneric.blazeftc.DummyPlugOpMode;
+import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import ro.sparktech24345.logicore.commands.BaseCommand;
 import ro.sparktech24345.logicore.config.ConfigMap;
 import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.config.IsHardware;
 import ro.sparktech24345.logicore.hardware.CoreVoltageSensor;
+import ro.sparktech24345.logicore.hardware.MotorPowerRemember;
 import ro.sparktech24345.logicore.pedro.CoreFollower;
 import ro.sparktech24345.logicore.pedro.FollowerConstants;
 import ro.sparktech24345.logicore.utils.Benchmark;
@@ -144,18 +145,25 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             Benchmark.of("independent modules output", independentModules::writeCore);
         });
     }
-
-    public void setMotorPower(String name, DcMotorEx motor, double power) {
+    private final MotorPowerRemember motorPowerRemember = new MotorPowerRemember(0.05); // caching for Blaze also vibecoded
+    public void setMotorPower(String name, CachingDcMotorEx motor, double power) {
         CoreOpMode.getInstance().getCoreTelemetry().addData("Motor: " + motor, motor.getDirection());
-        if (config.performanceEngine.get() == PerformanceEngine.BLAZE && !config.accelerateMotors.get())     {
-            int id = ConfigMap.get(name).getId();
-            int port = motor.getPortNumber();
-            double direction = motor.getDirection() == DcMotorEx.Direction.REVERSE ? -1 : 1;
-            BlazeFTC.setMotorPower(id, port,
-                    MathUtils.clip(power, -1, 1) * direction
-            );
+
+        if (config.performanceEngine.get() == PerformanceEngine.BLAZE && !config.accelerateMotors.get()) {
+            int id = ConfigMap.get(name).getId(); // 173 for Control Hub, 2 for Expansion Hub
+            int port = motor.getPortNumber();     // 0 to 3
+            double direction = motor.getDirection() == CachingDcMotorEx.Direction.REVERSE ? -1 : 1;
+
+            double targetPower = MathUtils.clip(power, -1, 1) * direction;
+
+            // Check if power changed before sending command over BlazeFTC
+            if (motorPowerRemember.shouldWrite(id, port, targetPower)) {
+                BlazeFTC.setMotorPower(id, port, targetPower);
+                motorPowerRemember.update(id, port, targetPower);
+            }
+
         } else {
-            double direction = motor.getDirection() == DcMotorEx.Direction.REVERSE ? -1 : 1;
+            double direction = motor.getDirection() == CachingDcMotorEx.Direction.REVERSE ? -1 : 1;
             CoreOpMode.getInstance().getCoreTelemetry().addData("Dir: " + motor.getDirection(), direction);
             motor.setPower(MathUtils.clip(power, -1, 1)); // reverse should by itself make it negative
         }
@@ -203,6 +211,8 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         if (executor == null || executor.isShutdown()) {
             executor = Executors.newSingleThreadExecutor();
         }
+
+        motorPowerRemember.reset(); // for motor stuff
 
 
         internalModules.install(gamepad, 1);
@@ -296,7 +306,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 
     public void runOpModeInBlaze() {
         try {
-            long targetMs = 10;
+            long targetMs = 0;
             System.out.println("Entering OpMode");
             initCore();
             while (opModeInInit()) maintainLoopRate(targetMs, this::init_loopCore);
@@ -327,6 +337,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     private void maintainLoopRate(long targetMs, Runnable block) {
         long startTime = System.currentTimeMillis();
         block.run();
+        if (targetMs <= 0) return;
         long elapsedTime = System.currentTimeMillis() - startTime;
         long sleepTime = targetMs - elapsedTime;
 

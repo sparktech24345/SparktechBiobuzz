@@ -14,8 +14,8 @@ import ro.sparktech24345.logicore.hardware.CoreMotor;
 public class Configs {
         public static final OpModeConfig teleopCfg = new OpModeConfig((opModeConfig) -> {
             opModeConfig.type.set(OpModeType.TELEOP);
-            opModeConfig.performanceEngine.set(PerformanceEngine.PHOTON);
-            opModeConfig.useFollower.set(true);
+            opModeConfig.performanceEngine.set(PerformanceEngine.BLAZE);
+            opModeConfig.useFollower.set(false);
             opModeConfig.useDriveTrain.set(true);
             opModeConfig.accelerateMotors.set(true);
             opModeConfig.followerConstants.set(new ConstantsDecode());
