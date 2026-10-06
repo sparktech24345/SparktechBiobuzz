@@ -8,6 +8,7 @@ import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.states.BaseStateSet;
 import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.states.HasStates;
+import ro.sparktech24345.logicore.utils.MathUtils;
 import ro.sparktech24345.logicore.utils.TickInterval;
 
 /**
@@ -33,7 +34,7 @@ public class CoreServo<T extends BaseStateSet<Double>> implements CoreModule, Ha
 
     /** Set servo to a specific state position */
     public void setState(CoreState<Double> state) {
-        this.realPosition = state.getValue();
+        this.setPosition(state.getValue());
         this.currState = state;
     }
 
@@ -56,11 +57,14 @@ public class CoreServo<T extends BaseStateSet<Double>> implements CoreModule, Ha
 
     /** Position range in user-defined units (auto-normalized if invalid) */
     private Pair<Double, Double> range = new Pair<>(0.0, 1.0);
-        public void setRange(Pair<Double, Double> value) {
-            if (value.second.equals(value.first)) throw new IllegalArgumentException("Range [" + value.first + ", " + value.second + "] is invalid.");
-            range = value.second < value.first ? new Pair<>(value.second, value.first) : value;
-            rangeDif = range.second - range.first;
-        }
+    public void setRange(Pair<Double, Double> value) {
+        if (value.second.equals(value.first)) throw new IllegalArgumentException("Range [" + value.first + ", " + value.second + "] is invalid.");
+        range = value.second < value.first ? new Pair<>(value.second, value.first) : value;
+        rangeDif = range.second - range.first;
+    }
+    public void setRange(double lo, double hi) {
+        setRange(new Pair<>(lo, hi));
+    }
 
     /** Calculated range difference for position mapping */
     private double rangeDif = 1;
@@ -75,6 +79,6 @@ public class CoreServo<T extends BaseStateSet<Double>> implements CoreModule, Ha
     /** Update servo position every loop cycle */
     public void writeCore() {
         if (!ticker.shouldTick()) return;
-        servo.setPosition(realPosition);
+        servo.setPosition(MathUtils.clip(realPosition, 0, 1));
     }
 }
