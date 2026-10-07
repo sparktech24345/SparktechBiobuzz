@@ -36,6 +36,7 @@ public class IntakeComponent implements CoreModule, HasStates<Pair<CoreState<Dou
         instance.install(Hubs.CONTROL, intakeMotor, 1);
         instance.install(Hubs.CONTROL, coupleServo, 1);
         instance.execute(command(states.DEFAULT)); // nu e necesar dar recomand sa puneti asta
+        coupleServo.setRange(new Pair<>(0.0, 1.0));
 
 
 //        exampleMotor.loop((motor, target) -> target); // loop este functia f(x) : (-inf, +inf) -> [-1, 1]

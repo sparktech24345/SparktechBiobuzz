@@ -23,7 +23,7 @@ public class GlobalStorage {
     public static String angleServoName = "angleservo";
     public static String ballsBlockingServo = "ballsblockingservo";
     public static String flowerCollectingServo = "flowercollectingservo";
-    public static String coupleServo = "coupleservo";
+    public static String coupleServo = "coupleServo";
 
 
     // ===================== OLD DECODE NAMES ==========================

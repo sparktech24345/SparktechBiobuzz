@@ -8,6 +8,6 @@ public class LeftGateServoStateSet extends BaseStateSet<Double> {
         super();
     }
 
-    public final CoreState<Double> OPEN = state(.0, "L_OPEN");
-    public final CoreState<Double> CLOSED = state(1.0, "L_CLOSED");
+    public final CoreState<Double> OPEN = state(0.65, "L_OPEN");
+    public final CoreState<Double> CLOSED = state(0.38, "L_CLOSED");
 }

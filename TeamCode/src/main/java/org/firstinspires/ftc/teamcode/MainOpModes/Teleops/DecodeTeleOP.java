@@ -2,7 +2,10 @@ package org.firstinspires.ftc.teamcode.MainOpModes.Teleops;
 
 import static ro.sparktech24345.logicore.commands.BaseCommand.command;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
+
 import org.firstinspires.ftc.teamcode.Components.Configs;
 import org.firstinspires.ftc.teamcode.Components.ConfigsDecode;
 import org.firstinspires.ftc.teamcode.Components.GateComponent;
@@ -15,8 +18,12 @@ import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.events.EventBus;
 import ro.sparktech24345.logicore.utils.PreciseTimer;
 
+@Config
 @TeleOp(name = "Decode TeleOP", group = "Testing")
 public class DecodeTeleOP extends CoreOpMode {
+
+    public static boolean useEvents = false;
+
     public DecodeTeleOP() {
         super(ConfigsDecode.decodeCfg);
     }
@@ -42,25 +49,53 @@ public class DecodeTeleOP extends CoreOpMode {
 //        install(Hubs.INDEPENDENT, turret, 1);
         install(Hubs.INDEPENDENT, intake, 1);
         install(Hubs.INDEPENDENT, gates, 1);
-
-
+        queue(new StateCommand<>(gates.getStates().DEFAULT));
         EventBus.subscribe(CoreButton.ButtonPressEvent.class, (event) -> {
-            CoreButton buttonInstance = event.getButton();
-            Button buttonEnum = buttonInstance.getButton();
-            switch (buttonEnum) {
-                case CROSS1: coreTelemetry.tel.addData("Hello, world!", timer.getTime().getMs()); break;
-                case TRIANGLE1: coreTelemetry.tel.addLine("Secret message!"); break;
-                default: System.out.println("got button " + buttonEnum); break;
+            if (useEvents) {
+                switch (event.getButton().getButton()) {
+                    case CIRCLE1:
+                        queue(new StateCommand<>(intake.getStates().DEFAULT),
+                                new StateCommand<>(gates.getStates().CLOSED));
+                        break;
+                    case SQUARE1:
+                        queue(new StateCommand<>(intake.getStates().FULL_COUPLED),
+                                new StateCommand<>(gates.getStates().LEFT_OPEN));
+                        break;
+                }
             }
         });
+
+
+
+//        EventBus.subscribe(CoreButton.ButtonPressEvent.class, (event) -> {
+//            CoreButton buttonInstance = event.getButton();
+//            Button buttonEnum = buttonInstance.getButton();
+//            switch (buttonEnum) {
+//                case CROSS1: coreTelemetry.tel.addData("Hello, world!", timer.getTime().getMs()); break;
+//                case TRIANGLE1: coreTelemetry.tel.addLine("Secret message!"); break;
+//                default: System.out.println("got button " + buttonEnum); break;
+//            }
+//        });
     }
 
     public void onStart() {
 //        queue(new StateCommand(exampleMotor.getStates().FULL)); // seteaza target-ul motorului la FULL aka 1 in cazul asta
-        queue(command(intake.getStates().HALF_DECOUPLED));
+//        queue(new StateCommand<>(intake.getStates().FULL_DECOUPLED));
+
     }
 
     public void onLoop() {
+        if (!useEvents) {
+            if (gamepad.get(Button.CIRCLE1).isToggled()) {
+                queue(new StateCommand<>(intake.getStates().DEFAULT),
+                        new StateCommand<>(gates.getStates().CLOSED));
+            }
+            if (gamepad.get(Button.RIGHT_BUMPER1).isToggled()) {
+                queue(new StateCommand<>(intake.getStates().FULL_COUPLED),
+                        new StateCommand<>(gates.getStates().LEFT_OPEN));
+            }
+        }
+
         telemetry.addData("Loop Time",
             "%.3f ms", // formatul doar zice ca floatul sa fie afisat cu 3 zecimale
             timer.getTime().getMs());
