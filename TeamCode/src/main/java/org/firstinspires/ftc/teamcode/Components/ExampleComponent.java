@@ -1,29 +1,25 @@
 package org.firstinspires.ftc.teamcode.Components;
 
+import static org.firstinspires.ftc.teamcode.Components.Configs.exampleMotor;
 import static ro.sparktech24345.logicore.commands.BaseCommand.command;
 
+import com.pedropathing.controllers.PIDController;
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
 
 import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
-import ro.sparktech24345.logicore.hardware.Controllers.VPIDController;
 import ro.sparktech24345.logicore.hardware.CoreMotor;
 import ro.sparktech24345.logicore.hardware.CoreServo;
 import ro.sparktech24345.logicore.states.BaseStateSet;
 
-public class TurretComponent implements CoreModule {
-    public VPIDController vpidController = new VPIDController(0,0,0,0,0);
-    public TurretComponent setConstants(double p, double i, double d, double f, double s) {
-        vpidController.setConstants(p,i,d,f,s);
-        return this;
-    }
+public class ExampleComponent implements CoreModule {
 
     public static final CoreMotor<BaseStateSet<Double>> rightOuttakeMotor =
             new CoreMotor<>(GlobalStorage.rightOuttakeMotorName, new BaseStateSet<>());
                 // BaseStateSet e placeholderul default pentru o clasa de state-uri
-    public static final CoreMotor<BaseStateSet<Double>> leftOuttakeMotor =
-                        new CoreMotor<>(GlobalStorage.leftOuttakeMotorName, new BaseStateSet<>());
+    public static final CoreMotor<BaseStateSet<Double>> leftIntakeMotor =
+                        new CoreMotor<>(GlobalStorage.leftIntakeMotorName, new BaseStateSet<>());
                 // BaseStateSet e placeholderul default pentru o clasa de state-uri
     public static final CoreServo<BaseStateSet<Double>> angleServo =
                         new CoreServo<>(GlobalStorage.angleServoName, new BaseStateSet<>());
@@ -35,31 +31,23 @@ public class TurretComponent implements CoreModule {
     public void initCore() {
         instance = CoreOpMode.getInstance();
         instance.install(Hubs.CONTROL, rightOuttakeMotor, 1.0); // priority reprezinta nr de ordine in care se da update la componenta
-        instance.install(Hubs.CONTROL, leftOuttakeMotor, 1.0); // priority reprezinta nr de ordine in care se da update la componenta
+        instance.install(Hubs.CONTROL, leftIntakeMotor, 1.0); // priority reprezinta nr de ordine in care se da update la componenta
         instance.install(Hubs.CONTROL, angleServo, 2.0); // un priority mai mare inseamna ca se da update mai devreme la componenta
                                                     // ex: servo isi ia update mai devreme decat motorul pentru ca 2 > 1
-
-        angleServo.initCore(); /// might be already initialized from the installation
-        rightOuttakeMotor.initCore();
-        leftOuttakeMotor.initCore();
-
-        rightOuttakeMotor.encoded(true);
-        leftOuttakeMotor.encoded(false);
-
-
-        rightOuttakeMotor.setLoop((motor, target) -> vpidController.calculate(target, rightOuttakeMotor.getVelocity()));
-        }
+        exampleMotor.setLoop((motor, target) -> target); // loop este functia f(x) : (-inf, +inf) -> [-1, 1]
+                                                   // adica ia un target si returneaza puterea data la motor ca sa se ajunga la target
+                                                   // in cazul asta parametrul _ reprezinta instanta motorului, iar functia returneaza acelasi target dat, adica practic functia este f(x) = x
+    }
 
     /** Called every loop cycle - update module logic */
     public void loopCore() {
-        rightOuttakeMotor.loopCore();
-        leftOuttakeMotor.setWantedPower(rightOuttakeMotor.getWantedPower());
-        leftOuttakeMotor.loopCore();
-        angleServo.loopCore();
+        PIDController pid = new PIDController(.0, .0, .0);
+        if (System.currentTimeMillis() % 2 == 0) {
+            exampleMotor.setLoop((motor, target) -> pid.calculate(target, 0.0));
+        } else {
+            exampleMotor.setLoop((motor, target) -> target * 0.5);
+        }
 
-
-//        instance.queue(command(exampleMotor.getStates().DEFAULT)); // asa setezi target-ul motorului care ti se da in functia de customLoop
+        instance.queue(command(exampleMotor.getStates().DEFAULT)); // asa setezi target-ul motorului care ti se da in functia de customLoop
     }
-
-    /// now how tf do I make some states for this turret to be on / off in an easy built in way
 }

@@ -4,21 +4,16 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import dev.anygeneric.blazeftc.AcceleratedMotor;
-import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import kotlin.jvm.functions.Function2;
-import ro.sparktech24345.logicore.config.ConfigMap;
 import ro.sparktech24345.logicore.config.HardwareConfig;
 import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.config.IsHardware;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
-import ro.sparktech24345.logicore.core.PerformanceEngine;
 import ro.sparktech24345.logicore.states.BaseStateSet;
 import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.states.HasStates;
-import ro.sparktech24345.logicore.utils.MathUtils;
 import ro.sparktech24345.logicore.utils.TickInterval;
 
 /**
@@ -107,7 +102,7 @@ public class CoreMotor<T extends BaseStateSet<Double>> implements CoreModule, Ha
 
     /** Custom control loop function for advanced motor control */
     private Function2<CoreMotor<T>, Double, Double> customLoop = DEFAULT_LOOP;
-    public void loop(Function2<CoreMotor<T>, Double, Double> fn) {
+    public void setLoop(Function2<CoreMotor<T>, Double, Double> fn) {
         this.customLoop = fn;
     }
     public void resetLoop() {
@@ -146,13 +141,24 @@ public class CoreMotor<T extends BaseStateSet<Double>> implements CoreModule, Ha
         wantedPower = customLoop.invoke(this, target);
     }
 
+    public void setWantedPower(double pow){ // an alternative to using the invoke loop from above
+        this.wantedPower = pow;
+    }
+    public double getWantedPower(){
+        return wantedPower;
+    }
+
     public void writeCore() {
         if (!ticker.shouldTick()) return;
-        CoreOpMode.getInstance().setMotorPower(name, motor.getDcMotorEx(), wantedPower);
+        CoreOpMode.getInstance().setMotorPower(name, motor, wantedPower);
     }
 
     public T getStates() {
         return states;
+    }
+    public double getVelocity(){
+        if(motor == null) return 0;
+        return motor.getVelocity();
     }
 
     private CoreState<Double> currState = null;
