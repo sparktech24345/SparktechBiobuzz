@@ -13,8 +13,10 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.robot.Robot;
 
 import org.firstinspires.ftc.teamcode.Components.ConfigsDecode;
+import org.firstinspires.ftc.teamcode.Components.DecodeTurretComponent;
 import org.firstinspires.ftc.teamcode.Components.GateComponent;
 import org.firstinspires.ftc.teamcode.Components.IntakeComponent;
 import org.firstinspires.ftc.teamcode.Helpers.Color;
@@ -64,6 +66,7 @@ public class DecodeTeleOP extends CoreOpMode {
 //    public final TurretComponent turret = new TurretComponent();
     public final IntakeComponent intake = new IntakeComponent();
     public final GateComponent gates = new GateComponent();
+    public final DecodeTurretComponent decodeTurret = new DecodeTurretComponent();
 
     public void onInit() {
         timer.start(); // doar reseteaza timerul
@@ -71,21 +74,26 @@ public class DecodeTeleOP extends CoreOpMode {
 //        install(Hubs.INDEPENDENT, turret, 1);
         install(Hubs.INDEPENDENT, intake, 1);
         install(Hubs.INDEPENDENT, gates, 1);
+        install(Hubs.INDEPENDENT, decodeTurret, 2);
         queue(new StateCommand<>(gates.getStates().DEFAULT));
-        EventBus.subscribe(CoreButton.ButtonPressEvent.class, (event) -> {
-            if (useEvents) {
-                switch (event.getButton().getButton()) {
-                    case CIRCLE1:
-                        queue(new StateCommand<>(intake.getStates().DEFAULT),
-                                new StateCommand<>(gates.getStates().CLOSED));
-                        break;
-                    case SQUARE1:
-                        queue(new StateCommand<>(intake.getStates().FULL_COUPLED),
-                                new StateCommand<>(gates.getStates().LEFT_OPEN));
-                        break;
+        if(useEvents) {
+            EventBus.subscribe(CoreButton.ButtonPressEvent.class, (event) -> {
+                if (useEvents) {
+                    switch (event.getButton().getButton()) {
+                        case CIRCLE1:
+                            queue(new StateCommand<>(intake.getStates().DEFAULT),
+                                    new StateCommand<>(gates.getStates().CLOSED));
+                            break;
+                        case SQUARE1:
+                            queue(new StateCommand<>(intake.getStates().FULL_COUPLED),
+                                    new StateCommand<>(gates.getStates().LEFT_OPEN));
+                            break;
+                        case LEFT_TRIGGER1:
+                            decodeTurret.aimAt(130, 53);
+                    }
                 }
-            }
-        });
+            });
+        }
 
 
 
@@ -98,17 +106,17 @@ public class DecodeTeleOP extends CoreOpMode {
 //                default: System.out.println("got button " + buttonEnum); break;
 //            }
 //        });
+
     }
 
     public void onStart() {
 //        queue(new StateCommand(exampleMotor.getStates().FULL)); // seteaza target-ul motorului la FULL aka 1 in cazul asta
 //        queue(new StateCommand<>(intake.getStates().FULL_DECOUPLED));
-
     }
 
     public void onLoop() {
 //        handleColors();
-        useCamera();
+//        useCamera();
         if (!useEvents) {
             if (gamepad.get(Button.CIRCLE1).isToggled()) {
                 queue(new StateCommand<>(intake.getStates().DEFAULT),
@@ -117,6 +125,9 @@ public class DecodeTeleOP extends CoreOpMode {
             if (gamepad.get(Button.RIGHT_BUMPER1).isToggled()) {
                 queue(new StateCommand<>(intake.getStates().FULL_COUPLED),
                         new StateCommand<>(gates.getStates().LEFT_OPEN));
+            }
+            if(gamepad.get(Button.RIGHT_TRIGGER1).isToggled()) {
+                decodeTurret.aimAt(130,53);
             }
             if(gamepad.get(Button.LEFT_BUMPER1).isToggled()){ // transfer button???
                 if(colorCase == GetColorCase.NOSORT){
@@ -205,6 +216,12 @@ public class DecodeTeleOP extends CoreOpMode {
         telemetry.addData("Loop Time",
             "%.3f ms", // formatul doar zice ca floatul sa fie afisat cu 3 zecimale
             timer.getTime().getMs());
+
+        telemetry.addData("Robot Pose", CoreOpMode.getInstance().getFollower().pose());
+        telemetry.addData("Robot X", CoreOpMode.getInstance().getFollower().pose().x());
+        telemetry.addData("Robot Y", CoreOpMode.getInstance().getFollower().pose().y());
+        telemetry.addData("Robot heading", CoreOpMode.getInstance().getFollower().pose().heading());
+
     }
 //    protected void handleColors(){
 //        NormalizedRGBA leftSensorColors = leftColorSensor.readCore();
