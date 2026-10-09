@@ -28,6 +28,7 @@ public class DecodeTurretComponent implements CoreModule {
     public static double kP = 0.035, kI = 0, kD = 0.0015;
     /** Power per (deg/s) of robot angular velocity, fights heading lag. */
     public static double kV = 0.003;
+    public static double kF = 0;
     /** Static friction kick, applied while error is above {@link #staticKickThreshold}. */
     public static double kStatic = 0.06;
     public static double staticKickThreshold = 0.25;
@@ -42,11 +43,12 @@ public class DecodeTurretComponent implements CoreModule {
     public static boolean invertAim = true;
     /** Camera offset from the robot center, forward along the heading (old: x_offset). */
     public static double cameraForwardOffset = 8;
+    public static double error;
 
     public final CoreMotor<BaseStateSet<Double>> rotationMotor =
             new CoreMotor<>(GlobalStorage.turretRotationMotorName, new BaseStateSet<>());
 
-    private final PIDController pid = new PIDController(kP, kI, kD);
+    private final PIDController pid = new PIDController(kP, kI, kD, kF);
     private CoreOpMode instance = null;
 
     private double targetAngle = 0;
@@ -83,15 +85,14 @@ public class DecodeTurretComponent implements CoreModule {
     // ================== Control ==================
 
     private double calculatePower() {
-        pid.setConstants(kP, kI, kD);
+        pid.setPIDFConstants(kP, kI, kD, kF);
 
         double target = clamp(targetAngle, MIN_ANGLE, MAX_ANGLE);
         double current = getAngle();
-        double error = target - current;
+        error = target - current;
 
-        double output = pid.calculate(target, current) + robotAngularVel * kV;
-        if (Math.abs(error) > staticKickThreshold) output += Math.signum(output) * kStatic;
-
+        double output = pid.calculate(target, current);
+//        if (Math.abs(error) > staticKickThreshold) output += Math.signum(output) * kStatic;
         return clamp(output, -1, 1);
     }
 

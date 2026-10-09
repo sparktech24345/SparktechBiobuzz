@@ -8,6 +8,6 @@ public class LeftTiltServoStateSet extends BaseStateSet<Double> {
         super();
     }
 
-    public final CoreState<Double> ACTIVE = state(0.42, "L_ACTIVE");
-    public final CoreState<Double> INACTIVE = state(0.68, "L_INACTIVE");
+    public final CoreState<Double> ACTIVE = state(0.2, "L_ACTIVE");
+    public final CoreState<Double> INACTIVE = state(.85, "L_INACTIVE");
 }

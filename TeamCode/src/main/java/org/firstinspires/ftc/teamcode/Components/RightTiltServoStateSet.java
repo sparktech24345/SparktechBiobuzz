@@ -6,6 +6,6 @@ public class RightTiltServoStateSet extends BaseStateSet<Double>{
         super();
     }
 
-    public final CoreState<Double> ACTIVE = state(0.42, "R_ACTIVE");
-    public final CoreState<Double> INACTIVE = state(0.68, "R_INACTIVE");
+    public final CoreState<Double> ACTIVE = state(0.2, "R_ACTIVE");
+    public final CoreState<Double> INACTIVE = state(0.85, "R_INACTIVE");
 }
