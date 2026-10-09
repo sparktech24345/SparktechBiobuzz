@@ -2,9 +2,6 @@ package org.firstinspires.ftc.teamcode.MainOpModes.Teleops;
 
 
 import static org.firstinspires.ftc.teamcode.Helpers.GlobalStorage.camId;
-import static org.firstinspires.ftc.teamcode.Helpers.GlobalStorage.colorSensorLeftName;
-import static org.firstinspires.ftc.teamcode.Helpers.GlobalStorage.colorSensorRightName;
-import static org.firstinspires.ftc.teamcode.Helpers.GlobalStorage.limelightName;
 import static ro.sparktech24345.logicore.commands.BaseCommand.command;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -31,9 +28,12 @@ import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.events.EventBus;
 import ro.sparktech24345.logicore.hardware.CoreColorSensor;
 import ro.sparktech24345.logicore.hardware.CoreLimelight;
+import ro.sparktech24345.logicore.hardware.CoreServo;
 import ro.sparktech24345.logicore.utils.PreciseTimer;
 import ro.sparktech24345.logicore.utils.TimeSpec;
+
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
+import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage.*;
 
 import java.util.List;
 
@@ -42,9 +42,9 @@ import java.util.List;
 public class DecodeTeleOP extends CoreOpMode {
 
     public static boolean useEvents = false;
-    public final CoreColorSensor leftColorSensor = new CoreColorSensor(colorSensorLeftName);
-    public final CoreColorSensor rightColorSensor = new CoreColorSensor(colorSensorRightName);
-    public final CoreLimelight limelight = new CoreLimelight(limelightName);
+    public final CoreColorSensor leftColorSensor = new CoreColorSensor(GlobalStorage.colorSensorLeftName);
+    public final CoreColorSensor rightColorSensor = new CoreColorSensor(GlobalStorage.colorSensorRightName);
+    public final CoreLimelight limelight = new CoreLimelight(GlobalStorage.limelightName);
     protected GetColorCase colorCase;
     protected Color ballColorRight;
     protected Color ballColorLeft;
@@ -115,7 +115,7 @@ public class DecodeTeleOP extends CoreOpMode {
     }
 
     public void onLoop() {
-//        handleColors();
+        handleColors();
 //        useCamera();
         if (!useEvents) {
             if (gamepad.get(Button.CIRCLE1).isToggled()) {
@@ -223,17 +223,14 @@ public class DecodeTeleOP extends CoreOpMode {
         telemetry.addData("Robot heading", CoreOpMode.getInstance().getFollower().pose().heading());
 
     }
-//    protected void handleColors(){
-//        NormalizedRGBA leftSensorColors = leftColorSensor.readCore();
-//        NormalizedRGBA rightSensorColors = rightColorSensor.readCore();
-//        ballColorLeft = Color.getColorForStorage(leftSensorColors, true);
-//        ballColorRight = Color.getColorForStorage(rightSensorColors);
-//    }
+    protected void handleColors(){
+        ballColorLeft = Color.getColorForStorage(leftColorSensor.r(),leftColorSensor.g(),leftColorSensor.b());
+        ballColorRight = Color.getColorForStorage(rightColorSensor.r(),rightColorSensor.g(),rightColorSensor.b());
+    }
 public void useCamera(){
     limelight.setPipeline(2);
 
     LLResult llResult = limelight.getResult();
-    llResult.getFiducialResults();
     List<LLResultTypes.FiducialResult> fiducialResults = llResult.getFiducialResults();
     for (LLResultTypes.FiducialResult fr : fiducialResults) {
         camId = fr.getFiducialId();

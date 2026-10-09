@@ -1,6 +1,10 @@
 package ro.sparktech24345.logicore.hardware;
 
+import android.graphics.Color;
+
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.util.Range;
 
 import org.opencv.core.Mat;
 
