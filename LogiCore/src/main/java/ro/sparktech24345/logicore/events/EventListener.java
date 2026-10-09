@@ -6,6 +6,8 @@ package ro.sparktech24345.logicore.events;
  */
 @FunctionalInterface
 public interface EventListener<T extends Event> {
-    /** Called when an event of type T is emitted */
+    /**
+     * Called when an event of type T is emitted
+     */
     void onEvent(T event);
 }

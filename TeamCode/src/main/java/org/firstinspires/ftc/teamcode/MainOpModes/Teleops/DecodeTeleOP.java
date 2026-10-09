@@ -5,7 +5,6 @@ import static org.firstinspires.ftc.teamcode.Helpers.GlobalStorage.camId;
 import static org.firstinspires.ftc.teamcode.Helpers.GlobalStorage.colorSensorLeftName;
 import static org.firstinspires.ftc.teamcode.Helpers.GlobalStorage.colorSensorRightName;
 import static org.firstinspires.ftc.teamcode.Helpers.GlobalStorage.limelightName;
-import static ro.sparktech24345.logicore.commands.BaseCommand.command;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -21,9 +20,10 @@ import org.firstinspires.ftc.teamcode.Components.IntakeStateSet;
 import org.firstinspires.ftc.teamcode.Helpers.Color;
 import org.firstinspires.ftc.teamcode.Helpers.GetColorCase;
 
+import java.util.List;
+
 import ro.sparktech24345.logicore.commands.DelayCommand;
 import ro.sparktech24345.logicore.commands.StateCommand;
-import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.Button;
 import ro.sparktech24345.logicore.core.CoreButton;
 import ro.sparktech24345.logicore.core.CoreOpMode;
@@ -32,8 +32,6 @@ import ro.sparktech24345.logicore.hardware.CoreColorSensor;
 import ro.sparktech24345.logicore.hardware.CoreLimelight;
 import ro.sparktech24345.logicore.utils.PreciseTimer;
 import ro.sparktech24345.logicore.utils.TimeSpec;
-
-import java.util.List;
 
 @Config
 @TeleOp(name = "Decode TeleOP", group = "Testing")
@@ -46,6 +44,7 @@ public class DecodeTeleOP extends CoreOpMode {
     protected GetColorCase colorCase;
     protected Color ballColorRight;
     protected Color ballColorLeft;
+
     public DecodeTeleOP() {
         super(ConfigsDecode.decodeCfg);
     }
@@ -59,7 +58,7 @@ public class DecodeTeleOP extends CoreOpMode {
 //    }
 
     public final PreciseTimer timer = new PreciseTimer();
-//    public final CoreServo<BaseStateSet> servo =
+    //    public final CoreServo<BaseStateSet> servo =
 //            new CoreServo<>("sample_servo", new BaseStateSet());
 //    public final TurretComponent turret = new TurretComponent();
     public final IntakeComponent intake = new IntakeComponent();
@@ -74,7 +73,7 @@ public class DecodeTeleOP extends CoreOpMode {
         install(gates, 1);
         install(decodeTurret, 2);
         queue(new StateCommand<>(gates, GateStateSet.DEFAULT));
-        if(useEvents) {
+        if (useEvents) {
             EventBus.subscribe(CoreButton.ButtonPressEvent.class, (event) -> {
                 if (useEvents) {
                     switch (event.button().button()) {
@@ -92,7 +91,6 @@ public class DecodeTeleOP extends CoreOpMode {
                 }
             });
         }
-
 
 
 //        EventBus.subscribe(CoreButton.ButtonPressEvent.class, (event) -> {
@@ -124,20 +122,20 @@ public class DecodeTeleOP extends CoreOpMode {
                 queue(new StateCommand<>(intake, IntakeStateSet.FULL_COUPLED),
                         new StateCommand<>(gates, GateStateSet.LEFT_OPEN));
             }
-            if(gamepad.get(Button.RIGHT_TRIGGER1).toggled()) {
-                decodeTurret.aimAt(130,53);
+            if (gamepad.get(Button.RIGHT_TRIGGER1).toggled()) {
+                decodeTurret.aimAt(130, 53);
             }
-            if(gamepad.get(Button.LEFT_BUMPER1).toggled()){ // transfer button???
-                if(colorCase == GetColorCase.NOSORT){
+            if (gamepad.get(Button.LEFT_BUMPER1).toggled()) { // transfer button???
+                if (colorCase == GetColorCase.NOSORT) {
                     queue(new StateCommand<>(intake, IntakeStateSet.FULL_COUPLED),
                             new StateCommand<>(gates, GateStateSet.LEFT_OPEN),
                             new DelayCommand(TimeSpec.fromMillis(400)),
                             new StateCommand<>(gates, GateStateSet.CLOSED)
                     );
-                }
-                else {
+                } else {
                     int greenBallPosition;
-                    if (ballColorRight == Color.GREEN) greenBallPosition = 1; // green is on the right
+                    if (ballColorRight == Color.GREEN)
+                        greenBallPosition = 1; // green is on the right
                     else if (ballColorLeft == Color.GREEN)
                         greenBallPosition = 2; // green is on the left
                     else greenBallPosition = 3; // green is on the right
@@ -212,8 +210,8 @@ public class DecodeTeleOP extends CoreOpMode {
         }
 
         telemetry.addData("Loop Time",
-            "%.3f ms", // formatul doar zice ca floatul sa fie afisat cu 3 zecimale
-            timer.time().getMs());
+                "%.3f ms", // formatul doar zice ca floatul sa fie afisat cu 3 zecimale
+                timer.time().getMs());
 
         telemetry.addData("Robot Pose", CoreOpMode.instance().follower().pose());
         telemetry.addData("Robot X", CoreOpMode.instance().follower().pose().x());
@@ -221,23 +219,25 @@ public class DecodeTeleOP extends CoreOpMode {
         telemetry.addData("Robot heading", CoreOpMode.instance().follower().pose().heading());
 
     }
-//    protected void handleColors(){
+
+    //    protected void handleColors(){
 //        NormalizedRGBA leftSensorColors = leftColorSensor.readCore();
 //        NormalizedRGBA rightSensorColors = rightColorSensor.readCore();
 //        ballColorLeft = Color.getColorForStorage(leftSensorColors, true);
 //        ballColorRight = Color.getColorForStorage(rightSensorColors);
 //    }
-public void useCamera() {
-    limelight.pipeline(2);
+    public void useCamera() {
+        limelight.pipeline(2);
 
-    LLResult llResult = limelight.result();
-    List<LLResultTypes.FiducialResult> fiducialResults = llResult.getFiducialResults();
-    for (LLResultTypes.FiducialResult fr : fiducialResults) {
-        camId = fr.getFiducialId();
+        LLResult llResult = limelight.result();
+        List<LLResultTypes.FiducialResult> fiducialResults = llResult.getFiducialResults();
+        for (LLResultTypes.FiducialResult fr : fiducialResults) {
+            camId = fr.getFiducialId();
+        }
+        if (camId < 21 || camId > 23) camId = 23;
+        colorCase = GetColorCase.getCase();
     }
-    if(camId < 21 || camId > 23) camId = 23;
-    colorCase = GetColorCase.getCase();
-}
+
     public void onStop() {
         System.out.println("Stopping OpMode!"); // putem avea si print debugging doar ca e nevoie de un android studio conectat la robot
     }

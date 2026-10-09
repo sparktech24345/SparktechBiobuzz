@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.Components;
 
-import static ro.sparktech24345.logicore.commands.BaseCommand.command;
-
 import android.util.Pair;
 
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
@@ -25,23 +23,30 @@ public class GateComponent implements CoreModule, HasStates<Pair<LeftGateServoSt
     }
 
 
-    /** Called once during OpMode initialization - set up hardware and initial state */
+    /**
+     * Called once during OpMode initialization - set up hardware and initial state
+     */
     public void initCore() {
         instance = CoreOpMode.instance();
         instance.install(leftGateServo, 1);
         instance.install(rightGateServo, 1);
     }
 
-    /** Called every loop cycle - update module logic */
-    public void loopCore() {}
+    /**
+     * Called every loop cycle - update module logic
+     */
+    public void loopCore() {
+    }
 
     private final Class<GateStateSet> states;
+
     @Override
     public Class<GateStateSet> states() {
         return states;
     }
 
     private GateStateSet currState = null;
+
     @Override
     public GateStateSet state() {
         return currState;

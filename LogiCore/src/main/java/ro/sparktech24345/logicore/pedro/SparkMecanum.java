@@ -1,6 +1,7 @@
 package ro.sparktech24345.logicore.pedro;
 
 import android.annotation.SuppressLint;
+
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.drivetrain.Drivetrain;
 import com.pedropathing.revhub.drivetrains.MecanumConfig;
@@ -8,7 +9,9 @@ import com.pedropathing.utils.Utils;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -154,12 +157,13 @@ public class SparkMecanum implements Drivetrain {
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
-        for(DcMotorEx motor : motors) {
+        for (DcMotorEx motor : motors) {
             motor.setZeroPowerBehavior(behavior);
         }
     }
 
-    /** Returns the sum of the four motors current in Amps
+    /**
+     * Returns the sum of the four motors current in Amps
      * This is not bulk cached by the motors so each motor request is a hardware read
      */
     public double currentAmps() {

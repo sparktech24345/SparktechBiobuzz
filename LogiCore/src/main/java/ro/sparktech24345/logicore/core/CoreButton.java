@@ -14,97 +14,170 @@ import ro.sparktech24345.logicore.utils.TimeSpec;
  * Supports both digital buttons and analog axes with configurable detection logic.
  */
 public class CoreButton {
-    public CoreButton() {}
+    public CoreButton() {
+    }
+
     public CoreButton(DoubleSupplier pressedSup) {
         this.pressedSup = pressedSup;
     }
 
     private Button actualButton = Button.NONE;
-    public Button button() { return this.actualButton; }
-    public void button(Button button) { this.actualButton = button; }
+
+    public Button button() {
+        return this.actualButton;
+    }
+
+    public void button(Button button) {
+        this.actualButton = button;
+    }
 
     private DoubleSupplier pressedSup = () -> 0.0;
 
-    /** Event emitted when button is pressed */
+    /**
+     * Event emitted when button is pressed
+     */
     public static class ButtonPressEvent extends Event {
         private final CoreButton button;
-        public CoreButton button() { return button; }
+
+        public CoreButton button() {
+            return button;
+        }
+
         public ButtonPressEvent(CoreButton button) {
             this.button = button;
         }
     }
 
-    /** Event emitted when button is released */
+    /**
+     * Event emitted when button is released
+     */
     public static class ButtonReleaseEvent extends Event {
         private final CoreButton button;
-        public CoreButton button() { return button; }
+
+        public CoreButton button() {
+            return button;
+        }
+
         public ButtonReleaseEvent(CoreButton button) {
             this.button = button;
         }
     }
 
-    /** Event emitted when button toggle state changes */
+    /**
+     * Event emitted when button toggle state changes
+     */
     public static class ButtonToggleEvent extends Event {
         private final CoreButton button;
-        public CoreButton button() { return button; }
+
+        public CoreButton button() {
+            return button;
+        }
 
         private final boolean toggled;
-        public boolean toggled() { return toggled; }
+
+        public boolean toggled() {
+            return toggled;
+        }
+
         public ButtonToggleEvent(CoreButton button, boolean toggleState) {
             this.button = button;
             this.toggled = toggleState;
         }
     }
 
-    /** True while button is currently held down */
+    /**
+     * True while button is currently held down
+     */
     private boolean held = false;
-    public boolean held() { return this.held; }
 
-    /** Custom press detection logic - defaults to edge detection on button press */
+    public boolean held() {
+        return this.held;
+    }
+
+    /**
+     * Custom press detection logic - defaults to edge detection on button press
+     */
 
     private BooleanSupplier wasPressed = () -> MathUtils.eval(pressedSup.getAsDouble()) && !held;
 
-    /** Custom release detection logic - defaults to edge detection on button release */
+    /**
+     * Custom release detection logic - defaults to edge detection on button release
+     */
     private BooleanSupplier wasReleased = () -> !MathUtils.eval(pressedSup.getAsDouble()) && held;
 
-    /** Determines when toggle state changes: on press or on release */
+    /**
+     * Determines when toggle state changes: on press or on release
+     */
     enum ToggleMode {
         ON_PRESS,
         ON_RELEASE
     }
 
     private ToggleMode toggleMode = ToggleMode.ON_PRESS;
-    public void toggleMode(ToggleMode mode) { this.toggleMode = mode; }
 
-    /** True on the frame when button transitions from not pressed to pressed */
+    public void toggleMode(ToggleMode mode) {
+        this.toggleMode = mode;
+    }
+
+    /**
+     * True on the frame when button transitions from not pressed to pressed
+     */
     private boolean pressed = false;
-    public boolean pressed() { return this.pressed; }
 
-    /** True on the frame when button transitions from pressed to not pressed */
+    public boolean pressed() {
+        return this.pressed;
+    }
+
+    /**
+     * True on the frame when button transitions from pressed to not pressed
+     */
     private boolean released = false;
-    public boolean released() { return this.released; }
 
-    /** Current toggle state based on toggleMode */
+    public boolean released() {
+        return this.released;
+    }
+
+    /**
+     * Current toggle state based on toggleMode
+     */
     private boolean toggled = false;
-    public boolean toggled() { return this.toggled; }
 
-    /** Toggle state that changes on press (regardless of toggleMode) */
+    public boolean toggled() {
+        return this.toggled;
+    }
+
+    /**
+     * Toggle state that changes on press (regardless of toggleMode)
+     */
     private boolean toggledOnPress = false;
 
-    /** Toggle state that changes on release (regardless of toggleMode) */
+    /**
+     * Toggle state that changes on release (regardless of toggleMode)
+     */
     private boolean toggledOnRelease = false;
 
-    /** Duration of the most recent button hold */
+    /**
+     * Duration of the most recent button hold
+     */
     private TimeSpec holdTime = new TimeSpec(0);
-    public TimeSpec holdTime() { return this.holdTime; }
+
+    public TimeSpec holdTime() {
+        return this.holdTime;
+    }
+
     private final PreciseTimer heldTimer = new PreciseTimer();
+
     public static CoreButton ofBool(BooleanSupplier isPressed, BooleanSupplier wasPressed, BooleanSupplier wasReleased) {
         CoreButton obj = new CoreButton(() -> MathUtils.eval(isPressed.getAsBoolean()));
         if (wasPressed != null) obj.wasPressed = wasPressed;
         if (wasReleased != null) obj.wasReleased = wasReleased;
         return obj;
     }
-    public static CoreButton ofBool(BooleanSupplier isPressed) { return ofBool(isPressed, null, null); }
+
+    public static CoreButton ofBool(BooleanSupplier isPressed) {
+        return ofBool(isPressed, null, null);
+    }
+
     public static CoreButton ofDouble(DoubleSupplier isPressed, BooleanSupplier wasPressed, BooleanSupplier wasReleased) {
         CoreButton obj = new CoreButton(isPressed);
         if (wasPressed != null) obj.wasPressed = wasPressed;
@@ -112,8 +185,10 @@ public class CoreButton {
         return obj;
     }
 
-    /** Get the raw input value without any processing */
-     double raw() {
+    /**
+     * Get the raw input value without any processing
+     */
+    double raw() {
         return pressedSup.getAsDouble();
     }
 
@@ -138,8 +213,10 @@ public class CoreButton {
         }
         boolean lastToggle = toggled;
         switch (toggleMode) {
-            case ON_PRESS: toggled = toggledOnPress;
-            case ON_RELEASE: toggled = toggledOnRelease;
+            case ON_PRESS:
+                toggled = toggledOnPress;
+            case ON_RELEASE:
+                toggled = toggledOnRelease;
         }
         if (toggled != lastToggle) EventBus.emit(new ButtonToggleEvent(this, toggled));
     }

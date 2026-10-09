@@ -5,5 +5,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public interface FollowerConstants {
     Follower create(HardwareMap map);
-    default double velocityConstraint() { return 4; }
+
+    default double velocityConstraint() {
+        return 4;
+    }
 }

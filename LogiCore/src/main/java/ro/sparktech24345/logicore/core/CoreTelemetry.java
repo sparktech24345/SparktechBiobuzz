@@ -1,10 +1,11 @@
 package ro.sparktech24345.logicore.core;
 
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -21,7 +22,11 @@ import ro.sparktech24345.logicore.utils.TickInterval;
  */
 public class CoreTelemetry implements CoreModule {
     private final MultipleTelemetry tel;
-    public Telemetry telemetry() { return tel; }
+
+    public Telemetry telemetry() {
+        return tel;
+    }
+
     private final TickInterval ticker;
 
     // Buffer thread-safe pentru date, medii și linii

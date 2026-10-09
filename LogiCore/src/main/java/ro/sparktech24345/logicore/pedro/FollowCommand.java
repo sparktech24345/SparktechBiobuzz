@@ -8,7 +8,8 @@ import ro.sparktech24345.logicore.commands.BaseCommand;
 
 public class FollowCommand extends BaseCommand {
     public FollowCommand(CoreFollower<?> follower, Path path, BooleanSupplier finishCond) {
-        super(() -> {});
+        super(() -> {
+        });
         this.onStart = () -> follower.follow(path);
         this.finishCondition = finishCond;
     }

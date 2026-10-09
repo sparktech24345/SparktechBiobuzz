@@ -9,12 +9,18 @@ public enum RightGateServoStateSet implements StateSet<Double> {
 
     private final String name;
     private final double val;
+
     RightGateServoStateSet(String name, double value) {
         this.name = name;
         this.val = value;
     }
 
     @Override
-    public Double value() { return this.val; }
-    public String stateName() { return this.name; }
+    public Double value() {
+        return this.val;
+    }
+
+    public String stateName() {
+        return this.name;
+    }
 }

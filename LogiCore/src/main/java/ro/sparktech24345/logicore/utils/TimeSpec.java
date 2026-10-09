@@ -8,11 +8,13 @@ public class TimeSpec implements Comparable<TimeSpec> {
     public TimeSpec() {
         this(System.nanoTime());
     }
+
     public TimeSpec(double timeNano) {
         this.timeNano = timeNano;
     }
+
     public TimeSpec(long timeNano) {
-        this.timeNano = (double)timeNano;
+        this.timeNano = (double) timeNano;
     }
 
     private final double timeNano;
@@ -26,7 +28,7 @@ public class TimeSpec implements Comparable<TimeSpec> {
     }
 
     public static TimeSpec fromMillis(double timeMillis) {
-        return new TimeSpec((long)Math.floor(timeMillis * 1e6));
+        return new TimeSpec((long) Math.floor(timeMillis * 1e6));
     }
 
     public static TimeSpec fromSeconds(double timeSec) {
@@ -35,20 +37,25 @@ public class TimeSpec implements Comparable<TimeSpec> {
 
     /**
      * Get time value in specified unit.
+     *
      * @param unit Time unit (NANOS, MILLIS, SECONDS)
      * @return Time value in requested unit, or null if unit not supported
      */
     public double get(TimeUnit unit) {
         switch (unit) {
-            case NANOS: return getNs();
-            case MILLIS: return getMs();
-            case SECONDS: return getSec();
-            default: return 0;
+            case NANOS:
+                return getNs();
+            case MILLIS:
+                return getMs();
+            case SECONDS:
+                return getSec();
+            default:
+                return 0;
         }
     }
 
     public double getNs() {
-        return (double)timeNano;
+        return (double) timeNano;
     }
 
     public double getMs() {

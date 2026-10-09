@@ -21,14 +21,15 @@ public class MotorMap {
         double[] pe = {Double.NaN, Double.NaN, Double.NaN, Double.NaN};
         for (int key : powers.keySet()) {
             Object o = powers.get(key);
-            if (o != null) switch(Keys.keyId(key)) {
+            if (o != null) switch (Keys.keyId(key)) {
                 case 2:
                     pe[Keys.keyPort(key)] = (double) o;
                     break;
                 case 173:
                     pc[Keys.keyPort(key)] = (double) o;
                     break;
-                default: break;
+                default:
+                    break;
             }
         }
         BlazeFTC.setMotorPowers(0, pc[0], pc[1], pc[2], pc[3]);

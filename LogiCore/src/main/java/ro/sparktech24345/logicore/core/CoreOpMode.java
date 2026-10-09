@@ -4,8 +4,6 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.seattlesolvers.solverslib.photon.PhotonCore;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,8 +34,14 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     private OpModeConfig config;
-    public OpModeConfig config() { return this.config; }
-    public void config(OpModeConfig config) { this.config = config; }
+
+    public OpModeConfig config() {
+        return this.config;
+    }
+
+    public void config(OpModeConfig config) {
+        this.config = config;
+    }
 
     private final ModuleHandler cHubModules = new ModuleHandler();
     private final ModuleHandler eHubModules = new ModuleHandler();
@@ -46,58 +50,122 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     private final CoreQueuer queuer = new CoreQueuer();
 
 
-        /** Global instance accessor for hardware components that need OpMode context */
+    /**
+     * Global instance accessor for hardware components that need OpMode context
+     */
     private static CoreOpMode instance = null;
-    public static CoreOpMode instance() { return instance; }
 
-    /** Current stage of the OpMode lifecycle */
+    public static CoreOpMode instance() {
+        return instance;
+    }
+
+    /**
+     * Current stage of the OpMode lifecycle
+     */
     protected GameStage stage = GameStage.INIT;
-    public GameStage stage() { return this.stage; }
 
-    /** Telemetry system with update throttling and multi-output support */
+    public GameStage stage() {
+        return this.stage;
+    }
+
+    /**
+     * Telemetry system with update throttling and multi-output support
+     */
     protected CoreTelemetry coreTelemetry;
-    public CoreTelemetry telemetry() { return this.coreTelemetry; }
+
+    public CoreTelemetry telemetry() {
+        return this.coreTelemetry;
+    }
 
     protected final CoreFollower<FollowerConstants> coreFollower;
-    public CoreFollower<FollowerConstants> follower() { return coreFollower; }
+
+    public CoreFollower<FollowerConstants> follower() {
+        return coreFollower;
+    }
+
     protected DriveTrain driveTrain;
-    public DriveTrain driveTrain() { return driveTrain; }
 
-    /** Gamepad input processing with button state tracking */
+    public DriveTrain driveTrain() {
+        return driveTrain;
+    }
+
+    /**
+     * Gamepad input processing with button state tracking
+     */
     protected CoreGamepad gamepad = new CoreGamepad();
-    public CoreGamepad gamepad() { return gamepad; }
+
+    public CoreGamepad gamepad() {
+        return gamepad;
+    }
+
     protected Logger logger;
-    public Logger logger() { return logger; }
 
-    /** Voltage monitoring for battery health tracking */
+    public Logger logger() {
+        return logger;
+    }
+
+    /**
+     * Voltage monitoring for battery health tracking
+     */
     protected CoreVoltageSensor voltageSensor = new CoreVoltageSensor();
-    public CoreVoltageSensor voltageSensor() { return voltageSensor; }
 
-    /** Control Hub and Expansion Hub handlers for bulk reads */
+    public CoreVoltageSensor voltageSensor() {
+        return voltageSensor;
+    }
+
+    /**
+     * Control Hub and Expansion Hub handlers for bulk reads
+     */
     protected CoreHubs hubs = new CoreHubs();
-    public CoreHubs hubs() { return hubs; }
 
-    /** Install a module into the system with priority-based execution order */
+    public CoreHubs hubs() {
+        return hubs;
+    }
+
+    /**
+     * Install a module into the system with priority-based execution order
+     */
     public <T extends CoreModule> T install(T module, double priority) {
         if (module instanceof IsHardware) {
             int k = ((IsHardware) module).key();
             switch (Keys.keyId(k)) {
-                case 2: eHubModules.install(module, priority); break;
-                case 173: cHubModules.install(module, priority); break;
-                default: independentModules.install(module, priority); break;
+                case 2:
+                    eHubModules.install(module, priority);
+                    break;
+                case 173:
+                    cHubModules.install(module, priority);
+                    break;
+                default:
+                    independentModules.install(module, priority);
+                    break;
             }
         } else independentModules.install(module, priority);
         return module;
     }
-    /** Execute a command immediately (bypasses queue) */
-    final public void execute(BaseCommand... commands) { for (BaseCommand cmd : commands) queuer.execute(cmd); }
 
-    /** Queue a command for sequential execution */
-    final public void queue(BaseCommand... commands) { for (BaseCommand cmd : commands) queuer.queue(cmd); }
+    /**
+     * Execute a command immediately (bypasses queue)
+     */
+    final public void execute(BaseCommand... commands) {
+        for (BaseCommand cmd : commands) queuer.execute(cmd);
+    }
 
-    /** Clear all pending and executing commands */
-    final public void clear() { queuer.clear(); }
+    /**
+     * Queue a command for sequential execution
+     */
+    final public void queue(BaseCommand... commands) {
+        for (BaseCommand cmd : commands) queuer.queue(cmd);
+    }
+
+    /**
+     * Clear all pending and executing commands
+     */
+    final public void clear() {
+        queuer.clear();
+    }
+
     public static ExecutorService executor;
+
     public static void schedule(Runnable run) {
         if (run == null) return;
         executor.execute(run);
@@ -116,12 +184,12 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     private void update(Runnable fn) {
         // read control hub motors, exp motors, senzori, processing, write controlhub, motors exp, motors all servos
         if (stage != GameStage.INIT) Benchmark.of("inputs", () -> {
-                internalModules.readCore();
+            internalModules.readCore();
 //                if (config.performanceEngine.get() != PerformanceEngine.BLAZE) {
-                    cHubModules.readCore();
-                    eHubModules.readCore();
+            cHubModules.readCore();
+            eHubModules.readCore();
 //                }
-                independentModules.readCore();
+            independentModules.readCore();
             // end of input stuff
         });
 
@@ -135,27 +203,30 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         });
 
         if (stage != GameStage.INIT) Benchmark.of("outputs", () -> {
-                Benchmark.of("internal modules output", internalModules::writeCore);
-                Benchmark.of("motors and servos output", () -> {
-                    cHubModules.writeCore();
-                    eHubModules.writeCore();
-                    if (config.performanceEngine.get() == PerformanceEngine.BLAZE)
-                        MotorMap.write();
-                });
+            Benchmark.of("internal modules output", internalModules::writeCore);
+            Benchmark.of("motors and servos output", () -> {
+                cHubModules.writeCore();
+                eHubModules.writeCore();
+                if (config.performanceEngine.get() == PerformanceEngine.BLAZE)
+                    MotorMap.write();
+            });
             Benchmark.of("independent modules output", independentModules::writeCore);
         });
     }
+
     public void setMotorPower(DcMotorEx motor, double power) {
         setMotorPower(
                 Keys.key(motor.getController().getConnectionInfo(), motor.getPortNumber()),
                 motor, power);
     }
+
     public void setMotorPower(int key, DcMotorEx motor, double power) {
         if (config.performanceEngine.get() == PerformanceEngine.BLAZE && !config.accelerateMotors.get()) {
             double targetPower = MathUtils.clip(power, -1, 1);
             MotorMap.set(key, targetPower);
             MotorMap.clear();
-        } else motor.setPower(MathUtils.clip(power, -1, 1)); // reverse should by itself make it negative
+        } else
+            motor.setPower(MathUtils.clip(power, -1, 1)); // reverse should by itself make it negative
     }
 
     final public void initCore() {
@@ -173,7 +244,8 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             }
             case BLAZE: {
                 BlazeDummyPlug.initializeBlazeFTC(hardwareMap);
-                if (config.accelerateMotors.get()) BlazeDummyPlug.engageMotorAccel(hardwareMap); // maybe not needed but use getMotor wrapper also
+                if (config.accelerateMotors.get())
+                    BlazeDummyPlug.engageMotorAccel(hardwareMap); // maybe not needed but use getMotor wrapper also
 //                BlazeDummyPlug.engageBulkReadAcceleration(hardwareMap, Hub.CtrlHub, 1, () -> {
 //                    if (stage != GameStage.INIT) cHubModules.readCore();
 //                    System.out.println("Read on control hub" + Hub.CtrlHub);
@@ -233,24 +305,37 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         update(this::onStop);
         EventBus.cleanup();
         // instance = null;
-         executor.shutdownNow();
-         executor = null;
+        executor.shutdownNow();
+        executor = null;
     }
 
-    /** User-defined initialization logic - called once during init stage */
+    /**
+     * User-defined initialization logic - called once during init stage
+     */
     abstract public void onInit();
 
-    /** Optional user logic for init_loop stage - called repeatedly before start */
-    public void onInitLoop() {}
+    /**
+     * Optional user logic for init_loop stage - called repeatedly before start
+     */
+    public void onInitLoop() {
+    }
 
-    /** Optional user logic for start stage - called when transitioning to running */
-    public void onStart() {}
+    /**
+     * Optional user logic for start stage - called when transitioning to running
+     */
+    public void onStart() {
+    }
 
-    /** User-defined main loop logic - called every cycle during running */
+    /**
+     * User-defined main loop logic - called every cycle during running
+     */
     abstract public void onLoop();
 
-    /** Optional user cleanup logic - called when OpMode stops */
-    public void onStop() {}
+    /**
+     * Optional user cleanup logic - called when OpMode stops
+     */
+    public void onStop() {
+    }
 
 
     @Override
@@ -277,14 +362,13 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
                 stopCore();
                 logger.write("Exiting OpMode");
             }
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             logger.write("Error in OpMode!!!");
             logger.write(e.getMessage());
             e.printStackTrace(logger.fd());
             throw e;
         } finally {
-             executor.shutdownNow();
+            executor.shutdownNow();
             instance = null;
         }
     }
@@ -311,7 +395,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             e.printStackTrace(logger.fd());
             throw e;
         } finally {
-             executor.shutdownNow();
+            executor.shutdownNow();
             instance = null;
         }
     }

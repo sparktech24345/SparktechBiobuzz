@@ -1,16 +1,16 @@
 package org.firstinspires.ftc.teamcode.MainOpModes.Teleops;
 
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import org.firstinspires.ftc.teamcode.Components.Configs;
 import static org.firstinspires.ftc.teamcode.Components.Configs.installBot;
 import static ro.sparktech24345.logicore.commands.BaseCommand.command;
 
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.teamcode.Components.Configs;
 import org.firstinspires.ftc.teamcode.Components.EmptyStateSet;
-import org.firstinspires.ftc.teamcode.Components.IntakeMotorStateSet;
 import org.firstinspires.ftc.teamcode.Components.TurretComponent;
 
-import ro.sparktech24345.logicore.core.CoreButton;
 import ro.sparktech24345.logicore.core.Button;
+import ro.sparktech24345.logicore.core.CoreButton;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.events.EventBus;
 import ro.sparktech24345.logicore.hardware.CoreServo;
@@ -33,7 +33,7 @@ public class TestTeleOP extends CoreOpMode {
         install(turret, 1);
 
         installBot(); // will be the function to install the default components of the Biobuzz Robot
-                      // again pls no
+        // again pls no
 
         EventBus.subscribe(CoreButton.ButtonPressEvent.class, (event) -> {
             // eventurile sunt cam niche, nu prea conteaza si nici nu (cred) ca ajuta la looptime-uri
@@ -50,8 +50,8 @@ public class TestTeleOP extends CoreOpMode {
 
     public void onLoop() {
         logger.write("Loop Time",
-            "%.3f ms", // formatul doar zice ca floatul sa fie afisat cu 3 zecimale
-            timer.time().getMs());
+                "%.3f ms", // formatul doar zice ca floatul sa fie afisat cu 3 zecimale
+                timer.time().getMs());
     }
 
     public void onStop() {

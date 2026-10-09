@@ -23,6 +23,7 @@ public class SparkPinpointLocalizer implements Localizer {
         RESET_AND_RECALIBRATE_IMU,
         NONE
     }
+
     private final GoBildaPinpointDriver pinpoint;
     private final DistanceUnit globalDistanceUnit;
 
@@ -32,6 +33,7 @@ public class SparkPinpointLocalizer implements Localizer {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final AtomicBoolean isRunning = new AtomicBoolean(true);
     private final Object pinpointLock = new Object();
+
     public SparkPinpointLocalizer(HardwareMap hardwareMap, PinpointConfig config) {
         this.globalDistanceUnit = config.globalDistanceUnit.get();
 
@@ -50,7 +52,7 @@ public class SparkPinpointLocalizer implements Localizer {
                 config.yPodDirection.get()
         );
 
-        switch (config.resetMode.get()){
+        switch (config.resetMode.get()) {
             case RESET_AND_RECALIBRATE_IMU:
                 resetMode = ResetMode.RESET_AND_RECALIBRATE_IMU;
                 break;

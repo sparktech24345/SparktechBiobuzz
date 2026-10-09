@@ -13,35 +13,57 @@ import ro.sparktech24345.logicore.commands.BaseCommand;
  * - Parallel executor: Commands execute simultaneously
  */
 public class CoreQueuer implements CommandQueuer {
-    /** Sequential command queue - executes one command at a time */
+    /**
+     * Sequential command queue - executes one command at a time
+     */
     private final ArrayDeque<BaseCommand> queuer = new ArrayDeque<>();
 
-    /** Parallel command executor - runs multiple commands simultaneously */
+    /**
+     * Parallel command executor - runs multiple commands simultaneously
+     */
     private final List<BaseCommand> executor = new ArrayList<>();
 
-    /** When true, all command processing is paused */
+    /**
+     * When true, all command processing is paused
+     */
     private boolean pause = false;
 
-    public CoreQueuer() {}
+    public CoreQueuer() {
+    }
 
-    public void pause(boolean p) { this.pause = p; }
-    public boolean pause() { return this.pause; }
+    public void pause(boolean p) {
+        this.pause = p;
+    }
+
+    public boolean pause() {
+        return this.pause;
+    }
 
 
-    /** True if both queues have pending commands */
-    public boolean busy() { return !queuer.isEmpty() && !executor.isEmpty(); }
+    /**
+     * True if both queues have pending commands
+     */
+    public boolean busy() {
+        return !queuer.isEmpty() && !executor.isEmpty();
+    }
 
-    /** Add a command to the sequential queue */
+    /**
+     * Add a command to the sequential queue
+     */
     public void queue(BaseCommand command) {
         queuer.add(command);
     }
 
-    /** Add a command to the parallel executor */
+    /**
+     * Add a command to the parallel executor
+     */
     public void execute(BaseCommand command) {
         executor.add(command);
     }
 
-    /** Clean up and remove all commands from both queues */
+    /**
+     * Clean up and remove all commands from both queues
+     */
     public void clear() {
         for (BaseCommand q : queuer) q.cleanup();
         queuer.clear();
@@ -49,11 +71,19 @@ public class CoreQueuer implements CommandQueuer {
         executor.clear();
     }
 
-    public void initCore() { loopCore(); }
-    public void init_loopCore() { loopCore(); }
-    public void startCore() { loopCore(); }
+    public void initCore() {
+        loopCore();
+    }
 
-    /** 
+    public void init_loopCore() {
+        loopCore();
+    }
+
+    public void startCore() {
+        loopCore();
+    }
+
+    /**
      * Update command execution state.
      * Processes sequential queue (one at a time) and parallel executor (simultaneously).
      * Sequential queue only advances when the current command finishes.

@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.MainOpModes.Teleops;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
 import org.firstinspires.ftc.teamcode.Components.Configs;
+
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.utils.PreciseTimer;
 import ro.sparktech24345.logicore.utils.TimeUnit;
@@ -14,10 +16,12 @@ public class ShowcaseTeleop extends CoreOpMode {
 
 
     private final PreciseTimer mainTimer = new PreciseTimer();
+
     public void onInit() {
     }
 
-    /**TO DO
+    /**
+     * TO DO
      * 1. rezolvat ca nu trimite la dashboard -- check
      * 2. Cu blaze pare ca avem niste probleme -- check
      * 3. OMA GAD KOTLIN E ASA ANNOYING        -- skill issue

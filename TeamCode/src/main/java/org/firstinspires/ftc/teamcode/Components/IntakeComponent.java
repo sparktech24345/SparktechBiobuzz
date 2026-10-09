@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.Components;
 
 import android.util.Pair;
+
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
+
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.hardware.CoreMotor;
@@ -22,7 +24,9 @@ public class IntakeComponent implements CoreModule, HasStates<Pair<IntakeMotorSt
     }
 
 
-    /** Called once during OpMode initialization - set up hardware and initial state */
+    /**
+     * Called once during OpMode initialization - set up hardware and initial state
+     */
     public void initCore() {
         instance = CoreOpMode.instance();
         instance.install(intakeMotor, 1);
@@ -34,7 +38,9 @@ public class IntakeComponent implements CoreModule, HasStates<Pair<IntakeMotorSt
         // in cazul asta parametrul _ reprezinta instanta motorului, iar functia returneaza acelasi target dat, adica practic functia este f(x) = x
     }
 
-    /** Called every loop cycle - update module logic */
+    /**
+     * Called every loop cycle - update module logic
+     */
     public void loopCore() {
 //        PIDController pid = new PIDController(.0, .0, .0);
 //        if (System.currentTimeMillis() % 2 == 0) {
@@ -54,6 +60,7 @@ public class IntakeComponent implements CoreModule, HasStates<Pair<IntakeMotorSt
     }
 
     private IntakeStateSet currState = null;
+
     @Override
     public IntakeStateSet state() {
         return currState;

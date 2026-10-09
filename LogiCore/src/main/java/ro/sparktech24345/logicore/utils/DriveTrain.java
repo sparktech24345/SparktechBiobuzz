@@ -19,6 +19,7 @@ public class DriveTrain implements CoreModule {
     public DriveTrain(Gamepad gp) {
         this(gp, "frontright", "frontleft", "backright", "backleft");
     }
+
     public DriveTrain(Gamepad gp, String rightFront, String leftFront, String rightBack, String leftBack) {
         this.gamepad = gp;
         this.rfn = rightFront;
@@ -26,6 +27,7 @@ public class DriveTrain implements CoreModule {
         this.rbn = rightBack;
         this.lbn = leftBack;
     }
+
     protected final Gamepad gamepad;
     protected final String rbn;
     protected final String lbn;
@@ -37,8 +39,11 @@ public class DriveTrain implements CoreModule {
     protected CachingDcMotorEx rb;
     protected CachingDcMotorEx lb;
 
-    /** Zero power behavior for all motors (applied to all motors when set) */
+    /**
+     * Zero power behavior for all motors (applied to all motors when set)
+     */
     protected DcMotor.ZeroPowerBehavior zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE;
+
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior value) {
         this.zeroPowerBehavior = value;
         rf.setZeroPowerBehavior(value);
@@ -46,19 +51,36 @@ public class DriveTrain implements CoreModule {
         rb.setZeroPowerBehavior(value);
         lb.setZeroPowerBehavior(value);
     }
-    public DcMotor.ZeroPowerBehavior getZeroPowerBehavior() { return this.zeroPowerBehavior; }
 
-    /** Reverse the driving direction (useful for driving from different orientations) */
+    public DcMotor.ZeroPowerBehavior getZeroPowerBehavior() {
+        return this.zeroPowerBehavior;
+    }
+
+    /**
+     * Reverse the driving direction (useful for driving from different orientations)
+     */
     protected boolean directionFlip = false; // ts by default true
-    public void setDirectionFlip(boolean v) { this.directionFlip = v; }
-    public boolean getDirectionFlip() { return this.directionFlip; }
 
-    /** Speed multiplier for fine control (0.0 to 1.0) */
+    public void setDirectionFlip(boolean v) {
+        this.directionFlip = v;
+    }
+
+    public boolean getDirectionFlip() {
+        return this.directionFlip;
+    }
+
+    /**
+     * Speed multiplier for fine control (0.0 to 1.0)
+     */
     public double slowdownMultiplier = 1.0;
+
     public void setSlowdownMultiplier(double value) {
         this.slowdownMultiplier = MathUtils.clip(value, 0.0, 1.0);
     }
-    public double getSlowdownMultiplier() { return this.slowdownMultiplier; }
+
+    public double getSlowdownMultiplier() {
+        return this.slowdownMultiplier;
+    }
 
     public void initCore() {
         HardwareMap map = CoreOpMode.instance().hardwareMap;
@@ -97,9 +119,9 @@ public class DriveTrain implements CoreModule {
         Benchmark.of("drivetrain calc", () -> {
             if (CoreOpMode.instance().config().type.get() == OpModeType.AUTONOMOUS) return;
             double flip = directionFlip ? -1 : 1;
-            double vertical   = - gamepad.left_stick_y * flip;
-            double horizontal = - gamepad.left_stick_x * flip;
-            double pivot      = - gamepad.right_stick_x;
+            double vertical = -gamepad.left_stick_y * flip;
+            double horizontal = -gamepad.left_stick_x * flip;
+            double pivot = -gamepad.right_stick_x;
 
             // Mecanum drive calculations
             lfp = vertical - horizontal - pivot;
@@ -109,10 +131,10 @@ public class DriveTrain implements CoreModule {
 
             // Normalize power to prevent saturation
             double div = MathUtils.max(
-                MathUtils.abs(rfp),
-                MathUtils.abs(rbp),
-                MathUtils.abs(lfp),
-                MathUtils.abs(lbp)
+                    MathUtils.abs(rfp),
+                    MathUtils.abs(rbp),
+                    MathUtils.abs(lfp),
+                    MathUtils.abs(lbp)
             );
 
             if (div > 1.0) {

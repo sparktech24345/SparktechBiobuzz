@@ -10,13 +10,20 @@ public enum CoupleServoStateSet implements StateSet<Double> {
     DECOUPLED("DECOUPLED", 0.25);
 
     private final String name;
+
     @Override
-    public String stateName() { return name; }
+    public String stateName() {
+        return name;
+    }
 
 
     private final double value;
+
     @Override
-    public Double value() { return value; }
+    public Double value() {
+        return value;
+    }
+
     CoupleServoStateSet(String name, double value) {
         this.name = name;
         this.value = value;

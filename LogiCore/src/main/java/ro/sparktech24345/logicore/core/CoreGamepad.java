@@ -1,6 +1,7 @@
 package ro.sparktech24345.logicore.core;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,20 +17,33 @@ public class CoreGamepad implements CoreModule {
      */
 
     private Gamepad g1;
-    public Gamepad gamepad1() { return g1; }
+
+    public Gamepad gamepad1() {
+        return g1;
+    }
+
     private Gamepad g2;
-    public Gamepad gamepad2() { return g2; }
+
+    public Gamepad gamepad2() {
+        return g2;
+    }
 
     public CoreGamepad() {
     }
 
-    /** Access button state using array-like syntax: gamepad[Button.CROSS1] */
-    public CoreButton get(Button button) { return buttons.get(button); }
+    /**
+     * Access button state using array-like syntax: gamepad[Button.CROSS1]
+     */
+    public CoreButton get(Button button) {
+        return buttons.get(button);
+    }
 
     // Java: gamepad.get(Button.CROSS1)
     // Kotlin: gamepad[Button.CROSS1]
 
-    public void loopCore() {}
+    public void loopCore() {
+    }
+
     public void readCore() {
         Benchmark.of("gamepad", () -> {
             if (CoreOpMode.instance().config().performanceEngine.get()
@@ -39,7 +53,9 @@ public class CoreGamepad implements CoreModule {
         });
     }
 
-    /** Complete button mapping for both gamepads with state tracking */
+    /**
+     * Complete button mapping for both gamepads with state tracking
+     */
     private final Map<Button, CoreButton> buttons = new HashMap<>();
 
     public void initCore() {

@@ -20,5 +20,7 @@ public enum LeftGateServoStateSet implements StateSet<Double> {
         return val;
     }
 
-    public String stateName() { return name; }
+    public String stateName() {
+        return name;
+    }
 }

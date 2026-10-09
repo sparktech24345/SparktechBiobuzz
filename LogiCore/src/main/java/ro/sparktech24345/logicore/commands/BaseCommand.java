@@ -21,38 +21,90 @@ public class BaseCommand {
         this.command = command;
     }
 
-    /** Whether the command has started (startCondition met) */
+    /**
+     * Whether the command has started (startCondition met)
+     */
     protected boolean started = false;
-    public boolean started() { return this.started; }
 
-    /** Whether the command has finished (finishCondition met) */
+    public boolean started() {
+        return this.started;
+    }
+
+    /**
+     * Whether the command has finished (finishCondition met)
+     */
     protected boolean finished = false;
-    public boolean finished() { return this.finished; }
 
-    /** Condition that must be true for the command to start */
+    public boolean finished() {
+        return this.finished;
+    }
+
+    /**
+     * Condition that must be true for the command to start
+     */
     protected BooleanSupplier startCondition = () -> true;
-    public void startCondition(BooleanSupplier sup) { this.startCondition = sup; }
-    public BooleanSupplier startCondition() { return this.startCondition; }
 
-    /** Condition that must be true for the command to finish */
+    public void startCondition(BooleanSupplier sup) {
+        this.startCondition = sup;
+    }
+
+    public BooleanSupplier startCondition() {
+        return this.startCondition;
+    }
+
+    /**
+     * Condition that must be true for the command to finish
+     */
     protected BooleanSupplier finishCondition = () -> true;
-    public void finishCondition(BooleanSupplier sup) { this.finishCondition = sup; }
-    public BooleanSupplier finishCondition() { return this.finishCondition; }
 
-    /** Action to execute when the command starts */
-    protected Runnable onStart = () -> {};
-    public void onStart(Runnable fun) { this.onStart = fun; }
-    public Runnable onStart() { return this.onStart; }
+    public void finishCondition(BooleanSupplier sup) {
+        this.finishCondition = sup;
+    }
 
-    /** Action to execute when the command finishes */
-    protected Runnable onFinish = () -> {};
-    public void onFinish(Runnable fun) { this.onFinish = fun; }
-    public Runnable onFinish() { return this.onFinish; }
+    public BooleanSupplier finishCondition() {
+        return this.finishCondition;
+    }
 
-    /** Name for debugging and telemetry purposes */
+    /**
+     * Action to execute when the command starts
+     */
+    protected Runnable onStart = () -> {
+    };
+
+    public void onStart(Runnable fun) {
+        this.onStart = fun;
+    }
+
+    public Runnable onStart() {
+        return this.onStart;
+    }
+
+    /**
+     * Action to execute when the command finishes
+     */
+    protected Runnable onFinish = () -> {
+    };
+
+    public void onFinish(Runnable fun) {
+        this.onFinish = fun;
+    }
+
+    public Runnable onFinish() {
+        return this.onFinish;
+    }
+
+    /**
+     * Name for debugging and telemetry purposes
+     */
     private String name = "GENERIC_ACTION_NAME";
-    public void name(String name) { this.name = name; }
-    public String name() { return this.name; }
+
+    public void name(String name) {
+        this.name = name;
+    }
+
+    public String name() {
+        return this.name;
+    }
 
     /**
      * Update command state machine.
@@ -82,6 +134,7 @@ public class BaseCommand {
     public static <Dt, St extends StateSet<Dt>> StateCommand<Dt, St> command(HasStates<Dt, St> stateComponent, St state) {
         return new StateCommand<>(stateComponent, state);
     }
+
     public static DelayCommand command(TimeSpec t) {
         return new DelayCommand(t);
     }

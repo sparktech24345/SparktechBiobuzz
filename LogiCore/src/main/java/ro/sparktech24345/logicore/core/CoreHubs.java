@@ -1,6 +1,7 @@
 package ro.sparktech24345.logicore.core;
 
 import com.qualcomm.hardware.lynx.LynxModule;
+
 import java.util.List;
 
 public class CoreHubs implements CoreModule {
@@ -11,7 +12,9 @@ public class CoreHubs implements CoreModule {
         for (LynxModule hub : hubs) hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
     }
 
-    public void loopCore() {}
+    public void loopCore() {
+    }
+
     public void readCore() {
         for (LynxModule hub : hubs) hub.clearBulkCache();
     }

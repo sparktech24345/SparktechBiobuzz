@@ -10,7 +10,8 @@ import ro.sparktech24345.logicore.core.CoreQueuer;
  */
 public class SequenceCommand extends BaseCommand {
     public SequenceCommand(Consumer<CoreQueuer> run) {
-        super(() -> {});
+        super(() -> {
+        });
         this.onStart = () -> run.accept(queuer);
         this.command = queuer::loopCore;
         this.finishCondition = () -> !queuer.busy();
