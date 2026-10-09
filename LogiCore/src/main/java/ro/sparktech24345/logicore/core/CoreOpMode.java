@@ -246,11 +246,33 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         update(this::onLoop);
     }
 
+    private boolean isStopped = false;
     final public void stopCore() {
+        if (isStopped) return;
+        isStopped = true;
+        boolean wasInInit = (stage == GameStage.INIT || stage == GameStage.INIT_LOOP);
         stage = GameStage.STOP;
-        update(this::onStop);
-        // instance = null;
-         executor.shutdownNow();
+
+        if (!wasInInit) {
+            try {
+                update(this::onStop);
+            } catch (Exception e) {
+                e.printStackTrace(System.out);
+            }
+        } else {
+            try {
+                onStop();
+            } catch (Exception e) {
+                e.printStackTrace(System.out);
+            }
+        }
+
+        if (config != null && config.performanceEngine.get() == PerformanceEngine.BLAZE) {
+            try {
+                BlazeDummyPlug.closeBlazeFTC();
+            } catch (Exception ignored) {}
+        }
+        executor.shutdownNow();
     }
 
     /** User-defined initialization logic - called once during init stage */
@@ -294,22 +316,38 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             }
         }
         catch (Throwable e) {
-            System.out.println("Error in OpMode!!!");
-            System.out.println(e.getMessage());
-            e.printStackTrace(System.out);
-            throw e;
+            if (isStopRequested() || Thread.currentThread().isInterrupted()) {
+                System.out.println("OpMode stopped gracefully.");
+                stopCore();
+            } else {
+                System.out.println("Error in OpMode!!!");
+                System.out.println(e.getMessage());
+                e.printStackTrace(System.out);
+                stopCore();
+                throw e;
+            }
         } finally {
-             executor.shutdownNow();
+            stopCore();
+            executor.shutdownNow();
             instance = null;
         }
     }
 
+    long targetMs = 5; // 5ms
     public void runOpModeInBlaze() {
         try {
-            long targetMs = 0;
             System.out.println("Entering OpMode");
             initCore();
-            while (opModeInInit()) maintainLoopRate(targetMs, this::init_loopCore);
+            while (opModeInInit()) {
+                if (isStopRequested()) break;
+                maintainLoopRate(targetMs, this::init_loopCore);
+            }
+
+            if (isStopRequested()) {
+                stopCore();
+                return;
+            }
+
             waitForStart();
 
             if (opModeIsActive()) {
@@ -321,12 +359,19 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             stopCore();
             System.out.println("Exiting OpMode");
         } catch (Throwable e) {
-            System.out.println("Error in OpMode!!!");
-            System.out.println(e.getMessage());
-            e.printStackTrace(System.out);
-            throw e;
+            if (isStopRequested() || Thread.currentThread().isInterrupted()) {
+                System.out.println("OpMode stopped gracefully.");
+                stopCore();
+            } else {
+                System.out.println("Error in OpMode!!!");
+                System.out.println(e.getMessage());
+                e.printStackTrace(System.out);
+                stopCore();
+                throw e;
+            }
         } finally {
-             executor.shutdownNow();
+            stopCore();
+            executor.shutdownNow();
             instance = null;
         }
     }
@@ -341,10 +386,12 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         long elapsedTime = System.currentTimeMillis() - startTime;
         long sleepTime = targetMs - elapsedTime;
 
-        if (sleepTime > 0) {
+        if (sleepTime > 0 && !isStopped) {
             try {
                 Thread.sleep(sleepTime);
             } catch (InterruptedException e) {
+                isStopped = true;
+                Thread.currentThread().interrupt();
                 System.out.println(e.getMessage());
                 e.printStackTrace(System.out);
             }

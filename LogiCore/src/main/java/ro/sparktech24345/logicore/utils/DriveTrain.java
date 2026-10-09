@@ -134,10 +134,11 @@ public class DriveTrain implements CoreModule {
     }
 
     public void writePowers() {
-        System.out.println("Has power in rf:" + rfp);
-        System.out.println("Has power in rb:" + rbp);
-        System.out.println("Has power in lb:" + lbp);
-        System.out.println("Has power in lf:" + lfp);
+        System.out.printf(
+            "x=%.3f y=%.3f turn=%.3f powers=[%.3f, %.3f, %.3f, %.3f]%n",
+            gamepad.left_stick_x, gamepad.left_stick_y, gamepad.right_stick_x,
+            rfp, lfp, lbp, rbp
+        );
     }
 
     public void writeCore() {
@@ -150,10 +151,17 @@ public class DriveTrain implements CoreModule {
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor lf", lf.portNumber)
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
 
-            CoreOpMode.getInstance().setMotorPower(rfn, rf, rfp);
-            CoreOpMode.getInstance().setMotorPower(rbn, rb, rbp);
-            CoreOpMode.getInstance().setMotorPower(lbn, lb, lbp);
-            CoreOpMode.getInstance().setMotorPower(lfn, lf, lfp);
+            if(CoreOpMode.getInstance().getConfig().performanceEngine.get() == PerformanceEngine.BLAZE) {
+                BlazeFTC.setMotorPowers(0, rfp, lfp, lbp, rbp); // 0 for control hub
+            }
+            else {
+
+                CoreOpMode.getInstance().setMotorPower(rfn, rf, rfp);
+                CoreOpMode.getInstance().setMotorPower(rbn, rb, rbp);
+                CoreOpMode.getInstance().setMotorPower(lbn, lb, lbp);
+                CoreOpMode.getInstance().setMotorPower(lfn, lf, lfp);
+            }
+
         });
     }
 }

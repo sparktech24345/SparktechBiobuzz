@@ -46,6 +46,7 @@ public class CoreTelemetry implements CoreModule {
      */
     public void addData(String key, Object value) {
         dataBuffer.put(key, value);
+        System.out.println(key + value);
     }
 
     /**
@@ -66,6 +67,7 @@ public class CoreTelemetry implements CoreModule {
      */
     public void addLine(String line) {
         lineBuffer.add(line);
+        System.out.println(line);
     }
 
     public TickInterval getTicker() {
