@@ -164,7 +164,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         queuer.clear();
     }
 
-    public static ExecutorService executor;
+    public static ExecutorService executor = null;
 
     public static void schedule(Runnable run) {
         if (run == null) return;
@@ -231,6 +231,9 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 
     final public void initCore() {
         instance = this;
+        if (executor == null || executor.isShutdown()) {
+            executor = Executors.newSingleThreadExecutor();
+        }
         // ====== GAMEPAD + TELEMETRY SETUP =======
         // executor = Executors.newSingleThreadExecutor();
 
@@ -265,9 +268,6 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         }
 
         // init stuff
-        if (executor == null || executor.isShutdown()) {
-            executor = Executors.newSingleThreadExecutor();
-        }
 
         internalModules.install(gamepad, 1);
         if (config.useFollower.get()) internalModules.install(coreFollower, 1);
@@ -308,21 +308,18 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         stage = GameStage.STOP;
         update(this::onStop);
         EventBus.cleanup();
-        // instance = null;
-        executor.shutdownNow();
-        executor = null;
 
         if (!wasInInit) {
             try {
                 update(this::onStop);
             } catch (Exception e) {
-                e.printStackTrace(System.out);
+                e.printStackTrace(logger.fd());
             }
         } else {
             try {
                 onStop();
             } catch (Exception e) {
-                e.printStackTrace(System.out);
+                e.printStackTrace(logger.fd());
             }
         }
 
@@ -332,6 +329,8 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             } catch (Exception ignored) {}
         }
         executor.shutdownNow();
+        executor = null;
+        instance = null;
     }
 
     /**
@@ -390,24 +389,19 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         }
         catch (Throwable e) {
             if (isStopRequested() || Thread.currentThread().isInterrupted()) {
-                System.out.println("OpMode stopped gracefully.");
+                logger.write("OpMode stopped gracefully.");
                 stopCore();
             } else {
-                System.out.println("Error in OpMode!!!");
-                System.out.println(e.getMessage());
-                e.printStackTrace(System.out);
+                logger.write("Error in OpMode!!!");
+                logger.write(e.getMessage());
+                e.printStackTrace(logger.fd());
                 stopCore();
                 throw e;
             }
-        } catch (Throwable e) {
-            logger.write("Error in OpMode!!!");
-            logger.write(e.getMessage());
-            e.printStackTrace(logger.fd());
-            throw e;
         } finally {
-            executor.shutdownNow();
             stopCore();
             executor.shutdownNow();
+            executor = null;
             instance = null;
         }
     }
@@ -415,14 +409,12 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     long targetMs = 5; // 5ms
     public void runOpModeInBlaze() {
         try {
-            long targetMs = 0;
             logger.write("Entering OpMode");
-            System.out.println("Entering OpMode");
             initCore();
             while (opModeInInit()) {
                 if (isStopRequested()) break;
                 maintainLoopRate(targetMs, this::init_loopCore);
-            }
+            } // could the maintainLoopRate cause issues down the line? or does it get interrupted when stop is requested?
 
             if (isStopRequested()) {
                 stopCore();
@@ -440,24 +432,20 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             stopCore();
             logger.write("Exiting OpMode");
         } catch (Throwable e) {
-            logger.write("Error in OpMode!!!");
-            logger.write(e.getMessage());
-            e.printStackTrace(logger.fd());
-            throw e;
             if (isStopRequested() || Thread.currentThread().isInterrupted()) {
-                System.out.println("OpMode stopped gracefully.");
+                logger.write("OpMode stopped gracefully.");
                 stopCore();
             } else {
-                System.out.println("Error in OpMode!!!");
-                System.out.println(e.getMessage());
-                e.printStackTrace(System.out);
+                logger.write("Error in OpMode!!!");
+                logger.write(e.getMessage());
+                e.printStackTrace(logger.fd());
                 stopCore();
                 throw e;
             }
         } finally {
-            executor.shutdownNow();
             stopCore();
             executor.shutdownNow();
+            executor = null;
             instance = null;
         }
     }
@@ -478,8 +466,6 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             } catch (InterruptedException e) {
                 isStopped = true;
                 Thread.currentThread().interrupt();
-                System.out.println(e.getMessage());
-                e.printStackTrace(System.out);
                 logger.write(e.getMessage());
                 e.printStackTrace(logger.fd());
             }

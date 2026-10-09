@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Components.Configs;
 import org.firstinspires.ftc.teamcode.Components.EmptyStateSet;
-import org.firstinspires.ftc.teamcode.Components.TurretComponent;
 
 import ro.sparktech24345.logicore.core.Button;
 import ro.sparktech24345.logicore.core.CoreButton;
@@ -25,12 +24,10 @@ public class TestTeleOP extends CoreOpMode {
     public final PreciseTimer timer = new PreciseTimer();
     public final CoreServo<EmptyStateSet> servo =
             new CoreServo<>("sample_servo", EmptyStateSet.ZERO);
-    public final TurretComponent turret = new TurretComponent();
 
     public void onInit() {
         timer.start(); // doar reseteaza timerul
         install(servo, 1);
-        install(turret, 1);
 
         installBot(); // will be the function to install the default components of the Biobuzz Robot
         // again pls no
