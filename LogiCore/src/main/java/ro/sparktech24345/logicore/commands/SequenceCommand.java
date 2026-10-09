@@ -13,7 +13,7 @@ public class SequenceCommand extends BaseCommand {
         super(() -> {});
         this.onStart = () -> run.accept(queuer);
         this.command = queuer::loopCore;
-        this.finishCondition = () -> !queuer.isBusy();
+        this.finishCondition = () -> !queuer.busy();
         this.onFinish = queuer::clear;
     }
 

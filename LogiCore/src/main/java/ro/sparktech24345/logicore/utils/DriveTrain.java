@@ -6,17 +6,10 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import java.io.Writer;
-
-import dev.anygeneric.blazeftc.AcceleratedMotor;
-import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
-import ro.sparktech24345.logicore.config.ConfigMap;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
-import ro.sparktech24345.logicore.core.OpModeConfig;
 import ro.sparktech24345.logicore.core.OpModeType;
-import ro.sparktech24345.logicore.core.PerformanceEngine;
 
 /**
  * Mecanum drive train implementation with gamepad control.
@@ -68,7 +61,7 @@ public class DriveTrain implements CoreModule {
     public double getSlowdownMultiplier() { return this.slowdownMultiplier; }
 
     public void initCore() {
-        HardwareMap map = CoreOpMode.getInstance().hardwareMap;
+        HardwareMap map = CoreOpMode.instance().hardwareMap;
         DcMotorEx rfm = map.get(DcMotorEx.class, rfn);
         DcMotorEx lfm = map.get(DcMotorEx.class, lfn);
         DcMotorEx rbm = map.get(DcMotorEx.class, rbn);
@@ -102,18 +95,17 @@ public class DriveTrain implements CoreModule {
      */
     public void loopCore() {
         Benchmark.of("drivetrain calc", () -> {
-            if (CoreOpMode.getInstance().getConfig().type.get() == OpModeType.AUTONOMOUS) return;
+            if (CoreOpMode.instance().config().type.get() == OpModeType.AUTONOMOUS) return;
             double flip = directionFlip ? -1 : 1;
             double vertical   = - gamepad.left_stick_y * flip;
-            double horizontal = - gamepad.left_stick_x * flip; // dont judge my minuses
+            double horizontal = - gamepad.left_stick_x * flip;
             double pivot      = - gamepad.right_stick_x;
 
             // Mecanum drive calculations
             lfp = vertical - horizontal - pivot;
-            rfp = vertical + horizontal + pivot; // dont mi d the minuses
+            rfp = vertical + horizontal + pivot;
             lbp = vertical + horizontal - pivot;
             rbp = vertical - horizontal + pivot;
-            // BE WARNED PEDRO ALSO INITS THIS so for example if you set reversed or not Pedro Overrides
 
             // Normalize power to prevent saturation
             double div = MathUtils.max(
@@ -142,7 +134,7 @@ public class DriveTrain implements CoreModule {
 
     public void writeCore() {
         Benchmark.of("drivetrain", () -> {
-            if (CoreOpMode.getInstance().getConfig().type.get() == OpModeType.AUTONOMOUS) return;
+            if (CoreOpMode.instance().config().type.get() == OpModeType.AUTONOMOUS) return;
             // Apply slowdown multiplier and set motor powers
 
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor rf", rf.portNumber)
@@ -150,10 +142,10 @@ public class DriveTrain implements CoreModule {
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor lf", lf.portNumber)
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
 
-            CoreOpMode.getInstance().setMotorPower(rfn, rf, rfp);
-            CoreOpMode.getInstance().setMotorPower(rbn, rb, rbp);
-            CoreOpMode.getInstance().setMotorPower(lbn, lb, lbp);
-            CoreOpMode.getInstance().setMotorPower(lfn, lf, lfp);
+            CoreOpMode.instance().setMotorPower(rf, rfp);
+            CoreOpMode.instance().setMotorPower(rb, rbp);
+            CoreOpMode.instance().setMotorPower(lb, lbp);
+            CoreOpMode.instance().setMotorPower(lf, lfp);
         });
     }
 }

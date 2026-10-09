@@ -2,8 +2,6 @@ package ro.sparktech24345.logicore.hardware;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
 
-import org.opencv.core.Mat;
-
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.utils.MathUtils;
@@ -27,7 +25,7 @@ public class CoreColorSensor implements CoreModule {
 
     private ColorSensor sensor;
     private final TickInterval ticker;
-    public TickInterval getTicker() { return this.ticker; }
+    public TickInterval ticker() { return this.ticker; }
     private volatile int color = 0;
     public int color() { return color; }
 
@@ -61,7 +59,7 @@ public class CoreColorSensor implements CoreModule {
 
 
     public void initCore() {
-        sensor = CoreOpMode.getInstance().hardwareMap.get(ColorSensor.class, name);
+        sensor = CoreOpMode.instance().hardwareMap.get(ColorSensor.class, name);
     }
 
     public void loopCore() {}
@@ -78,9 +76,9 @@ public class CoreColorSensor implements CoreModule {
             r = (color >> 16) & 0xFF;
             g = (color >> 8) & 0xFF;
             b = color & 0xFF;
-            double rp = r / 255.0;
-            double gp = g / 255.0;
-            double bp = b / 255.0;
+            double rp = r * inverse;
+            double gp = g * inverse;
+            double bp = b * inverse;
             double max = MathUtils.max(rp, gp, bp);
             double min = MathUtils.min(rp, gp, bp);
             double delta = max - min;
@@ -92,4 +90,5 @@ public class CoreColorSensor implements CoreModule {
             else h = 60.0 * (((rp - gp) / delta) + 4.0);
         });
     }
+    private static final double inverse = 1.0 / 255.0;
 }

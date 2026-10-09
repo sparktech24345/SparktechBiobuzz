@@ -29,7 +29,7 @@ public class CoreQueuer implements CommandQueuer {
 
 
     /** True if both queues have pending commands */
-    public boolean isBusy() { return !queuer.isEmpty() && !executor.isEmpty(); }
+    public boolean busy() { return !queuer.isEmpty() && !executor.isEmpty(); }
 
     /** Add a command to the sequential queue */
     public void queue(BaseCommand command) {
@@ -66,7 +66,7 @@ public class CoreQueuer implements CommandQueuer {
         while (iter.hasNext()) {
             BaseCommand command = iter.next();
             command.update();
-            if (command.hasFinished()) {
+            if (command.finished()) {
                 command.cleanup();
                 iter.remove();
             } else break; // Wait for current command to finish
@@ -77,7 +77,7 @@ public class CoreQueuer implements CommandQueuer {
         while (it.hasNext()) {
             BaseCommand command = it.next();
             command.update();
-            if (command.hasFinished()) {
+            if (command.finished()) {
                 command.cleanup();
                 it.remove();
             }

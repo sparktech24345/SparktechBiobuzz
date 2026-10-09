@@ -1,21 +1,14 @@
 package org.firstinspires.ftc.teamcode.Components;
 
-import static ro.sparktech24345.logicore.commands.BaseCommand.command;
-
 import android.util.Pair;
-
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
-
-import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.hardware.CoreMotor;
 import ro.sparktech24345.logicore.hardware.CoreServo;
-import ro.sparktech24345.logicore.states.BaseStateSet;
-import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.states.HasStates;
 
-public class IntakeComponent implements CoreModule, HasStates<Pair<CoreState<Double>, CoreState<Double>>, IntakeStateSet> {
+public class IntakeComponent implements CoreModule, HasStates<Pair<IntakeMotorStateSet, CoupleServoStateSet>, IntakeStateSet> {
 
 
     public final CoreServo<CoupleServoStateSet> coupleServo;
@@ -23,20 +16,17 @@ public class IntakeComponent implements CoreModule, HasStates<Pair<CoreState<Dou
     private CoreOpMode instance = null;
 
     public IntakeComponent() {
-        intakeMotor = new CoreMotor<>(GlobalStorage.intakeMotorName, new IntakeMotorStateSet());
-        coupleServo = new CoreServo<>(GlobalStorage.coupleServo, new CoupleServoStateSet());
-        this.states = new IntakeStateSet(intakeMotor.getStates(), coupleServo.getStates());
-        states.own(this);
+        intakeMotor = new CoreMotor<>(GlobalStorage.intakeMotorName, IntakeMotorStateSet.ZERO);
+        coupleServo = new CoreServo<>(GlobalStorage.coupleServo, CoupleServoStateSet.COUPLED);
+        this.states = IntakeStateSet.class;
     }
 
 
     /** Called once during OpMode initialization - set up hardware and initial state */
     public void initCore() {
-        instance = CoreOpMode.getInstance();
-        instance.install(Hubs.CONTROL, intakeMotor, 1);
-        instance.install(Hubs.CONTROL, coupleServo, 1);
-        instance.execute(command(states.DEFAULT)); // nu e necesar dar recomand sa puneti asta
-        coupleServo.setRange(new Pair<>(0.0, 1.0));
+        instance = CoreOpMode.instance();
+        instance.install(intakeMotor, 1);
+        instance.install(coupleServo, 1);
 
 
 //        exampleMotor.loop((motor, target) -> target); // loop este functia f(x) : (-inf, +inf) -> [-1, 1]
@@ -56,25 +46,23 @@ public class IntakeComponent implements CoreModule, HasStates<Pair<CoreState<Dou
 //        instance.queue(new StateCommand(exampleMotor.getStates().ZERO)); // asa setezi target-ul motorului care ti se da in functia de customLoop
     }
 
-    private final IntakeStateSet states;
+    private final Class<IntakeStateSet> states;
 
     @Override
-    public IntakeStateSet getStates() {
+    public Class<IntakeStateSet> states() {
         return states;
     }
 
-    private CoreState<Pair<CoreState<Double>, CoreState<Double>>> currState = null;
+    private IntakeStateSet currState = null;
     @Override
-    public CoreState<Pair<CoreState<Double>, CoreState<Double>>> currentState() {
+    public IntakeStateSet state() {
         return currState;
     }
 
     @Override
-    public void setState(CoreState<Pair<CoreState<Double>, CoreState<Double>>> state) {
-        CoreState<Double> fv = state.getValue().first;
-        CoreState<Double> sv = state.getValue().second;
-        fv.getOwner().setState(fv);
-        sv.getOwner().setState(sv);
+    public void state(IntakeStateSet state) {
+        intakeMotor.state(state.value().first);
+        coupleServo.state(state.value().second);
         currState = state;
     }
 }

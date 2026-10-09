@@ -3,15 +3,11 @@ package org.firstinspires.ftc.teamcode.Components;
 import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
-
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
-
-import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.hardware.CoreMotor;
 import ro.sparktech24345.logicore.hardware.Controllers.PIDController;
-import ro.sparktech24345.logicore.states.BaseStateSet;
 
 /**
  * Turret rotation: PD position control with a feedforward on the robot's angular velocity,
@@ -43,8 +39,8 @@ public class DecodeTurretComponent implements CoreModule {
     /** Camera offset from the robot center, forward along the heading (old: x_offset). */
     public static double cameraForwardOffset = 8;
 
-    public final CoreMotor<BaseStateSet<Double>> rotationMotor =
-            new CoreMotor<>(GlobalStorage.turretRotationMotorName, new BaseStateSet<>());
+    public final CoreMotor<EmptyStateSet> rotationMotor =
+            new CoreMotor<>(GlobalStorage.turretRotationMotorName, EmptyStateSet.ZERO);
 
     private final PIDController pid = new PIDController(kP, kI, kD);
     private CoreOpMode instance = null;
@@ -62,22 +58,22 @@ public class DecodeTurretComponent implements CoreModule {
 
     /** Called once during OpMode initialization - set up hardware and initial state */
     public void initCore() {
-        instance = CoreOpMode.getInstance();
-        instance.install(Hubs.CONTROL, rotationMotor, 1);
+        instance = CoreOpMode.instance();
+        instance.install(rotationMotor, 1);
         rotationMotor.encoded(true);
         rotationMotor.zeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     /** Called every loop cycle - update module logic */
     public void loopCore() {
-        updateRobotPose(instance.getFollower().pose());
+        updateRobotPose(instance.follower().pose());
 
         if (!enabled) {
-            rotationMotor.setWantedPower(0);
+            rotationMotor.motorPower(0);
             return;
         }
         if (autoAim) targetAngle = calculateAimAngle(aimX, aimY, lookaheadSeconds);
-        rotationMotor.setWantedPower(calculatePower());
+        rotationMotor.motorPower(calculatePower());
     }
 
     // ================== Control ==================

@@ -20,15 +20,15 @@ public class CoreButton {
     }
 
     private Button actualButton = Button.NONE;
-    public Button getButton() { return this.actualButton; }
-    public void setButton(Button button) { this.actualButton = button; }
+    public Button button() { return this.actualButton; }
+    public void button(Button button) { this.actualButton = button; }
 
     private DoubleSupplier pressedSup = () -> 0.0;
 
     /** Event emitted when button is pressed */
     public static class ButtonPressEvent extends Event {
         private final CoreButton button;
-        public CoreButton getButton() { return button; }
+        public CoreButton button() { return button; }
         public ButtonPressEvent(CoreButton button) {
             this.button = button;
         }
@@ -37,7 +37,7 @@ public class CoreButton {
     /** Event emitted when button is released */
     public static class ButtonReleaseEvent extends Event {
         private final CoreButton button;
-        public CoreButton getButton() { return button; }
+        public CoreButton button() { return button; }
         public ButtonReleaseEvent(CoreButton button) {
             this.button = button;
         }
@@ -46,10 +46,10 @@ public class CoreButton {
     /** Event emitted when button toggle state changes */
     public static class ButtonToggleEvent extends Event {
         private final CoreButton button;
-        public CoreButton getButton() { return button; }
+        public CoreButton button() { return button; }
 
         private final boolean toggled;
-        public boolean getToggled() { return toggled; }
+        public boolean toggled() { return toggled; }
         public ButtonToggleEvent(CoreButton button, boolean toggleState) {
             this.button = button;
             this.toggled = toggleState;
@@ -58,7 +58,7 @@ public class CoreButton {
 
     /** True while button is currently held down */
     private boolean held = false;
-    public boolean isHeld() { return this.held; }
+    public boolean held() { return this.held; }
 
     /** Custom press detection logic - defaults to edge detection on button press */
 
@@ -74,19 +74,19 @@ public class CoreButton {
     }
 
     private ToggleMode toggleMode = ToggleMode.ON_PRESS;
-    public void setToggleMode(ToggleMode mode) { this.toggleMode = mode; }
+    public void toggleMode(ToggleMode mode) { this.toggleMode = mode; }
 
     /** True on the frame when button transitions from not pressed to pressed */
     private boolean pressed = false;
-    public boolean isPressed() { return this.pressed; }
+    public boolean pressed() { return this.pressed; }
 
     /** True on the frame when button transitions from pressed to not pressed */
     private boolean released = false;
-    public boolean isReleased() { return this.released; }
+    public boolean released() { return this.released; }
 
     /** Current toggle state based on toggleMode */
     private boolean toggled = false;
-    public boolean isToggled() { return this.toggled; }
+    public boolean toggled() { return this.toggled; }
 
     /** Toggle state that changes on press (regardless of toggleMode) */
     private boolean toggledOnPress = false;
@@ -96,7 +96,7 @@ public class CoreButton {
 
     /** Duration of the most recent button hold */
     private TimeSpec holdTime = new TimeSpec(0);
-    public TimeSpec getHoldTime() { return this.holdTime; }
+    public TimeSpec holdTime() { return this.holdTime; }
     private final PreciseTimer heldTimer = new PreciseTimer();
     public static CoreButton ofBool(BooleanSupplier isPressed, BooleanSupplier wasPressed, BooleanSupplier wasReleased) {
         CoreButton obj = new CoreButton(() -> MathUtils.eval(isPressed.getAsBoolean()));
@@ -133,7 +133,7 @@ public class CoreButton {
         }
         if (released) {
             EventBus.emit(new ButtonReleaseEvent(this));
-            this.holdTime = heldTimer.getTime();
+            this.holdTime = heldTimer.time();
             toggledOnRelease = !toggledOnRelease;
         }
         boolean lastToggle = toggled;

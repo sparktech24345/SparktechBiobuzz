@@ -5,9 +5,8 @@ import com.acmerobotics.dashboard.config.Config;
 import ro.sparktech24345.logicore.states.StateSet;
 
 @Config
-public enum CoupleServoStateSet implements StateSet<Double> {
-    COUPLED("COUPLED", 0.14),
-    DECOUPLED("DECOUPLED", 0.25);
+public enum EmptyStateSet implements StateSet<Double> {
+    ZERO("ZERO", 0.0);
 
     private final String name;
     @Override
@@ -17,7 +16,7 @@ public enum CoupleServoStateSet implements StateSet<Double> {
     private final double value;
     @Override
     public Double value() { return value; }
-    CoupleServoStateSet(String name, double value) {
+    EmptyStateSet(String name, double value) {
         this.name = name;
         this.value = value;
     }

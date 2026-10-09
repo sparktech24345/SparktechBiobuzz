@@ -37,12 +37,12 @@ public class CoreFollower<T extends FollowerConstants> implements CoreModule {
     public int pathIndex() { return follower.pathIndex(); }
     public Pose closestPose() { return follower.closestPose(); }
     public Follower.Mode mode() { return follower.mode(); }
-    public double velocityConstraint() { return constants.getVelocityConstraint(); }
+    public double velocityConstraint() { return constants.velocityConstraint(); }
     public boolean stationaryFinish() { return !follower.isBusy(); }
     public boolean inertialFinish() { return follower.atParametricEnd(); }
 
     public boolean lenientFinish() { return Math.abs(follower.tangentialVelocity()) < velocityConstraint() && distanceToEnd() < 4; }
-    public void setManualDrive(double vertical, double horizontal, double pivot) {
+    public void manualDrive(double vertical, double horizontal, double pivot) {
         follower.manual(vertical, horizontal, pivot);
     }
 
@@ -53,7 +53,7 @@ public class CoreFollower<T extends FollowerConstants> implements CoreModule {
     public void interrupt() { follower.stop(); }
 
     public void initCore() {
-        follower = constants.create(CoreOpMode.getInstance().hardwareMap);
+        follower = constants.create(CoreOpMode.instance().hardwareMap);
         follower.setPose(startPose == null ? PoseStorage.lastPose : startPose);
         this.writeCore();
     }

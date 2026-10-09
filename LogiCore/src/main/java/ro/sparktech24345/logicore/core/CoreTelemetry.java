@@ -21,6 +21,7 @@ import ro.sparktech24345.logicore.utils.TickInterval;
  */
 public class CoreTelemetry implements CoreModule {
     private final MultipleTelemetry tel;
+    public Telemetry telemetry() { return tel; }
     private final TickInterval ticker;
 
     // Buffer thread-safe pentru date, medii și linii

@@ -4,8 +4,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 import ro.sparktech24345.logicore.core.CoreQueuer;
-import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.states.HasStates;
+import ro.sparktech24345.logicore.states.StateSet;
 import ro.sparktech24345.logicore.utils.TimeSpec;
 
 /**
@@ -23,36 +23,36 @@ public class BaseCommand {
 
     /** Whether the command has started (startCondition met) */
     protected boolean started = false;
-    public boolean hasStarted() { return this.started; }
+    public boolean started() { return this.started; }
 
     /** Whether the command has finished (finishCondition met) */
     protected boolean finished = false;
-    public boolean hasFinished() { return this.finished; }
+    public boolean finished() { return this.finished; }
 
     /** Condition that must be true for the command to start */
     protected BooleanSupplier startCondition = () -> true;
-    public void setStartCondition(BooleanSupplier sup) { this.startCondition = sup; }
-    public BooleanSupplier getStartCondition() { return this.startCondition; }
+    public void startCondition(BooleanSupplier sup) { this.startCondition = sup; }
+    public BooleanSupplier startCondition() { return this.startCondition; }
 
     /** Condition that must be true for the command to finish */
     protected BooleanSupplier finishCondition = () -> true;
-    public void setFinishCondition(BooleanSupplier sup) { this.finishCondition = sup; }
-    public BooleanSupplier getFinishCondition() { return this.finishCondition; }
+    public void finishCondition(BooleanSupplier sup) { this.finishCondition = sup; }
+    public BooleanSupplier finishCondition() { return this.finishCondition; }
 
     /** Action to execute when the command starts */
     protected Runnable onStart = () -> {};
-    public void setOnStart(Runnable fun) { this.onStart = fun; }
-    public Runnable getOnStart() { return this.onStart; }
+    public void onStart(Runnable fun) { this.onStart = fun; }
+    public Runnable onStart() { return this.onStart; }
 
     /** Action to execute when the command finishes */
     protected Runnable onFinish = () -> {};
-    public void setOnFinish(Runnable fun) { this.onFinish = fun; }
-    public Runnable getOnFinish() { return this.onFinish; }
+    public void onFinish(Runnable fun) { this.onFinish = fun; }
+    public Runnable onFinish() { return this.onFinish; }
 
     /** Name for debugging and telemetry purposes */
     private String name = "GENERIC_ACTION_NAME";
-    public void setName(String name) { this.name = name; }
-    public String getName() { return this.name; }
+    public void name(String name) { this.name = name; }
+    public String name() { return this.name; }
 
     /**
      * Update command state machine.
@@ -79,11 +79,8 @@ public class BaseCommand {
         finished = false;
     }
 
-    public static <Dt> StateCommand<Dt> command(CoreState<Dt> state) {
-        return new StateCommand<>(state);
-    }
-    public static <Dt> StateCommand<Dt> command(HasStates<Dt, ?> comp, CoreState<Dt> state) {
-        return new StateCommand<>(comp, state);
+    public static <Dt, St extends StateSet<Dt>> StateCommand<Dt, St> command(HasStates<Dt, St> stateComponent, St state) {
+        return new StateCommand<>(stateComponent, state);
     }
     public static DelayCommand command(TimeSpec t) {
         return new DelayCommand(t);

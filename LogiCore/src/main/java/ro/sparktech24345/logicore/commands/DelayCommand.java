@@ -12,7 +12,7 @@ public class DelayCommand extends BaseCommand {
     public DelayCommand(TimeSpec time) {
         super(() -> {});
         this.onStart = () -> timer.start();
-        this.finishCondition = () -> timer.getTime().compareTo(time) >= 0;
+        this.finishCondition = () -> timer.time().compareTo(time) >= 0;
     }
     protected PreciseTimer timer = new PreciseTimer();
 }

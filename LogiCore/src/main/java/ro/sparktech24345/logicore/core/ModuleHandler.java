@@ -2,8 +2,6 @@ package ro.sparktech24345.logicore.core;
 
 import java.util.ArrayList;
 
-import ro.sparktech24345.logicore.utils.WeightedArray;
-
 /**
  * Manages a collection of modules with priority-based execution order.
  * Prevents module installation after the OpMode starts to ensure consistent state.
@@ -13,7 +11,7 @@ public class ModuleHandler implements ModuleContainer {
     private ArrayList<CoreModule> modules = new ArrayList<>();
 
     /** Number of modules currently managed */
-    public int getSize() { return modules.size(); }
+    public int size() { return modules.size(); }
 
     /** Prevents module installation after start() is called */
     private boolean lock = false;

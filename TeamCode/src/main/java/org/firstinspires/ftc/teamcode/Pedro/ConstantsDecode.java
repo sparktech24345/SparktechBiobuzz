@@ -116,7 +116,7 @@ public class ConstantsDecode implements FollowerConstants {
     }
 
     @Override
-    public double getVelocityConstraint() {
+    public double velocityConstraint() {
         return 4.0; // hey don't ask why 4.0 that's also in the main class and in the Pedro documentation so ima leave it be
     }
 }

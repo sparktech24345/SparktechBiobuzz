@@ -9,9 +9,9 @@ public enum GetColorCase {
     PPG,
     NOSORT;
     public static GetColorCase getCase(){
-        if(camId == 1)return GPP;
-        if(camId == 2)return PGP;
-        if(camId == 3)return PPG;
+        if(camId == 1) return GPP;
+        if(camId == 2) return PGP;
+        if(camId == 3) return PPG;
         else return NOSORT;
     }
 

@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import java.util.HashMap;
 import java.util.Map;
 
-import dev.anygeneric.blazeftc.BlazeFTC;
 import ro.sparktech24345.logicore.utils.Benchmark;
 
 /**
@@ -17,7 +16,9 @@ public class CoreGamepad implements CoreModule {
      */
 
     private Gamepad g1;
+    public Gamepad gamepad1() { return g1; }
     private Gamepad g2;
+    public Gamepad gamepad2() { return g2; }
 
     public CoreGamepad() {
     }
@@ -31,9 +32,9 @@ public class CoreGamepad implements CoreModule {
     public void loopCore() {}
     public void readCore() {
         Benchmark.of("gamepad", () -> {
-            if (CoreOpMode.getInstance().getConfig().performanceEngine.get()
+            if (CoreOpMode.instance().config().performanceEngine.get()
                     == PerformanceEngine.BLAZE)
-                CoreOpMode.getInstance().updateGamepads();
+                CoreOpMode.instance().updateGamepads();
             for (CoreButton button : buttons.values()) button.update();
         });
     }
@@ -42,8 +43,8 @@ public class CoreGamepad implements CoreModule {
     private final Map<Button, CoreButton> buttons = new HashMap<>();
 
     public void initCore() {
-        g1 = CoreOpMode.getInstance().gamepad1;
-        g2 = CoreOpMode.getInstance().gamepad2;
+        g1 = CoreOpMode.instance().gamepad1;
+        g2 = CoreOpMode.instance().gamepad2;
         // =========================== GAMEPAD 1 =================================
 
         buttons.put(Button.CROSS1, CoreButton.ofBool(() -> g1.cross, g1::aWasPressed, g1::aWasReleased));
@@ -103,7 +104,7 @@ public class CoreGamepad implements CoreModule {
 
         buttons.put(Button.OPTIONS2, CoreButton.ofBool(() -> g2.options, g2::optionsWasPressed, g2::optionsWasReleased));
         buttons.put(Button.SHARE2, CoreButton.ofBool(() -> g2.share, g2::shareWasPressed, g2::shareWasReleased));
-        buttons.forEach((button, coreButton) -> coreButton.setButton(button));
+        buttons.forEach((button, coreButton) -> coreButton.button(button));
     }
 }
 

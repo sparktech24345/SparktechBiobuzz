@@ -19,14 +19,14 @@ public class CoreVoltageSensor implements CoreModule {
     }
     private VoltageSensor sensor;
     private final TickInterval ticker;
-    public TickInterval getTicker() { return this.ticker; }
+    public TickInterval ticker() { return this.ticker; }
 
     /** Current battery voltage in volts */
     private volatile double voltage = 0;
-    public double getVoltage() { return this.voltage; }
+    public double voltage() { return this.voltage; }
 
     public void initCore() {
-        sensor = CoreOpMode.getInstance().hardwareMap.getAll(VoltageSensor.class).iterator().next();
+        sensor = CoreOpMode.instance().hardwareMap.getAll(VoltageSensor.class).iterator().next();
     }
 
     public void loopCore() {}

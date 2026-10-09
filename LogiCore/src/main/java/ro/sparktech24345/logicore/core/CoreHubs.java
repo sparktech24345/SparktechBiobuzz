@@ -7,7 +7,7 @@ public class CoreHubs implements CoreModule {
     private List<LynxModule> hubs;
 
     public void initCore() {
-        hubs = CoreOpMode.getInstance().hardwareMap.getAll(LynxModule.class);
+        hubs = CoreOpMode.instance().hardwareMap.getAll(LynxModule.class);
         for (LynxModule hub : hubs) hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
     }
 
