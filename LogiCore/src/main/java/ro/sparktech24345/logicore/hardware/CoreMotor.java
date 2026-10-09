@@ -1,130 +1,218 @@
 package ro.sparktech24345.logicore.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import kotlin.jvm.functions.Function2;
-import ro.sparktech24345.logicore.config.HardwareConfig;
-import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.config.IsHardware;
+import ro.sparktech24345.logicore.config.Keys;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
-import ro.sparktech24345.logicore.states.BaseStateSet;
-import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.states.HasStates;
+import ro.sparktech24345.logicore.states.StateSet;
+import ro.sparktech24345.logicore.utils.MathUtils;
 import ro.sparktech24345.logicore.utils.TickInterval;
 
 /**
  * Enhanced motor control with state management, PID control, and multiple run modes.
  * Supports power, position, velocity, and custom control modes with encoder integration.
  */
-public class CoreMotor<T extends BaseStateSet<Double>> implements CoreModule, HasStates<Double, T>, IsHardware {
-    public CoreMotor(String name, T stateSet) {
-        this(name, stateSet, 1);
+public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasStates<Double, T>, IsHardware {
+    public CoreMotor(String name, T initialState) {
+        this(name, initialState, 0);
     }
 
-    public CoreMotor(String name, T stateSet, double interval) {
+    public CoreMotor(String name, T initialState, double threshold) {
+        this(name, initialState, threshold, 1);
+    }
+
+    public CoreMotor(String name, T initialState, double threshold, double interval) {
         this.name = name;
-        this.states = stateSet;
+        this.states = (Class<T>) initialState.getClass();
+        state(initialState);
+        this.threshold = threshold;
         this.ticker = new TickInterval(interval);
     }
+
     private final String name;
-    private HardwareConfig config = new HardwareConfig(Hubs.INDEPENDENT, -1);
-    public void setConfig(HardwareConfig cfg) { this.config = cfg; }
-    public HardwareConfig getConfig() { return this.config; }
+    private double threshold = 0;
 
-    private CachingDcMotorEx motor;
-    public CachingDcMotorEx getMotor() { return this.motor; }
+    public double threshold() {
+        return threshold;
+    }
 
-    private final T states;
+    public void threshold(double value) {
+        this.threshold = value;
+    }
+
+    private int key = 0;
+
+    @Override
+    public void key(int key) {
+        this.key = key;
+    }
+
+    @Override
+    public int key() {
+        return this.key;
+    }
+
+    private DcMotorEx motor;
+
+    public DcMotorEx motor() {
+        return this.motor;
+    }
 
     private final TickInterval ticker;
-    public TickInterval getTicker() { return this.ticker; }
+
+    public TickInterval ticker() {
+        return this.ticker;
+    }
+
+    private final Class<T> states;
+    private T currentState;
 
     /**
      * Set the motor to a specific state.
      * Automatically handles run mode switching based on state type.
      */
     @Override
-    public void setState(CoreState<Double> state) {
-        this.target = state.getValue();
-        this.currState = state;
+    public Class<T> states() {
+        return states;
+    }
+
+    @Override
+    public T state() {
+        return currentState;
+    }
+
+    @Override
+    public void state(T state) {
+        this.currentState = state;
+        this.target = currentState.value();
     }
 
     private double target = 0;
 
     private double wantedPower = 0;
 
-    /** Whether to update this motor during init_loop stage */
+    /**
+     * Whether to update this motor during init_loop stage
+     */
     private boolean updateInInit = false;
-    public void doUpdatesInInit(boolean value) { this.updateInInit = value; }
-    public boolean doesUpdatesInInit() { return this.updateInInit; }
 
-    /** Whether this motor has an encoder installed */
+    public void doUpdatesInInit(boolean value) {
+        this.updateInInit = value;
+    }
+
+    public boolean doesUpdatesInInit() {
+        return this.updateInInit;
+    }
+
+    /**
+     * Whether this motor has an encoder installed
+     */
     private boolean encoded = false;
+
     public void encoded(boolean val) {
         if (encoded != val) encoderChange = true;
         this.encoded = val;
     }
-    public boolean encoded() { return this.encoded; }
+
+    public boolean encoded() {
+        return this.encoded;
+    }
 
     private boolean encoderChange = false;
 
-    /** Encoder ticks per revolution (auto-detected if possible) */
+    /**
+     * Encoder ticks per revolution (auto-detected if possible)
+     */
     private double unitsPerRev = 1;
-    public void setUnitsPerRev(double value) { this.unitsPerRev = value; }
-    public double getUnitsPerRev() { return this.unitsPerRev; }
 
-    /** Current encoder position in ticks */
+    public void unitsPerRev(double value) {
+        this.unitsPerRev = value;
+    }
+
+    public double unitsPerRev() {
+        return this.unitsPerRev;
+    }
+
+    /**
+     * Current encoder position in ticks
+     */
     private double currentPosition = Double.NaN;
-    public double currentPosition() { return this.currentPosition; }
 
-    /** Motor behavior when power is set to 0 */
+    public double currentPosition() {
+        return this.currentPosition;
+    }
+
+    /**
+     * Motor behavior when power is set to 0
+     */
     private DcMotor.ZeroPowerBehavior zeroPowerBehavior = DcMotor.ZeroPowerBehavior.UNKNOWN;
 
     public void zeroPowerBehavior(DcMotor.ZeroPowerBehavior zpb) {
         if (zeroPowerBehavior != zpb) behaviorChange = true;
         this.zeroPowerBehavior = zpb;
     }
-    public DcMotor.ZeroPowerBehavior zeroPowerBehavior() { return this.zeroPowerBehavior; }
+
+    public DcMotor.ZeroPowerBehavior zeroPowerBehavior() {
+        return this.zeroPowerBehavior;
+    }
+
     private boolean behaviorChange = false;
 
     private DcMotorSimple.Direction direction = DcMotorSimple.Direction.FORWARD;
+
     public void direction(DcMotorSimple.Direction dir) {
-            if (dir != direction) directionChanged = true;
-            this.direction = dir;
-        }
+        if (dir != direction) directionChanged = true;
+        this.direction = dir;
+    }
+
     private boolean directionChanged = false;
 
-    private final Function2<CoreMotor<T>, Double, Double> DEFAULT_LOOP = (m, t) -> t;
+    private final Function2<CoreMotor, Double, Double> DEFAULT_LOOP = (m, t) -> t;
 
-    /** Custom control loop function for advanced motor control */
-    private Function2<CoreMotor<T>, Double, Double> customLoop = DEFAULT_LOOP;
-    public void setLoop(Function2<CoreMotor<T>, Double, Double> fn) {
+    /**
+     * Custom control loop function for advanced motor control
+     */
+    private Function2<CoreMotor, Double, Double> customLoop = DEFAULT_LOOP;
+
+    public void loop(Function2<CoreMotor, Double, Double> fn) {
         this.customLoop = fn;
     }
-    public void resetLoop() {
+
+    public void loop() {
         this.customLoop = DEFAULT_LOOP;
     }
 
-    /** Reverse motor direction */
-    public void reverse() { reverse(true); }
+    /**
+     * Reverse motor direction
+     */
+    public void reverse() {
+        reverse(true);
+    }
+
     public void reverse(boolean enabled) {
         motor.setDirection(enabled ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
     }
 
+    @Override
     public void initCore() {
-        states.own(this);
-        motor = new CachingDcMotorEx(CoreOpMode.getInstance().hardwareMap.get(DcMotorImplEx.class, name));
-        unitsPerRev = (motor.getDcMotorEx()).getController().getMotorType(motor.getPortNumber()).getTicksPerRev();
+        motor = CoreOpMode.instance().hardwareMap.get(DcMotorImplEx.class, name);
+        key = Keys.key(motor.getController().getConnectionInfo(), motor.getPortNumber());
+        unitsPerRev = motor.getController().getMotorType(motor.getPortNumber()).getTicksPerRev();
     }
 
+    @Override
     public void init_loopCore() {
         if (updateInInit) loopCore();
     }
 
+    @Override
     public void readCore() {
         if (behaviorChange && zeroPowerBehavior != DcMotor.ZeroPowerBehavior.UNKNOWN)
             motor.setZeroPowerBehavior(zeroPowerBehavior);
@@ -133,38 +221,44 @@ public class CoreMotor<T extends BaseStateSet<Double>> implements CoreModule, Ha
         if (encoderChange)
             motor.setMode(encoded ? DcMotor.RunMode.RUN_USING_ENCODER : DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         if (encoded)
-            currentPosition = motor.getCurrentPosition();
+            currentPosition = motor.getCurrentPosition() / unitsPerRev;
     }
 
-    /** Calculates the wanted power to be sent to the motor */
+    /**
+     * Calculates the wanted power to be sent to the motor
+     */
+    @Override
     public void loopCore() {
         wantedPower = customLoop.invoke(this, target);
     }
 
-    public void setWantedPower(double pow){ // an alternative to using the invoke loop from above
+    public void motorPower(double pow) {
         this.wantedPower = pow;
     }
-    public double getWantedPower(){
+
+    public double motorPower() {
         return wantedPower;
     }
 
-    public void writeCore() {
-        if (!ticker.shouldTick()) return;
-        CoreOpMode.getInstance().setMotorPower(name, motor, wantedPower);
-    }
-
-    public T getStates() {
-        return states;
-    }
-    public double getVelocity(){
-        if(motor == null) return 0;
-        return motor.getVelocity();
-    }
-
-    private CoreState<Double> currState = null;
+    private double lastPow = 0;
 
     @Override
-    public CoreState<Double> currentState() {
-        return currState;
+    public void writeCore() {
+        if (!ticker.shouldTick()) return;
+        if (
+                MathUtils.abs(lastPow - wantedPower) <= threshold ||
+                        (wantedPower == 0 && lastPow != 0) ||
+                        (wantedPower >= 1.0 && lastPow < 1.0) ||
+                        (wantedPower <= -1.0 && lastPow > -1.0) ||
+                        Double.isNaN(lastPow)
+        ) {
+            CoreOpMode.instance().setMotorPower(key, motor, wantedPower);
+            lastPow = wantedPower;
+        }
+    }
+
+    public double velocity() {
+        if (motor == null) return 0;
+        return motor.getVelocity();
     }
 }

@@ -1,6 +1,7 @@
 package ro.sparktech24345.logicore.pedro;
 
 import android.annotation.SuppressLint;
+
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.drivetrain.Drivetrain;
 import com.pedropathing.revhub.drivetrains.MecanumConfig;
@@ -8,7 +9,9 @@ import com.pedropathing.utils.Utils;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,10 +65,10 @@ public class SparkMecanum implements Drivetrain {
         for (int i = 0; i < wheelPowers.length; i++) {
             this.wheelPowers[i] = wheelPowers[i] / maxPower;
         }
-        CoreOpMode.getInstance().setMotorPower(config.frontLeftName.get(),  motors[FL], this.wheelPowers[FL]);
-        CoreOpMode.getInstance().setMotorPower(config.frontRightName.get(), motors[FR], this.wheelPowers[FR]);
-        CoreOpMode.getInstance().setMotorPower(config.backRightName.get(),  motors[BR], this.wheelPowers[BR]);
-        CoreOpMode.getInstance().setMotorPower(config.backLeftName.get(),   motors[BL], this.wheelPowers[BL]);
+        CoreOpMode.instance().setMotorPower(motors[FL], this.wheelPowers[FL]);
+        CoreOpMode.instance().setMotorPower(motors[FR], this.wheelPowers[FR]);
+        CoreOpMode.instance().setMotorPower(motors[BR], this.wheelPowers[BR]);
+        CoreOpMode.instance().setMotorPower(motors[BL], this.wheelPowers[BL]);
     }
 
     public double[] computeWheelPowersUnnormalized(DrivePowers powers) {
@@ -131,10 +134,10 @@ public class SparkMecanum implements Drivetrain {
             setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         }
 
-        CoreOpMode.getInstance().setMotorPower(config.frontLeftName.get(),  motors[FL], 0);
-        CoreOpMode.getInstance().setMotorPower(config.frontRightName.get(), motors[FR], 0);
-        CoreOpMode.getInstance().setMotorPower(config.backRightName.get(),  motors[BR], 0);
-        CoreOpMode.getInstance().setMotorPower(config.backLeftName.get(),   motors[BL], 0);
+        CoreOpMode.instance().setMotorPower(motors[FL], 0);
+        CoreOpMode.instance().setMotorPower(motors[FR], 0);
+        CoreOpMode.instance().setMotorPower(motors[BR], 0);
+        CoreOpMode.instance().setMotorPower(motors[BL], 0);
     }
 
     @Override
@@ -154,12 +157,13 @@ public class SparkMecanum implements Drivetrain {
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
-        for(DcMotorEx motor : motors) {
+        for (DcMotorEx motor : motors) {
             motor.setZeroPowerBehavior(behavior);
         }
     }
 
-    /** Returns the sum of the four motors current in Amps
+    /**
+     * Returns the sum of the four motors current in Amps
      * This is not bulk cached by the motors so each motor request is a hardware read
      */
     public double currentAmps() {

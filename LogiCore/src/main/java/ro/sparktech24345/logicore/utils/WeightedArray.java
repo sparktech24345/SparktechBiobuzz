@@ -1,8 +1,6 @@
 package ro.sparktech24345.logicore.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -15,9 +13,11 @@ public class WeightedArray<T> {
             this.value = value;
             this.weight = weight;
         }
+
         public Ty value;
         public double weight;
     }
+
     private final ArrayList<Weighted<T>> arr = new ArrayList<>();
 
     public void plusAssign(Weighted<T> entry) {
@@ -51,12 +51,23 @@ public class WeightedArray<T> {
         arr.add(low, newEntry);
     }
 
-    public Weighted<T> get(int index) { return arr.get(index); }
+    public Weighted<T> get(int index) {
+        return arr.get(index);
+    }
 
-    public int getSize() { return arr.size(); }
+    public int size() {
+        return arr.size();
+    }
 
-    public void remove(int index) { arr.remove(index); }
+    public void remove(int index) {
+        arr.remove(index);
+    }
 
-    public List<Weighted<T>> list() { return arr; }
-    public void clear() { arr.clear(); }
+    public List<Weighted<T>> list() {
+        return arr;
+    }
+
+    public void clear() {
+        arr.clear();
+    }
 }

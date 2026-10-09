@@ -1,7 +1,5 @@
 package ro.sparktech24345.logicore.utils;
 
-import ro.sparktech24345.logicore.core.CoreTelemetry;
-
 /**
  * High-precision timer for benchmarking and timing operations.
  * Uses nanosecond precision for accurate performance measurement.
@@ -10,6 +8,7 @@ public class PreciseTimer {
     public PreciseTimer() {
         this("GENERIC_TIMER_NAME");
     }
+
     public PreciseTimer(String name) {
         this.name = name;
         this.time = System.nanoTime();
@@ -21,6 +20,7 @@ public class PreciseTimer {
 
     /**
      * Start or restart the timer.
+     *
      * @return This timer for method chaining
      */
     public PreciseTimer start() {
@@ -30,25 +30,23 @@ public class PreciseTimer {
 
     /**
      * Get the elapsed time since the timer was started.
+     *
      * @return TimeSpec representing the elapsed duration
      */
-    public TimeSpec getTime() {
+    public TimeSpec time() {
         return new TimeSpec(System.nanoTime() - time);
     }
 
     /**
      * Log the current elapsed time to telemetry.
-     * @param telemetry Optional telemetry object (null-safe)
+     *
      * @param unit Time unit for display (default: milliseconds)
      */
-    public void log(CoreTelemetry telemetry, TimeUnit unit) {
-        String caption = "Timer: " + name + " -- [ms]";
-        double time = getTime().get(unit);
-        if (telemetry != null) telemetry.addData(caption, time);
-//        System.out.println(caption + " " + time);
+    public void log(Logger log, TimeUnit unit) {
+        log.write("Timer: " + name + " -- [ms]", time().get(unit));
     }
 
-    public void log(CoreTelemetry telemetry) {
-        this.log(telemetry, TimeUnit.MILLIS);
+    public void log(Logger log) {
+        this.log(log, TimeUnit.MILLIS);
     }
 }

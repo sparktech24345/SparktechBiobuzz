@@ -16,16 +16,23 @@ public class SparkMath {
     public static double eval(boolean val) {
         return (val ? 1 : 0);
     }
+
     public static boolean eval(double val) {
         return val != 0;
     }
+
     public static boolean evalForTrigger(double val) {
         return val >= 0.4;
     }
+
     public static boolean TriggerEval(double val) {
         return val > 0.4;
     }
-    public static <Tx, Ty> Pair<Tx, Ty> make_pair(Tx arg1, Ty arg2) { return new Pair<>(arg1, arg2); }
+
+    public static <Tx, Ty> Pair<Tx, Ty> make_pair(Tx arg1, Ty arg2) {
+        return new Pair<>(arg1, arg2);
+    }
+
     public static double interpolate(double x, double x1, double x2, double y1, double y2) {
         double tangent = (y2 - y1) / (x2 - x1);
         return (y1 + tangent * (x - x1));

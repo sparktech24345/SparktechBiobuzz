@@ -10,15 +10,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Pedro.ConstantsBiobuzz;
-import org.firstinspires.ftc.teamcode.Pedro.ConstantsDecode;
-
-import java.util.zip.ZipInputStream;
-
 import dev.anygeneric.blazeftc.BlazeDummyPlug;
 import dev.anygeneric.blazeftc.BlazeFTC;
-import dev.anygeneric.blazeftc.Hub;
-import dev.anygeneric.blazeftc_pedro.Pedro3SingleDataLocalizer;
 
 @TeleOp(name = "BlazeOpMode", group = "teleops")
 public class BlazeOpMode extends OpMode {
@@ -26,6 +19,7 @@ public class BlazeOpMode extends OpMode {
     int target = 500;
     Follower follower = null;
     Path pathToFollow;
+
     @Override
     public void init() {
         BlazeDummyPlug.initializeBlazeFTC(hardwareMap);

@@ -1,43 +1,42 @@
 package org.firstinspires.ftc.teamcode.Components;
 
-import static ro.sparktech24345.logicore.commands.BaseCommand.command;
-
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
 
-import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.hardware.Controllers.VPIDController;
 import ro.sparktech24345.logicore.hardware.CoreMotor;
 import ro.sparktech24345.logicore.hardware.CoreServo;
-import ro.sparktech24345.logicore.states.BaseStateSet;
 
 public class TurretComponent implements CoreModule {
-    public VPIDController vpidController = new VPIDController(0,0,0,0,0);
+    public VPIDController vpidController = new VPIDController(0, 0, 0, 0, 0);
+
     public TurretComponent setConstants(double p, double i, double d, double f, double s) {
-        vpidController.setConstants(p,i,d,f,s);
+        vpidController.setConstants(p, i, d, f, s);
         return this;
     }
 
-    public static final CoreMotor<BaseStateSet<Double>> rightOuttakeMotor =
-            new CoreMotor<>(GlobalStorage.rightOuttakeMotorName, new BaseStateSet<>());
-                // BaseStateSet e placeholderul default pentru o clasa de state-uri
-    public static final CoreMotor<BaseStateSet<Double>> leftOuttakeMotor =
-                        new CoreMotor<>(GlobalStorage.leftOuttakeMotorName, new BaseStateSet<>());
-                // BaseStateSet e placeholderul default pentru o clasa de state-uri
-    public static final CoreServo<BaseStateSet<Double>> angleServo =
-                        new CoreServo<>(GlobalStorage.angleServoName, new BaseStateSet<>());
-                        // vezi TestTeleOP pentru un exemplu de clasa de state-uri
+    public static final CoreMotor<EmptyStateSet> rightOuttakeMotor =
+            new CoreMotor<>(GlobalStorage.rightOuttakeMotorName, EmptyStateSet.ZERO);
+    // BaseStateSet e placeholderul default pentru o clasa de state-uri
+    public static final CoreMotor<EmptyStateSet> leftOuttakeMotor =
+            new CoreMotor<>(GlobalStorage.leftOuttakeMotorName, EmptyStateSet.ZERO);
+    // BaseStateSet e placeholderul default pentru o clasa de state-uri
+    public static final CoreServo<EmptyStateSet> angleServo =
+            new CoreServo<>(GlobalStorage.angleServoName, EmptyStateSet.ZERO);
+    // vezi TestTeleOP pentru un exemplu de clasa de state-uri
     public CoreOpMode instance = null;
 
 
-    /** Called once during OpMode initialization - set up hardware and initial state */
+    /**
+     * Called once during OpMode initialization - set up hardware and initial state
+     */
     public void initCore() {
-        instance = CoreOpMode.getInstance();
-        instance.install(Hubs.CONTROL, rightOuttakeMotor, 1.0); // priority reprezinta nr de ordine in care se da update la componenta
-        instance.install(Hubs.CONTROL, leftOuttakeMotor, 1.0); // priority reprezinta nr de ordine in care se da update la componenta
-        instance.install(Hubs.CONTROL, angleServo, 2.0); // un priority mai mare inseamna ca se da update mai devreme la componenta
-                                                    // ex: servo isi ia update mai devreme decat motorul pentru ca 2 > 1
+        instance = CoreOpMode.instance();
+        instance.install(rightOuttakeMotor, 1.0); // priority reprezinta nr de ordine in care se da update la componenta
+        instance.install(leftOuttakeMotor, 1.0); // priority reprezinta nr de ordine in care se da update la componenta
+        instance.install(angleServo, 2.0); // un priority mai mare inseamna ca se da update mai devreme la componenta
+        // ex: servo isi ia update mai devreme decat motorul pentru ca 2 > 1
 
         angleServo.initCore(); /// might be already initialized from the installation
         rightOuttakeMotor.initCore();
@@ -47,13 +46,15 @@ public class TurretComponent implements CoreModule {
         leftOuttakeMotor.encoded(false);
 
 
-        rightOuttakeMotor.setLoop((motor, target) -> vpidController.calculate(target, rightOuttakeMotor.getVelocity()));
-        }
+        rightOuttakeMotor.loop((motor, target) -> vpidController.calculate(target, rightOuttakeMotor.velocity()));
+    }
 
-    /** Called every loop cycle - update module logic */
+    /**
+     * Called every loop cycle - update module logic
+     */
     public void loopCore() {
         rightOuttakeMotor.loopCore();
-        leftOuttakeMotor.setWantedPower(rightOuttakeMotor.getWantedPower());
+        leftOuttakeMotor.motorPower(rightOuttakeMotor.motorPower());
         leftOuttakeMotor.loopCore();
         angleServo.loopCore();
 

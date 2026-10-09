@@ -1,8 +1,6 @@
 package ro.sparktech24345.logicore.events;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,7 +14,7 @@ public class EventBus {
     /**
      * Subscribe a listener to a specific event type.
      *
-     * @param type The event class to listen for
+     * @param type     The event class to listen for
      * @param listener The listener to handle events
      */
     public static <T extends Event> void subscribe(Class<T> type, EventListener<T> listener) {
@@ -29,7 +27,7 @@ public class EventBus {
     /**
      * Unsubscribe a listener from a specific event type.
      *
-     * @param type The event class to stop listening for
+     * @param type     The event class to stop listening for
      * @param listener The listener to remove
      */
     public static <T extends Event> void unsubscribe(Class<T> type, EventListener<T> listener) {
@@ -50,12 +48,16 @@ public class EventBus {
         if (list == null) return;
 
         for (EventListener<? extends Event> listener : list) {
-            ((EventListener<T>)listener).onEvent(event);
+            ((EventListener<T>) listener).onEvent(event);
 
             if (event.cancelled()) break;
         }
     }
 
-    /** Clear all event listeners - useful for cleanup between OpModes */
-    public static void cleanup() { listeners.clear(); }
+    /**
+     * Clear all event listeners - useful for cleanup between OpModes
+     */
+    public static void cleanup() {
+        listeners.clear();
+    }
 }

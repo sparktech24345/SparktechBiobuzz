@@ -1,13 +1,16 @@
 package ro.sparktech24345.logicore.hardware;
 
 import android.util.Pair;
+
 import com.qualcomm.robotcore.hardware.Servo;
-import dev.frozenmilk.dairy.cachinghardware.CachingServo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
+
+import ro.sparktech24345.logicore.config.IsHardware;
+import ro.sparktech24345.logicore.config.Keys;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
-import ro.sparktech24345.logicore.states.BaseStateSet;
-import ro.sparktech24345.logicore.states.CoreState;
 import ro.sparktech24345.logicore.states.HasStates;
+import ro.sparktech24345.logicore.states.StateSet;
 import ro.sparktech24345.logicore.utils.MathUtils;
 import ro.sparktech24345.logicore.utils.TickInterval;
 
@@ -15,70 +18,140 @@ import ro.sparktech24345.logicore.utils.TickInterval;
  * Enhanced servo control with position mapping and state management.
  * Supports custom position ranges and automatic servo position clamping.
  */
-public class CoreServo<T extends BaseStateSet<Double>> implements CoreModule, HasStates<Double, T> {
-    public CoreServo(String name, T stateSet) {
-        this(name, stateSet, 1);
+public class CoreServo<T extends StateSet<Double>> implements CoreModule, HasStates<Double, T>, IsHardware {
+    public CoreServo(String name, T initialState) {
+        this(name, initialState, 0);
     }
-    public CoreServo(String name, T stateSet, double interval) {
+
+    public CoreServo(String name, T initialState, double threshold) {
+        this(name, initialState, threshold, 1);
+    }
+
+    public CoreServo(String name, T initialState, double threshold, double interval) {
         this.name = name;
-        this.states = stateSet;
+        this.states = (Class<T>) initialState.getClass();
+        state(initialState);
         this.ticker = new TickInterval(interval);
+        this.threshold = threshold;
     }
+
     private final String name;
     private final TickInterval ticker;
-    public TickInterval getTicker() { return this.ticker; }
-    private CachingServo servo;
-    public CachingServo servo() { return this.servo; }
 
-    private final T states;
+    public TickInterval ticker() {
+        return this.ticker;
+    }
 
-    /** Set servo to a specific state position */
-    public void setState(CoreState<Double> state) {
-        this.setPosition(state.getValue());
+    private ServoImplEx servo;
+
+    public Servo servo() {
+        return this.servo;
+    }
+
+    private double threshold;
+
+    public double threshold() {
+        return this.threshold;
+    }
+
+    public void threshold(double value) {
+        this.threshold = value;
+    }
+
+    private final Class<T> states;
+
+    /**
+     * Set servo to a specific state position
+     */
+    public void state(T state) {
+        this.realPosition = state.value();
         this.currState = state;
     }
 
-    public T getStates() { return this.states; }
+    public Class<T> states() {
+        return this.states;
+    }
 
-    private CoreState<Double> currState;
+    private T currState;
+
     @Override
-    public CoreState<Double> currentState() {
+    public T state() {
         return currState;
     }
 
-    /** Internal servo position */
+    /**
+     * Internal servo position
+     */
     private double realPosition = 0;
 
-    /** External position in user-defined units */
-    public double getPosition() { return this.realPosition * rangeDif + range.first; }
-    public void setPosition(double value) {
-            this.realPosition = (value - range.first) / rangeDif;
-        }
+    /**
+     * External position in user-defined units
+     */
+    public double position() {
+        return this.realPosition * rangeDif + range.first;
+    }
 
-    /** Position range in user-defined units (auto-normalized if invalid) */
+    public void position(double value) {
+        this.realPosition = (value - range.first) / rangeDif;
+    }
+
+    /**
+     * Position range in user-defined units (auto-normalized if invalid)
+     */
     private Pair<Double, Double> range = new Pair<>(0.0, 1.0);
-    public void setRange(Pair<Double, Double> value) {
-        if (value.second.equals(value.first)) throw new IllegalArgumentException("Range [" + value.first + ", " + value.second + "] is invalid.");
+
+    public void range(Pair<Double, Double> value) {
+        if (value.second.equals(value.first))
+            throw new IllegalArgumentException("Range [" + value.first + ", " + value.second + "] is invalid.");
         range = value.second < value.first ? new Pair<>(value.second, value.first) : value;
         rangeDif = range.second - range.first;
     }
-    public void setRange(double lo, double hi) {
-        setRange(new Pair<>(lo, hi));
+
+    public Pair<Double, Double> range() {
+        return this.range;
     }
 
-    /** Calculated range difference for position mapping */
+    /**
+     * Calculated range difference for position mapping
+     */
     private double rangeDif = 1;
 
     public void initCore() {
-        states.own(this);
-        servo = new CachingServo(CoreOpMode.getInstance().hardwareMap.get(Servo.class, name));
+        servo = CoreOpMode.instance().hardwareMap.get(ServoImplEx.class, name);
+        key = Keys.key(servo.getController().getConnectionInfo(), servo.getPortNumber());
     }
 
-    public void loopCore() {}
+    public void loopCore() {
+    }
 
-    /** Update servo position every loop cycle */
+    private double lastPos = 0;
+
+    /**
+     * Update servo position every loop cycle
+     */
     public void writeCore() {
         if (!ticker.shouldTick()) return;
-        servo.setPosition(MathUtils.clip(realPosition, 0, 1));
+        if (
+                MathUtils.abs(lastPos - realPosition) <= threshold ||
+                        (realPosition == 0 && lastPos != 0) ||
+                        (realPosition >= 1.0 && lastPos < 1.0) ||
+                        (realPosition <= -1.0 && lastPos > -1.0) ||
+                        Double.isNaN(lastPos)
+        ) {
+            servo.setPosition(realPosition);
+            lastPos = realPosition;
+        }
+    }
+
+    private int key;
+
+    @Override
+    public void key(int key) {
+        this.key = key;
+    }
+
+    @Override
+    public int key() {
+        return key;
     }
 }
