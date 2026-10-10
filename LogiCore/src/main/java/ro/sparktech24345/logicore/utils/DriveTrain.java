@@ -154,6 +154,10 @@ public class DriveTrain implements CoreModule {
             rfp, lfp, lbp, rbp
         );
     }
+    private final CachingTracker rft = new CachingTracker(.02);
+    private final CachingTracker rbt = new CachingTracker(.02);
+    private final CachingTracker lbt = new CachingTracker(.02);
+    private final CachingTracker lft = new CachingTracker(.02);
 
     public void writeCore() {
         Benchmark.of("drivetrain", () -> {
@@ -165,10 +169,10 @@ public class DriveTrain implements CoreModule {
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor lf", lf.portNumber)
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
 
-            CoreOpMode.instance().setMotorPower(rf, rfp);
-            CoreOpMode.instance().setMotorPower(rb, rbp);
-            CoreOpMode.instance().setMotorPower(lb, lbp);
-            CoreOpMode.instance().setMotorPower(lf, lfp);
+            if (rft.shouldUpdate(rfp)) CoreOpMode.instance().setMotorPower(rf, rfp);
+            if (rbt.shouldUpdate(rfp)) CoreOpMode.instance().setMotorPower(rb, rbp);
+            if (lbt.shouldUpdate(rfp)) CoreOpMode.instance().setMotorPower(lb, lbp);
+            if (lft.shouldUpdate(rfp)) CoreOpMode.instance().setMotorPower(lf, lfp);
         });
     }
 }
