@@ -21,7 +21,7 @@ public class CachingTracker {
     private double lastValue;
 
     public boolean shouldUpdate(double newValue) {
-        boolean condition = MathUtils.abs(lastValue - newValue) <= threshold ||
+        boolean condition = MathUtils.abs(lastValue - newValue) > threshold ||
                 (newValue == 0 && lastValue != 0) ||
                 (newValue >= 1.0 && lastValue < 1.0) ||
                 (newValue <= -1.0 && lastValue > -1.0) ||

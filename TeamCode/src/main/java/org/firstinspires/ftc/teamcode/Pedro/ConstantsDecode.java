@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.jetbrains.annotations.NotNull;
 
+import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.pedro.FollowerConstants;
 import ro.sparktech24345.logicore.pedro.SparkMecanum;
 import ro.sparktech24345.logicore.pedro.SparkPinpointLocalizer;
@@ -107,14 +108,21 @@ public class ConstantsDecode implements FollowerConstants {
     public static Follower createBlazeFollower(HardwareMap hardwareMap) {
         applyYawScalar(hardwareMap);
         SparkMecanum drivetrain = new SparkMecanum(hardwareMap, drivetrainConfig);
-        PinpointLocalizer localizer = new PinpointLocalizer(hardwareMap, localizerConfig);
+        SparkPinpointLocalizer localizer = new SparkPinpointLocalizer(hardwareMap, localizerConfig);
         Foresight algorithm = new Foresight(foresightConfigFarAuto);
         return new Follower(localizer, drivetrain, algorithm);
     }
 
     @Override
     public @NotNull Follower create(@NotNull HardwareMap hardwareMap) {
-        return createPhotonFollower(hardwareMap);
+        switch (CoreOpMode.instance().config().performanceEngine.get()) {
+            case PHOTON:
+                return createPhotonFollower(hardwareMap);
+            case BLAZE:
+                return createBlazeFollower(hardwareMap);
+            default:
+                return createFollowerDecode(hardwareMap);
+        }
     }
 
     @Override

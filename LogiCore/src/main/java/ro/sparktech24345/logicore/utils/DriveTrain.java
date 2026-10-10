@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
+import ro.sparktech24345.logicore.config.Keys;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.core.OpModeType;
@@ -82,6 +83,11 @@ public class DriveTrain implements CoreModule {
         return this.slowdownMultiplier;
     }
 
+    private int rfk = 0;
+    private int rbk = 0;
+    private int lbk = 0;
+    private int lfk = 0;
+
     public void initCore() {
         HardwareMap map = CoreOpMode.instance().hardwareMap;
         DcMotorEx rfm = map.get(DcMotorEx.class, rfn);
@@ -104,6 +110,10 @@ public class DriveTrain implements CoreModule {
 
 
         this.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rfk = Keys.key(rf.getController().getConnectionInfo(), rf.getPortNumber());
+        rbk = Keys.key(rb.getController().getConnectionInfo(), rb.getPortNumber());
+        lbk = Keys.key(lb.getController().getConnectionInfo(), lb.getPortNumber());
+        lfk = Keys.key(lf.getController().getConnectionInfo(), lf.getPortNumber());
     }
 
     protected double rfp = 0;
@@ -143,7 +153,6 @@ public class DriveTrain implements CoreModule {
                 lfp /= div;
                 lbp /= div;
             }
-            writePowers();
         });
     }
 
@@ -169,10 +178,10 @@ public class DriveTrain implements CoreModule {
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor lf", lf.portNumber)
             //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
 
-            if (rft.shouldUpdate(rfp)) CoreOpMode.instance().setMotorPower(rf, rfp);
-            if (rbt.shouldUpdate(rfp)) CoreOpMode.instance().setMotorPower(rb, rbp);
-            if (lbt.shouldUpdate(rfp)) CoreOpMode.instance().setMotorPower(lb, lbp);
-            if (lft.shouldUpdate(rfp)) CoreOpMode.instance().setMotorPower(lf, lfp);
+            if (rft.shouldUpdate(rfp)) Benchmark.of(rfn, () -> CoreOpMode.instance().setMotorPower(rfk, rf, rfp));
+            if (rbt.shouldUpdate(rbp)) Benchmark.of(rbn, () -> CoreOpMode.instance().setMotorPower(rbk, rb, rbp));
+            if (lbt.shouldUpdate(lbp)) Benchmark.of(lbn, () -> CoreOpMode.instance().setMotorPower(lbk, lb, lbp));
+            if (lft.shouldUpdate(lfp)) Benchmark.of(lfn, () -> CoreOpMode.instance().setMotorPower(lfk, lf, lfp));
         });
     }
 }

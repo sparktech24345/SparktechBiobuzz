@@ -38,15 +38,13 @@ public class MotorMap {
                     break;
             }
         }
-        boolean writeC = true;
+        boolean writeC = false;
         for (double d : pc) {
-            if (!Double.isFinite(d)) writeC = false;
-            break;
+            if (!Double.isNaN(d)) writeC = true;
         }
-        boolean writeE = true;
+        boolean writeE = false;
         for (double d : pe) {
-            if (!Double.isFinite(d)) writeE = false;
-            break;
+            if (!Double.isNaN(d)) writeE = true;
         }
         if (writeC && doBulkWrites) BlazeFTC.setMotorPowers(0, pc[0], pc[1], pc[2], pc[3]);
         else for (int i = 0; i < 4; ++i)

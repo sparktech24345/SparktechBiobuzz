@@ -13,7 +13,7 @@ public class Configs {
         opModeConfig.performanceEngine.set(PerformanceEngine.BLAZE);
         opModeConfig.useFollower.set(true);
         opModeConfig.useDriveTrain.set(true);
-        opModeConfig.accelerateMotors.set(true);
+        opModeConfig.accelerateMotors.set(false);
         opModeConfig.followerConstants.set(new ConstantsDecode());
     });
 

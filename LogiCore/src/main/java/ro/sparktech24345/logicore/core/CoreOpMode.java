@@ -208,7 +208,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
                 cHubModules.writeCore();
                 eHubModules.writeCore();
                 if (config.performanceEngine.get() == PerformanceEngine.BLAZE)
-                    MotorMap.write();
+                    Benchmark.of("MotorMap write", MotorMap::write);
             });
             Benchmark.of("independent modules output", independentModules::writeCore);
         });
@@ -305,21 +305,13 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         isStopped = true;
         boolean wasInInit = (stage == GameStage.INIT || stage == GameStage.INIT_LOOP);
         stage = GameStage.STOP;
-        update(this::onStop);
-        EventBus.cleanup();
-
-        if (!wasInInit) {
-            try {
+        try {
+            if (!wasInInit)
                 update(this::onStop);
-            } catch (Exception e) {
-                e.printStackTrace(logger.fd());
-            }
-        } else {
-            try {
+            else
                 onStop();
-            } catch (Exception e) {
-                e.printStackTrace(logger.fd());
-            }
+        } catch(Exception e) {
+            e.printStackTrace(logger.fd());
         }
 
         if (config != null && config.performanceEngine.get() == PerformanceEngine.BLAZE) {
@@ -327,6 +319,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
                 BlazeDummyPlug.closeBlazeFTC();
             } catch (Exception ignored) {}
         }
+        EventBus.cleanup();
         if(executor != null) executor.shutdownNow();
         executor = null;
         instance = null;

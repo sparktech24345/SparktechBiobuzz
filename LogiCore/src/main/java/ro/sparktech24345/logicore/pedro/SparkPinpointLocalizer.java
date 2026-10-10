@@ -87,6 +87,12 @@ public class SparkPinpointLocalizer implements Localizer {
                 if (!isRunning.get()) break;
                 readAndStoreState();
             }
+            try {
+                Thread.sleep(7);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
     }
 

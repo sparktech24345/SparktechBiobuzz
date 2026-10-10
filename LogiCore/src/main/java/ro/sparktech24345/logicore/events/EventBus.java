@@ -55,6 +55,14 @@ public class EventBus {
     }
 
     /**
+     * Check if there are active listeners for a specific event type.
+     */
+    public static boolean hasListeners(Class<? extends Event> type) {
+        List<EventListener<? extends Event>> list = listeners.get(type);
+        return list != null && !list.isEmpty();
+    }
+
+    /**
      * Clear all event listeners - useful for cleanup between OpModes
      */
     public static void cleanup() {
