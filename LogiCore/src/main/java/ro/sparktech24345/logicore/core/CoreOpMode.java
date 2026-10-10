@@ -224,7 +224,6 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
         if (config.performanceEngine.get() == PerformanceEngine.BLAZE && !config.accelerateMotors.get()) {
             double targetPower = MathUtils.clip(power, -1, 1);
             MotorMap.set(key, targetPower);
-            MotorMap.clear();
         } else
             motor.setPower(MathUtils.clip(power, -1, 1)); // reverse should by itself make it negative
     }
