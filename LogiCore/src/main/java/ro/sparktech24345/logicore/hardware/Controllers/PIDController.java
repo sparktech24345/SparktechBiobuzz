@@ -5,6 +5,7 @@ public class PIDController {
     private double ki = 0;
     private double kd = 0;
     private double kf = 0;
+
     private double integral = 0;
     private double lastError = 0;
     private double lastVelocity = 0;

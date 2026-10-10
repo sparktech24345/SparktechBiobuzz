@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.Components.GateStateSet;
 import org.firstinspires.ftc.teamcode.Components.IntakeComponent;
 import org.firstinspires.ftc.teamcode.Components.TiltComponent;
 import org.firstinspires.ftc.teamcode.Components.IntakeStateSet;
+import org.firstinspires.ftc.teamcode.Components.TiltStateSet;
 import org.firstinspires.ftc.teamcode.Helpers.Color;
 import org.firstinspires.ftc.teamcode.Helpers.GetColorCase;
 
@@ -81,46 +82,46 @@ public class DecodeTeleOP extends CoreOpMode {
         timer.start(); // doar reseteaza timerul
 //        install(Hubs.EXPANSION, servo, 1);
 //        install(Hubs.INDEPENDENT, turret, 1);
-        install(Hubs.INDEPENDENT, intake, 1);
-        install(Hubs.INDEPENDENT, gates, 2);
-        install(Hubs.INDEPENDENT, decodeTurret, 2);
-        install(Hubs.INDEPENDENT,tilt,2);
-        queue(new StateCommand<>(gates.getStates().DEFAULT));
-        queue(new StateCommand<>(tilt.getStates().DEFAULT));
+        install(intake, 1);
+        install(gates, 2);
+        install(decodeTurret, 2);
+        install(tilt,2);
+        queue(new StateCommand<>(gates,GateStateSet.DEFAULT));
+        queue(new StateCommand<>(tilt,TiltStateSet.DEFAULT));
         if(useEvents) {
             EventBus.subscribe(CoreButton.ButtonPressEvent.class, (event) -> {
                 if (useEvents) {
-                    switch (event.getButton().getButton()) {
+                    switch (event.button().button()) {
                         case CIRCLE1:
-                            queue(new StateCommand<>(intake.getStates().DEFAULT),
-                                    new StateCommand<>(gates.getStates().CLOSED));
+                            queue(new StateCommand<>(intake,IntakeStateSet.DEFAULT),
+                                    new StateCommand<>(gates,GateStateSet.CLOSED));
                             break;
                         case SQUARE1:
-                            queue(new StateCommand<>(intake.getStates().FULL_COUPLED),
-                                    new StateCommand<>(gates.getStates().LEFT_OPEN));
+                            queue(new StateCommand<>(intake,IntakeStateSet.FULL_COUPLED),
+                                    new StateCommand<>(gates,GateStateSet.LEFT_OPEN));
                             break;
                         case LEFT_TRIGGER1:
                             decodeTurret.aimAt(130, 53);
                             break;
                         case LEFT_BUMPER1:
                             if(colorCase == GetColorCase.NOSORT){
-                                queue(new StateCommand<>(intake.getStates().FULL_COUPLED),
-                                        new StateCommand<>(gates.getStates().LEFT_OPEN),
+                                queue(new StateCommand<>(intake,IntakeStateSet.FULL_COUPLED),
+                                        new StateCommand<>(gates,GateStateSet.LEFT_OPEN),
                                         new DelayCommand(TimeSpec.fromMillis(500)),
-                                        new StateCommand<>(gates.getStates().RIGHT_OPEN),
-                                        new StateCommand<>(gates.getStates().CLOSED)
+                                        new StateCommand<>(gates,GateStateSet.RIGHT_OPEN),
+                                        new StateCommand<>(gates,GateStateSet.CLOSED)
                                 );
                             }
                             break;
                         case DPAD_UP1:
-                                if(tilt.currentState() == tilt.getStates().DEFAULT) {
+                                if(tilt.state() == TiltStateSet.DEFAULT) {
                                     execute(
-                                            new StateCommand<>(tilt.getStates().ACTIVE)
+                                            new StateCommand<>(tilt,TiltStateSet.ACTIVE)
                                     );
-                                    coreTelemetry.addData("tiltState",tilt.currentState());
+                                    coreTelemetry.addData("tiltState",tilt.state());
                                 }
-                                if(tilt.currentState() == tilt.getStates().ACTIVE)
-                                    execute(new StateCommand<>(tilt.getStates().DEFAULT));
+                                if(tilt.state() == TiltStateSet.ACTIVE)
+                                        execute(new StateCommand<>(tilt,TiltStateSet.DEFAULT));
                                 break;
 
                     }
@@ -151,34 +152,34 @@ public class DecodeTeleOP extends CoreOpMode {
         handleColors();
         //useCamera();
         if (!useEvents) {
-            if (gamepad.get(Button.CIRCLE1).isToggled()) {
-                queue(new StateCommand<>(intake.getStates().DEFAULT),
-                        new StateCommand<>(gates.getStates().CLOSED));
+            if (gamepad.get(Button.CIRCLE1).toggled()) {
+                queue(new StateCommand<>(intake,IntakeStateSet.DEFAULT),
+                        new StateCommand<>(gates,GateStateSet.CLOSED));
             }
-            if (gamepad.get(Button.RIGHT_BUMPER1).isToggled()) {
-                queue(new StateCommand<>(intake.getStates().FULL_COUPLED));
+            if (gamepad.get(Button.RIGHT_BUMPER1).toggled()) {
+                queue(new StateCommand<>(intake,IntakeStateSet.FULL_COUPLED));
             }
-            if (gamepad.get(Button.RIGHT_TRIGGER1).isToggled()) {
+            if (gamepad.get(Button.RIGHT_TRIGGER1).toggled()) {
                 decodeTurret.aimAt(130, 53);
             }
-            if(gamepad.get(Button.DPAD_UP1).isPressed()){
-                if(tilt.currentState() == tilt.getStates().DEFAULT) {
+            if(gamepad.get(Button.DPAD_UP1).pressed()){
+                if(tilt.state() == TiltStateSet.DEFAULT) {
                     execute(
-                            new StateCommand<>(tilt.getStates().ACTIVE)
+                            new StateCommand<>(tilt,TiltStateSet.ACTIVE)
                     );
-                    coreTelemetry.addData("tiltState",tilt.currentState());
+                    coreTelemetry.addData("tiltState",tilt.state());
                 }
-                if(tilt.currentState() == tilt.getStates().ACTIVE)
-                    execute(new StateCommand<>(tilt.getStates().DEFAULT));
+                if(tilt.state() == TiltStateSet.ACTIVE)
+                    execute(new StateCommand<>(tilt,TiltStateSet.DEFAULT));
             }
-            if(gamepad.get(Button.LEFT_BUMPER1).isPressed()){ // transfer button???
+            if(gamepad.get(Button.LEFT_BUMPER1).pressed()){ // transfer button???
                 if(colorCase == GetColorCase.NOSORT){
-                    queue(new StateCommand<>(intake.getStates().FULL_COUPLED),
-                            new StateCommand<>(gates.getStates().LEFT_OPEN),
+                    queue(new StateCommand<>(intake,IntakeStateSet.FULL_COUPLED),
+                            new StateCommand<>(gates,GateStateSet.LEFT_OPEN),
                             new DelayCommand(TimeSpec.fromMillis(1500)),
-                            new StateCommand<>(gates.getStates().RIGHT_OPEN),
+                            new StateCommand<>(gates,GateStateSet.RIGHT_OPEN),
                             new DelayCommand(TimeSpec.fromMillis(1500)),
-                            new StateCommand<>(gates.getStates().CLOSED)
+                            new StateCommand<>(gates,GateStateSet.CLOSED)
                     );
                 } else {
                     int greenBallPosition;
@@ -246,11 +247,11 @@ public class DecodeTeleOP extends CoreOpMode {
                                     new DelayCommand(TimeSpec.fromMillis(100)),
                                     new StateCommand<>(gates, GateStateSet.CLOSED),
                                     new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates.GateStateSet.RIGHT_OPEN),
+                                    new StateCommand<>(gates,GateStateSet.RIGHT_OPEN),
                                     new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates.GateStateSet.LEFT_OPEN),
+                                    new StateCommand<>(gates,GateStateSet.LEFT_OPEN),
                                     new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates.GateStateSet.CLOSED)
+                                    new StateCommand<>(gates,GateStateSet.CLOSED)
                             );
                     }
                 }
@@ -258,12 +259,12 @@ public class DecodeTeleOP extends CoreOpMode {
         }
 
         coreTelemetry.addData("Loop Time", // formatul doar zice ca floatul sa fie afisat cu 3 zecimale
-            timer.getTime().getMs());
+            timer.time().getMs());
 
-        coreTelemetry.addData("Robot Pose", CoreOpMode.getInstance().getFollower().pose());
-        coreTelemetry.addData("Robot X", CoreOpMode.getInstance().getFollower().pose().x());
-        coreTelemetry.addData("Robot Y", CoreOpMode.getInstance().getFollower().pose().y());
-        coreTelemetry.addData("Robot heading", CoreOpMode.getInstance().getFollower().pose().heading());
+        coreTelemetry.addData("Robot Pose", CoreOpMode.instance().follower().pose());
+        coreTelemetry.addData("Robot X", CoreOpMode.instance().follower().pose().x());
+        coreTelemetry.addData("Robot Y", CoreOpMode.instance().follower().pose().y());
+        coreTelemetry.addData("Robot heading", CoreOpMode.instance().follower().pose().heading());
         coreTelemetry.addData("ballcolorleft",ballColorLeft);
         coreTelemetry.addData("ballcolorright",ballColorRight);
         coreTelemetry.addData("leftred",leftColorSensor.r());
@@ -280,9 +281,9 @@ public class DecodeTeleOP extends CoreOpMode {
         ballColorRight = Color.getColorForStorage(rightColorSensor.r(),rightColorSensor.g(),rightColorSensor.b());
     }
     public void useCamera(){
-        limelight.setPipeline(2);
+        limelight.pipeline(2);
 
-        LLResult llResult = limelight.getResult();
+        LLResult llResult = limelight.result();
         List<LLResultTypes.FiducialResult> fiducialResults = llResult.getFiducialResults();
         for (LLResultTypes.FiducialResult fr : fiducialResults) {
         camId = fr.getFiducialId();

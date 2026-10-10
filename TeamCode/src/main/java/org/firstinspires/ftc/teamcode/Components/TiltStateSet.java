@@ -1,20 +1,32 @@
 package org.firstinspires.ftc.teamcode.Components;
 import android.util.Pair;
 
-import ro.sparktech24345.logicore.states.BaseStateSet;
-import ro.sparktech24345.logicore.states.CoreState;
+import ro.sparktech24345.logicore.states.StateSet;
 
-public class TiltStateSet extends BaseStateSet<Pair<CoreState<Double>, CoreState<Double>>> {
-    public TiltStateSet(LeftTiltServoStateSet lt, RightTiltServoStateSet rt) {
-        super();
-        ACTIVE       = state(new Pair<>(lt.ACTIVE, rt.ACTIVE), "ACTIVE");
-        INACTIVE     = state(new Pair<>(lt.INACTIVE, rt.INACTIVE), "INACTIVE");
-        DEFAULT = INACTIVE;
+public enum TiltStateSet implements StateSet<Pair<LeftTiltServoStateSet, RightTiltServoStateSet>> {
+    ACTIVE("PARK", LeftTiltServoStateSet.ACTIVE, RightTiltServoStateSet.ACTIVE),
+    INACTIVE("NO_PARK", LeftTiltServoStateSet.INACTIVE, RightTiltServoStateSet.INACTIVE);
 
+    private final Pair<LeftTiltServoStateSet, RightTiltServoStateSet> val;
+    private final String name;
+    public static final TiltStateSet DEFAULT = INACTIVE;
+
+    TiltStateSet(String name, LeftTiltServoStateSet lt, RightTiltServoStateSet rt) {
+        this.name = name;
+        this.val = new Pair<>(lt, rt);
     }
-    public TiltStateSet(RightTiltServoStateSet rt, LeftTiltServoStateSet lt) {
-        this(lt, rt);
+
+    TiltStateSet(String name, RightTiltServoStateSet rt, LeftTiltServoStateSet lt) {
+        this(name, lt, rt);
     }
-    public final CoreState<Pair<CoreState<Double>, CoreState<Double>>> ACTIVE;
-    public final CoreState<Pair<CoreState<Double>, CoreState<Double>>> INACTIVE;
+
+    @Override
+    public Pair<LeftTiltServoStateSet, RightTiltServoStateSet> value() {
+        return val;
+    }
+
+    @Override
+    public String stateName() {
+        return name;
+    }
 }

@@ -1,9 +1,10 @@
 package ro.sparktech24345.logicore.hardware.Controllers;
 
 public class VPIDController extends PIDController {
+
     public double Kf;
-    /// f as a linear additive as f(target) = x
     public double Ks;
+    /// f as a linear additive as f(target) = x
 
     /// an additive constant
     public void setConstants(double p, double i, double d, double f, double s) {
@@ -50,13 +51,10 @@ public class VPIDController extends PIDController {
             this.Kf = f;
             this.Ks = s;
         }
-
         public double Kp;
-        public double Ki;
         public double Kd;
+        public double Ki;
         public double Kf;
         public double Ks;
     }
-
-
 }

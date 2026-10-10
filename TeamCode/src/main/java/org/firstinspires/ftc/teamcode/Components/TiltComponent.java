@@ -9,49 +9,45 @@ import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.hardware.CoreServo;
-import ro.sparktech24345.logicore.states.BaseStateSet;
-import ro.sparktech24345.logicore.states.CoreState;
+import ro.sparktech24345.logicore.states.StateSet;
 import ro.sparktech24345.logicore.states.HasStates;
 
-public class TiltComponent implements CoreModule, HasStates<Pair<CoreState<Double>, CoreState<Double>>, TiltStateSet> {
+public class TiltComponent implements CoreModule, HasStates<Pair<LeftTiltServoStateSet, RightTiltServoStateSet>, TiltStateSet> {
 
     public final CoreServo<LeftTiltServoStateSet> leftTiltServo;
     public final CoreServo<RightTiltServoStateSet> rightTiltServo;
     public TiltComponent(){
-        leftTiltServo= new CoreServo<>(GlobalStorage.leftTiltServoName,new LeftTiltServoStateSet());
-        rightTiltServo = new CoreServo<>(GlobalStorage.rightTiltServoName,new RightTiltServoStateSet());
-        this.states = new TiltStateSet(leftTiltServo.getStates(),rightTiltServo .getStates());
-        states.own(this);
+        leftTiltServo= new CoreServo<>(GlobalStorage.leftTiltServoName,LeftTiltServoStateSet.INACTIVE);
+        rightTiltServo = new CoreServo<>(GlobalStorage.rightTiltServoName,RightTiltServoStateSet.INACTIVE);
+        this.states = TiltStateSet.class;
+        state(TiltStateSet.DEFAULT);
     }
 
     public CoreOpMode instance = null;
 
     public void initCore(){
-        instance = CoreOpMode.getInstance();
-        instance.install(Hubs.CONTROL,rightTiltServo,1.0);
-        instance.install(Hubs.CONTROL,leftTiltServo,1.0);
-        instance.execute(command(states.DEFAULT));
+        instance = CoreOpMode.instance();
+        instance.install(rightTiltServo,1.0);
+        instance.install(leftTiltServo,1.0);
     }
 
     public void loopCore(){}
-   private final TiltStateSet states;
+   private final Class<TiltStateSet> states;
     @Override
-    public TiltStateSet getStates(){
+    public Class<TiltStateSet> states(){
         return states;
     }
 
-    private CoreState<Pair<CoreState<Double>, CoreState<Double>>> currState = null;
+    private TiltStateSet currState = null;
     @Override
-    public CoreState<Pair<CoreState<Double>, CoreState<Double>>> currentState() {
+    public TiltStateSet state() {
         return currState;
     }
 
     @Override
-    public void setState(CoreState<Pair<CoreState<Double>, CoreState<Double>>> state) {
-        CoreState<Double> fv = state.getValue().first;
-        CoreState<Double> sv = state.getValue().second;
-        fv.getOwner().setState(fv);
-        sv.getOwner().setState(sv);
+    public void state(TiltStateSet state) {
+        leftTiltServo.state(state.value().first);
+        rightTiltServo.state(state.value().second);
         currState = state;
     }
 }
