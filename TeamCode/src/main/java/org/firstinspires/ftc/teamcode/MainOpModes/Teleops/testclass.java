@@ -16,8 +16,8 @@ public class testclass extends CoreOpMode {
     @Override
     public void onInit() {
         EventBus.subscribe(CoreButton.ButtonPressEvent.class, (event) -> {
-            CoreButton button = event.getButton();
-            Button type = button.getButton();
+            CoreButton button = event.button();
+            Button type = button.button();
             if (type == Button.CROSS1) {
                 System.out.println("Button " + Button.CROSS1 + " was pressed!");
             }

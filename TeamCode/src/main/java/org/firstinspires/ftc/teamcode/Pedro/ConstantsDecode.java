@@ -1,18 +1,19 @@
 package org.firstinspires.ftc.teamcode.Pedro;
 
-import com.pedropathing.controllers.Controller;
-import com.pedropathing.follower.Follower;
 import com.pedropathing.algorithm.Foresight;
 import com.pedropathing.algorithm.ForesightConfig;
+import com.pedropathing.controllers.Controller;
+import com.pedropathing.follower.Follower;
 import com.pedropathing.math.Matrix;
 import com.pedropathing.math.Vector2D;
 import com.pedropathing.revhub.drivetrains.Mecanum;
 import com.pedropathing.revhub.drivetrains.MecanumConfig;
-import com.pedropathing.revhub.localizers.PinpointLocalizer;
 import com.pedropathing.revhub.localizers.PinpointConfig;
+import com.pedropathing.revhub.localizers.PinpointLocalizer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,10 +53,10 @@ public class ConstantsDecode implements FollowerConstants {
     // since that field's 3.0 mapping is itself unconfirmed above, this is currently identical to foresightConfig.
     public static ForesightConfig foresightConfigFarAuto = foresightConfig;
 
-    public static String frontRightName         = "frontright";
-    public static String frontLeftName          = "frontleft";
-    public static String backRightName          = "backright";
-    public static String backLeftName           = "backleft";
+    public static String frontRightName = "frontright";
+    public static String frontLeftName = "frontleft";
+    public static String backRightName = "backright";
+    public static String backLeftName = "backleft";
     public static MecanumConfig drivetrainConfig = new MecanumConfig(c -> {
         c.frontLeftName.set(frontLeftName);
         c.frontRightName.set(frontRightName);
@@ -98,10 +99,11 @@ public class ConstantsDecode implements FollowerConstants {
     public static Follower createPhotonFollower(HardwareMap hardwareMap) {
         applyYawScalar(hardwareMap);
         Mecanum drivetrain = new Mecanum(hardwareMap, drivetrainConfig);
-        SparkPinpointLocalizer   localizer = new SparkPinpointLocalizer(hardwareMap, localizerConfig);
+        SparkPinpointLocalizer localizer = new SparkPinpointLocalizer(hardwareMap, localizerConfig);
         Foresight algorithm = new Foresight(foresightConfigFarAuto);
         return new Follower(localizer, drivetrain, algorithm);
     }
+
     public static Follower createBlazeFollower(HardwareMap hardwareMap) {
         applyYawScalar(hardwareMap);
         SparkMecanum drivetrain = new SparkMecanum(hardwareMap, drivetrainConfig);
@@ -116,7 +118,7 @@ public class ConstantsDecode implements FollowerConstants {
     }
 
     @Override
-    public double getVelocityConstraint() {
+    public double velocityConstraint() {
         return 4.0; // hey don't ask why 4.0 that's also in the main class and in the Pedro documentation so ima leave it be
     }
 }

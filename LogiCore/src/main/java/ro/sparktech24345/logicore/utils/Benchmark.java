@@ -8,8 +8,12 @@ public class Benchmark {
      * Logs execution time to both telemetry and console.
      */
     public static void of(String name, Runnable run) {
+        Benchmark.of(name, CoreOpMode.instance().logger(), run);
+    }
+
+    public static void of(String name, Logger log, Runnable run) {
         PreciseTimer bm = new PreciseTimer(name).start();
         run.run();
-        bm.log(CoreOpMode.getInstance().getCoreTelemetry());
+        bm.log(log);
     }
 }

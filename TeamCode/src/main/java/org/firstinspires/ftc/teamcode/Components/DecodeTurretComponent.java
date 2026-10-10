@@ -6,18 +6,17 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
 
-import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.hardware.CoreMotor;
 import ro.sparktech24345.logicore.hardware.Controllers.PIDController;
-import ro.sparktech24345.logicore.states.BaseStateSet;
+
 
 /**
  * Turret rotation: PD position control with a feedforward on the robot's angular velocity,
  * so the turret keeps pointing at the goal while the robot turns.
  * Refactored from the old repo's Experimental TurretComponent (MotorComponent subclass).
- *
+ * <p>
  * The turret angle is in "turret degrees" in [MIN_ANGLE, MAX_ANGLE] (encoder ticks / ticksPerDegree).
  * Either call {@link #setTargetAngle(double)} directly, or {@link #aimAt(double, double)} to have the
  * component compute the angle from the follower pose every loop.
@@ -26,27 +25,41 @@ import ro.sparktech24345.logicore.states.BaseStateSet;
 public class DecodeTurretComponent implements CoreModule {
     // Tunables (FTC Dashboard). Defaults are the values from the old robot's ComponentMakerMethods / teleop.
     public static double kP = 0.035, kI = 0, kD = 0.0015;
-    /** Power per (deg/s) of robot angular velocity, fights heading lag. */
+    /**
+     * Power per (deg/s) of robot angular velocity, fights heading lag.
+     */
     public static double kV = 0.003;
     public static double kF = 0;
-    /** Static friction kick, applied while error is above {@link #staticKickThreshold}. */
+    /**
+     * Static friction kick, applied while error is above {@link #staticKickThreshold}.
+     */
     public static double kStatic = 0.06;
     public static double staticKickThreshold = 0.25;
-    /** Encoder ticks per turret degree (old code: setResolution(5)). */
+    /**
+     * Encoder ticks per turret degree (old code: setResolution(5)).
+     */
     public static double ticksPerDegree = 5;
     public static double MIN_ANGLE = 0, MAX_ANGLE = 360;
-    /** Seconds to extrapolate the robot position by, to compensate for the ball's flight time. */
+    /**
+     * Seconds to extrapolate the robot position by, to compensate for the ball's flight time.
+     */
     public static double lookaheadSeconds = 0.45;
-    /** Added to the computed aim angle (replaces the old teleop's rotationAdder / farZoneCameraAdder). */
+    /**
+     * Added to the computed aim angle (replaces the old teleop's rotationAdder / farZoneCameraAdder).
+     */
     public static double aimOffsetDegrees = 0;
-    /** The old teleop subtracted the field-relative angle (flagged with a TODO); flip if the turret aims mirrored. */
+    /**
+     * The old teleop subtracted the field-relative angle (flagged with a TODO); flip if the turret aims mirrored.
+     */
     public static boolean invertAim = true;
-    /** Camera offset from the robot center, forward along the heading (old: x_offset). */
+    /**
+     * Camera offset from the robot center, forward along the heading (old: x_offset).
+     */
     public static double cameraForwardOffset = 8;
     public static double error;
 
-    public final CoreMotor<BaseStateSet<Double>> rotationMotor =
-            new CoreMotor<>(GlobalStorage.turretRotationMotorName, new BaseStateSet<>());
+    public final CoreMotor<EmptyStateSet> rotationMotor =
+            new CoreMotor<>(GlobalStorage.turretRotationMotorName, EmptyStateSet.ZERO);
 
     private final PIDController pid = new PIDController(kP, kI, kD, kF);
     private CoreOpMode instance = null;
@@ -62,27 +75,45 @@ public class DecodeTurretComponent implements CoreModule {
     private double vx = 0, vy = 0, robotAngularVel = 0;
     private double currentX, currentY, currentHeadingDeg;
 
-    /** Called once during OpMode initialization - set up hardware and initial state */
+    private static double wrapDegrees(double deg) {
+        while (deg > 180) deg -= 360;
+        while (deg < -180) deg += 360;
+        return deg;
+    }
+
+    private static double clamp(double v, double lo, double hi) {
+        return Math.max(lo, Math.min(hi, v));
+    }
+
+    // ================== Control ==================
+
+    /**
+     * Called once during OpMode initialization - set up hardware and initial state
+     */
     public void initCore() {
-        instance = CoreOpMode.getInstance();
-        instance.install(Hubs.CONTROL, rotationMotor, 1);
+        instance = CoreOpMode.instance();
+        instance.install(rotationMotor, 1);
         rotationMotor.encoded(true);
         rotationMotor.zeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    /** Called every loop cycle - update module logic */
+    // ================== Pose tracking ==================
+
+    /**
+     * Called every loop cycle - update module logic
+     */
     public void loopCore() {
-        updateRobotPose(instance.getFollower().pose());
+        updateRobotPose(instance.follower().pose());
 
         if (!enabled) {
-            rotationMotor.setWantedPower(0);
+            rotationMotor.motorPower(0);
             return;
         }
         if (autoAim) targetAngle = calculateAimAngle(aimX, aimY, lookaheadSeconds);
-        rotationMotor.setWantedPower(calculatePower());
+        rotationMotor.motorPower(calculatePower());
     }
 
-    // ================== Control ==================
+    // ================== Aiming ==================
 
     private double calculatePower() {
         pid.setPIDFConstants(kP, kI, kD, kF);
@@ -96,9 +127,9 @@ public class DecodeTurretComponent implements CoreModule {
         return clamp(output, -1, 1);
     }
 
-    // ================== Pose tracking ==================
-
-    /** Estimates robot velocity and angular velocity from consecutive poses. */
+    /**
+     * Estimates robot velocity and angular velocity from consecutive poses.
+     */
     public void updateRobotPose(Pose robotPose) {
         double x = robotPose.x();
         double y = robotPose.y();
@@ -121,8 +152,6 @@ public class DecodeTurretComponent implements CoreModule {
         lastNanos = now;
     }
 
-    // ================== Aiming ==================
-
     /**
      * Turret angle needed to face (targetX, targetY), extrapolating the robot position by
      * lookaheadSeconds using its current velocity. Result is in [0, 360).
@@ -132,6 +161,8 @@ public class DecodeTurretComponent implements CoreModule {
         double predY = currentY + vy * lookaheadSeconds;
         return toTurretAngle(predX, predY, currentHeadingDeg, targetX, targetY);
     }
+
+    // ================== API ==================
 
     /**
      * Same as {@link #calculateAimAngle} but from the camera's pose (e.g. a Limelight/odometry fused pose)
@@ -152,42 +183,51 @@ public class DecodeTurretComponent implements CoreModule {
         return ((angle % 360) + 360) % 360;
     }
 
-    // ================== API ==================
-
-    /** Manual aim: stops auto-aiming and holds this turret angle. */
-    public void setTargetAngle(double degrees) {
-        autoAim = false;
-        targetAngle = degrees;
-    }
-
-    /** Continuously aim at a field point (recomputed every loop from the follower pose). */
+    /**
+     * Continuously aim at a field point (recomputed every loop from the follower pose).
+     */
     public void aimAt(double x, double y) {
         autoAim = true;
         aimX = x;
         aimY = y;
     }
 
-    public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public double getAngle() {
         double ticks = rotationMotor.currentPosition();
         return Double.isNaN(ticks) ? 0 : ticks / ticksPerDegree;
     }
-    public double getTargetAngle() { return targetAngle; }
-    public double getError() { return targetAngle - getAngle(); }
-    public double getVx() { return vx; }
-    public double getVy() { return vy; }
-    public double getRobotAngularVelocity() { return robotAngularVel; }
+
+    public double getTargetAngle() {
+        return targetAngle;
+    }
+
+    /**
+     * Manual aim: stops auto-aiming and holds this turret angle.
+     */
+    public void setTargetAngle(double degrees) {
+        autoAim = false;
+        targetAngle = degrees;
+    }
+
+    public double getError() {
+        return targetAngle - getAngle();
+    }
+
+    public double getVx() {
+        return vx;
+    }
 
     // ================== Helpers ==================
 
-    private static double wrapDegrees(double deg) {
-        while (deg > 180) deg -= 360;
-        while (deg < -180) deg += 360;
-        return deg;
+    public double getVy() {
+        return vy;
     }
 
-    private static double clamp(double v, double lo, double hi) {
-        return Math.max(lo, Math.min(hi, v));
+    public double getRobotAngularVelocity() {
+        return robotAngularVel;
     }
 }

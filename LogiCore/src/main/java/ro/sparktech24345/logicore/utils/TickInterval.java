@@ -9,6 +9,7 @@ public class TickInterval {
     public TickInterval(double interval) {
         this(interval, 0);
     }
+
     public TickInterval(double interval, double delay) {
         this.interval = interval;
         this.delay = delay;
@@ -21,40 +22,62 @@ public class TickInterval {
         TICKS,
         TIME,
     }
+
     private long ticks = 0;
     private final PreciseTimer timer = new PreciseTimer().start();
     private boolean firstTick = true;
-    public void setFirstTick(boolean value) { this.firstTick = value; }
-    public boolean getFirstTick() { return this.firstTick; }
+
+    public void firstTick(boolean value) {
+        this.firstTick = value;
+    }
+
+    public boolean firstTick() {
+        return this.firstTick;
+    }
 
     private IntervalMode mode = IntervalMode.TICKS;
-    public void setMode(IntervalMode value) { this.mode = value; }
-    public IntervalMode getMode() { return this.mode; }
+
+    public void mode(IntervalMode value) {
+        this.mode = value;
+    }
+
+    public IntervalMode mode() {
+        return this.mode;
+    }
+
     private TimeUnit timeUnit = TimeUnit.MILLIS;
-    public void setTimeUnit(TimeUnit value) { this.timeUnit = value; }
-    public TimeUnit getTimeUnit() { return this.timeUnit; }
+
+    public void timeUnit(TimeUnit value) {
+        this.timeUnit = value;
+    }
+
+    public TimeUnit timeUnit() {
+        return this.timeUnit;
+    }
 
     /**
      * Check if the current tick should trigger an update.
      * Note: This increments the internal counter, so it should be called exactly once per loop.
+     *
      * @return true if an update is due
      */
     public boolean shouldTick() {
         switch (mode) {
             case TICKS: {
-                ticks %= (long)interval;
-                boolean update = ticks == (long)delay;
+                ticks %= (long) interval;
+                boolean update = ticks == (long) delay;
                 ++ticks;
                 return update;
             }
             case TIME: {
-                double elapsed = timer.getTime().get(timeUnit);
+                double elapsed = timer.time().get(timeUnit);
                 if (elapsed >= interval) {
                     timer.start();
                     return true;
                 } else return false;
             }
-            default: return false;
+            default:
+                return false;
         }
     }
 }

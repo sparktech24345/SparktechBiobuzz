@@ -1,13 +1,26 @@
 package org.firstinspires.ftc.teamcode.Components;
 
-import ro.sparktech24345.logicore.states.BaseStateSet;
-import ro.sparktech24345.logicore.states.CoreState;
+import ro.sparktech24345.logicore.states.StateSet;
 
-public class LeftGateServoStateSet extends BaseStateSet<Double> {
-    public LeftGateServoStateSet() {
-        super();
+public enum LeftGateServoStateSet implements StateSet<Double> {
+
+    OPEN("L_OPEN", 0.65),
+    CLOSED("L_CLOSED", 0.38);
+
+    private final String name;
+    private final double val;
+
+    LeftGateServoStateSet(String name, double value) {
+        this.name = name;
+        this.val = value;
     }
 
-    public final CoreState<Double> OPEN = state(0.65, "L_OPEN");
-    public final CoreState<Double> CLOSED = state(0.38, "L_CLOSED");
+    @Override
+    public Double value() {
+        return val;
+    }
+
+    public String stateName() {
+        return name;
+    }
 }

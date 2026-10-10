@@ -5,8 +5,16 @@ package ro.sparktech24345.logicore.events;
  * Events can be cancelled to prevent further processing by listeners.
  */
 public class Event {
-    /** Whether this event has been cancelled and should stop processing */
+    /**
+     * Whether this event has been cancelled and should stop processing
+     */
     private boolean cancelled = false;
-    public boolean cancelled() { return this.cancelled; }
-    public void cancelled(boolean val) { this.cancelled = val; }
+
+    public boolean cancelled() {
+        return this.cancelled;
+    }
+
+    public void cancelled(boolean val) {
+        this.cancelled = val;
+    }
 }

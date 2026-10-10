@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Helpers;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 @Config
 public class GlobalStorage {
@@ -45,7 +44,6 @@ public class GlobalStorage {
     public static String distanceSensorName = "distanceSensor";
 
 
-
     /// =============================== Sensors ===============================
 
     public static String pinpointName = "pinpoint";
@@ -56,6 +54,6 @@ public class GlobalStorage {
     public static double ballColorTresholdBlue = 6;
     public static double ballColorTresholdGreen = 6;
     public static double leftSensorColorMultiplier = 0.6;
-    public static double camId=0;
+    public static double camId = 0;
 
 }
