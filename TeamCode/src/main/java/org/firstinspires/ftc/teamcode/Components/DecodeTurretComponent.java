@@ -1,16 +1,18 @@
 package org.firstinspires.ftc.teamcode.Components;
 
+import static com.pedropathing.utils.Utils.lerp;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
 
+import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.hardware.CoreMotor;
 import ro.sparktech24345.logicore.hardware.Controllers.PIDController;
-
 
 /**
  * Turret rotation: PD position control with a feedforward on the robot's angular velocity,
@@ -74,6 +76,15 @@ public class DecodeTurretComponent implements CoreModule {
     private long lastNanos = 0;
     private double vx = 0, vy = 0, robotAngularVel = 0;
     private double currentX, currentY, currentHeadingDeg;
+    private double D2_rotationAdder = 0;
+    private double usedAimX, usedAimY;
+    private double targetXCenter = 128; // 130
+    private double targetYCenter = 53;
+
+    private double targetXRightPanel = 127;
+    private double targetYRightPanel = 48;
+    private double targetXLeftPanel = 123.5;
+    private double targetYLeftPanel = 53;
 
     private static double wrapDegrees(double deg) {
         while (deg > 180) deg -= 360;
@@ -109,12 +120,53 @@ public class DecodeTurretComponent implements CoreModule {
             rotationMotor.motorPower(0);
             return;
         }
-        if (autoAim) targetAngle = calculateAimAngle(aimX, aimY, lookaheadSeconds);
+        calculateTargetPosition();
+        if (autoAim) targetAngle = calculateAimAngle(usedAimX, usedAimY, lookaheadSeconds);
         rotationMotor.motorPower(calculatePower());
     }
 
     // ================== Aiming ==================
 
+    private void calculateTargetPosition(){
+        usedAimX = aimX;
+        usedAimY = aimY;
+
+        double robotToGoalAbsoluteAngle = Math.abs(angleFromTargetToRobot(aimX, aimY));
+        if (robotToGoalAbsoluteAngle < 30) {
+            // alpha is 1.0 at 0 degrees (Full Right) and 0.0 at 30 degrees (Center)
+            double alpha = (30.0 - robotToGoalAbsoluteAngle) / 30.0;
+            usedAimX = lerp(targetXCenter, targetXRightPanel, alpha);
+            usedAimY = lerp(targetYCenter, targetYRightPanel, alpha);
+
+        } else if (robotToGoalAbsoluteAngle > 65) {
+            // alpha is 0.0 at 65 degrees (Center) and 1.0 at 90+ degrees (Full Left)
+            // clamp alpha between 0 and 1 to prevent the target from sliding off the goal
+            double alpha = Math.min(1.0, (robotToGoalAbsoluteAngle - 65.0) / 25.0);
+            usedAimX = lerp(targetXCenter, targetXLeftPanel, alpha);
+            usedAimY = lerp(targetYCenter, targetYLeftPanel, alpha);
+
+        } else {
+            //if between 30 and 65, stay locked on Center
+            usedAimX = targetXCenter;
+            usedAimY = targetYCenter;
+        }
+    }
+
+    private double angleFromTargetToRobot(double targetX, double targetY) {
+        // from pose to point
+
+        double dx = currentX - aimX;
+        double dy = currentY - aimY;
+
+        // atan2(dx, dy) gives an angle in radians in the range [-PI, PI]
+        // matching:
+        // same X -> 0 or 180
+        // same Y -> +90 or -90
+        // left negative, right positive
+        double angleRadians = Math.atan2(dx, dy);
+
+        return Math.toDegrees(angleRadians) + 90;
+    }
     private double calculatePower() {
         pid.setPIDFConstants(kP, kI, kD, kF);
 
@@ -179,22 +231,39 @@ public class DecodeTurretComponent implements CoreModule {
     private double toTurretAngle(double fromX, double fromY, double headingDeg, double targetX, double targetY) {
         double worldAngle = Math.toDegrees(Math.atan2(targetY - fromY, targetX - fromX));
         double relative = wrapDegrees(worldAngle - headingDeg);
+        relative += D2_rotationAdder;
         double angle = (invertAim ? -relative : relative) + aimOffsetDegrees;
         return ((angle % 360) + 360) % 360;
     }
 
-    /**
-     * Continuously aim at a field point (recomputed every loop from the follower pose).
-     */
+//    public static double distanceToVelocityFunction(double distance) {
+//        if (distance <= 1.0) return closeVelo;
+//        if (distance > 2.9)  return grade1farVelo * distance + grade0farVelo + farVeloOffset;
+//
+//        return grade1VeloClose * distance + grade0VeloClose;
+//    }
+
+    // ================== API ==================
+
+    /** Manual aim: stops auto-aiming and holds this turret angle. */
+
+    /** Continuously aim at a field point (recomputed every loop from the follower pose). */
     public void aimAt(double x, double y) {
         autoAim = true;
         aimX = x;
         aimY = y;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public void startAiming(double x) {
+        autoAim = true;
+        D2_rotationAdder = x;
     }
+
+    public void decideCoordinates() {
+
+    }
+
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
 
     public double getAngle() {
         double ticks = rotationMotor.currentPosition();

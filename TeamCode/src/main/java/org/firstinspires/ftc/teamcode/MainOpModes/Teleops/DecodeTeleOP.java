@@ -54,6 +54,8 @@ public class DecodeTeleOP extends CoreOpMode {
     public final CoreColorSensor rightColorSensor = new CoreColorSensor(GlobalStorage.colorSensorRightName);
     public final CoreLimelight limelight = new CoreLimelight(GlobalStorage.limelightName);
     protected GetColorCase colorCase = GetColorCase.NOSORT;
+    public final double D2_rotationAdder = 0;
+    public final double D2_velocityAdder = 0;
     protected Color ballColorRight;
     protected Color ballColorLeft;
 
