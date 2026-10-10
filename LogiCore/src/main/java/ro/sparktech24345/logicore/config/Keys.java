@@ -3,8 +3,6 @@ package ro.sparktech24345.logicore.config;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import kotlin.text.Regex;
-
 public class Keys {
 
     private static final int SHORT_MASK = 0xFFFF;
@@ -16,7 +14,8 @@ public class Keys {
     public static int key(String conn, int port) {
         Pattern pattern = Pattern.compile("(?<=module )[0-9]*");
         Matcher matcher = pattern.matcher(conn);
-        int id = Integer.parseInt(String.valueOf(matcher.find()));
+        int id = 0;
+        if (matcher.find()) id = Integer.parseInt(matcher.group());
         return key(id, port);
     }
 
