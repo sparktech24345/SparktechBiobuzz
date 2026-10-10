@@ -1,5 +1,8 @@
 package ro.sparktech24345.logicore.config;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import kotlin.text.Regex;
 
 public class Keys {
@@ -11,8 +14,9 @@ public class Keys {
     }
 
     public static int key(String conn, int port) {
-        Regex rg = new Regex("(?<=module )[0-9]*");
-        int id = Integer.parseInt(String.valueOf(rg.find(conn, 0)));
+        Pattern pattern = Pattern.compile("(?<=module )[0-9]*");
+        Matcher matcher = pattern.matcher(conn);
+        int id = Integer.parseInt(String.valueOf(matcher.find()));
         return key(id, port);
     }
 
