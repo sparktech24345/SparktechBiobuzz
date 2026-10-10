@@ -212,6 +212,8 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             });
             Benchmark.of("independent modules output", independentModules::writeCore);
         });
+
+        coreTelemetry.dumpMap(); // save snapshot of current telemetry to send
     }
 
     public void setMotorPower(DcMotorEx motor, double power) {
