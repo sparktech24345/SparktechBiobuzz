@@ -328,7 +328,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
                 BlazeDummyPlug.closeBlazeFTC();
             } catch (Exception ignored) {}
         }
-        executor.shutdownNow();
+        if(executor != null) executor.shutdownNow();
         executor = null;
         instance = null;
     }
@@ -400,7 +400,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             }
         } finally {
             stopCore();
-            executor.shutdownNow();
+            if(executor != null) executor.shutdownNow();
             executor = null;
             instance = null;
         }
@@ -444,7 +444,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             }
         } finally {
             stopCore();
-            executor.shutdownNow();
+            if(executor != null) executor.shutdownNow();
             executor = null;
             instance = null;
         }
