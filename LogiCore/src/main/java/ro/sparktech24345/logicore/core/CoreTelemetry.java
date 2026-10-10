@@ -166,10 +166,36 @@ public class CoreTelemetry implements CoreModule {
             if (frameToSend == null) continue;
 
 
+            //protects the receiver from getting data faster than 2ms intervals + thread sleeps
+            while (true) {
+                long targetTimeNano = lastJniSendTimeNano + MIN_JNI_GAP_NANO;
+                long timeLeftNano = targetTimeNano - System.nanoTime();
+
+                // Break out instantly if time is up, or if the OpMode is stopping
+                if (timeLeftNano <= 0 || !running || Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                // If we have plenty of time left (>1.5ms), take a safe 1ms nap to protect the CPU/battery
+                if (timeLeftNano > 1_500_000L) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                } else {
+                    // Micro-window fallback: Keep the thread active without pinning the core architecture
+                    int dummy = 0;
+                    dummy ^= 1;
+                }
+            }
+
             // Execute the flush operation on the background thread using the frozen snapshot
             flushTelemetry(frameToSend);
         }
     }
+
 
     private void flushTelemetry(TelemetryFrameSnapshot snapshot) {
         try {
