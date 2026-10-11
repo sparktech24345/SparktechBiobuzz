@@ -2,6 +2,8 @@ package ro.sparktech24345.logicore.core;
 
 import java.util.ArrayList;
 
+import ro.sparktech24345.logicore.utils.Benchmark;
+
 /**
  * Manages a collection of modules with priority-based execution order.
  * Prevents module installation after the OpMode starts to ensure consistent state.
@@ -78,7 +80,7 @@ public class ModuleHandler implements ModuleContainer {
 
     public void writeCore() {
         for (CoreModule module : modules) {
-            module.writeCore();
+            Benchmark.of("module write " + module, module::writeCore);
         }
     }
 }

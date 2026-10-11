@@ -1,11 +1,17 @@
 package ro.sparktech24345.logicore.config;
 
+import android.util.Pair;
+
+import com.acmerobotics.dashboard.config.Config;
+
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import dev.anygeneric.blazeftc.BlazeFTC;
 
+@Config
 public class MotorMap {
+    public static boolean doBulkWrites = true;
     private static final ConcurrentHashMap<Integer, Double> powers = new ConcurrentHashMap<>();
 
     public static void set(int key, double value) {
@@ -32,11 +38,22 @@ public class MotorMap {
                     break;
             }
         }
-        BlazeFTC.setMotorPowers(0, pc[0], pc[1], pc[2], pc[3]);
-        BlazeFTC.setMotorPowers(1, pe[0], pe[1], pe[2], pe[3]);
-    }
-
-    public static void clear() {
+        boolean writeC = false;
+        for (double d : pc) {
+            if (!Double.isNaN(d)) writeC = true;
+        }
+        boolean writeE = false;
+        for (double d : pe) {
+            if (!Double.isNaN(d)) writeE = true;
+        }
+        if (writeC && doBulkWrites) BlazeFTC.setMotorPowers(0, pc[0], pc[1], pc[2], pc[3]);
+        else for (int i = 0; i < 4; ++i)
+            if (Double.isFinite(pc[i]))
+                BlazeFTC.setMotorPower(Hubs.CONTROL.id(), i, pc[i]);
+        if (writeE && doBulkWrites) BlazeFTC.setMotorPowers(1, pe[0], pe[1], pe[2], pe[3]);
+        else for (int i = 0; i < 4; ++i)
+            if (Double.isFinite(pe[i]))
+                BlazeFTC.setMotorPower(Hubs.EXPANSION.id(), i, pe[i]);
         powers.clear();
     }
 }

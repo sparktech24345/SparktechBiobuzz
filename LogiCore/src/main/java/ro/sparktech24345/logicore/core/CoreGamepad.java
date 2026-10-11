@@ -49,7 +49,7 @@ public class CoreGamepad implements CoreModule {
             if (CoreOpMode.instance().config().performanceEngine.get()
                     == PerformanceEngine.BLAZE)
                 CoreOpMode.instance().updateGamepads();
-            for (CoreButton button : buttons.values()) button.update();
+            CoreButton.advanceFrame();
         });
     }
 

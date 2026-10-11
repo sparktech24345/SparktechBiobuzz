@@ -23,7 +23,7 @@ public class Test_PIDF_HomemadePID extends LinearOpMode {
     DcMotorEx turretSpinL;
     DcMotorEx turretSpinR;
     PIDController piDcontroller;
-    public static double P =0.0004;
+    public static double P = 0.0004;
     public static double D = 0;
     public static double I = 0;
     public static double F = -0.00038;

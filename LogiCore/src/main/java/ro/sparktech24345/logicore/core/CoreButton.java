@@ -85,12 +85,25 @@ public class CoreButton {
         }
     }
 
+    private static int globalFrameCount = 0;
+    public static void advanceFrame() {
+        globalFrameCount++;
+    }
+    private int lastUpdatedFrame = -1;
+
+    public void ensureUpdated() {
+        if (lastUpdatedFrame == globalFrameCount) return;
+        lastUpdatedFrame = globalFrameCount;
+        updateInternal();
+    }
+
     /**
      * True while button is currently held down
      */
     private boolean held = false;
 
     public boolean held() {
+        ensureUpdated();
         return this.held;
     }
 
@@ -125,6 +138,7 @@ public class CoreButton {
     private boolean pressed = false;
 
     public boolean pressed() {
+        ensureUpdated();
         return this.pressed;
     }
 
@@ -134,6 +148,7 @@ public class CoreButton {
     private boolean released = false;
 
     public boolean released() {
+        ensureUpdated();
         return this.released;
     }
 
@@ -143,6 +158,7 @@ public class CoreButton {
     private boolean toggled = false;
 
     public boolean toggled() {
+        ensureUpdated();
         return this.toggled;
     }
 
@@ -162,6 +178,7 @@ public class CoreButton {
     private TimeSpec holdTime = new TimeSpec(0);
 
     public TimeSpec holdTime() {
+        ensureUpdated();
         return this.holdTime;
     }
 
@@ -189,6 +206,7 @@ public class CoreButton {
      * Get the raw input value without any processing
      */
     double raw() {
+        ensureUpdated();
         return pressedSup.getAsDouble();
     }
 
@@ -197,17 +215,26 @@ public class CoreButton {
      * Should be called every frame to maintain accurate state tracking.
      */
     void update() {
+        ensureUpdated();
+    }
+
+    void updateInternal() {
         boolean input = MathUtils.eval(pressedSup.getAsDouble());
         pressed = wasPressed.getAsBoolean();
         released = wasReleased.getAsBoolean();
         held = input;
+
+        boolean hasPress = EventBus.hasListeners(ButtonPressEvent.class);
+        boolean hasRelease = EventBus.hasListeners(ButtonReleaseEvent.class);
+        boolean hasToggle = EventBus.hasListeners(ButtonToggleEvent.class);
+
         if (pressed) {
-            EventBus.emit(new ButtonPressEvent(this));
+            if (hasPress) EventBus.emit(new ButtonPressEvent(this));
             heldTimer.start();
             toggledOnPress = !toggledOnPress;
         }
         if (released) {
-            EventBus.emit(new ButtonReleaseEvent(this));
+            if (hasRelease) EventBus.emit(new ButtonReleaseEvent(this));
             this.holdTime = heldTimer.time();
             toggledOnRelease = !toggledOnRelease;
         }
@@ -215,9 +242,13 @@ public class CoreButton {
         switch (toggleMode) {
             case ON_PRESS:
                 toggled = toggledOnPress;
+                break;
             case ON_RELEASE:
                 toggled = toggledOnRelease;
+                break;
         }
-        if (toggled != lastToggle) EventBus.emit(new ButtonToggleEvent(this, toggled));
+        if (toggled != lastToggle && hasToggle) {
+            EventBus.emit(new ButtonToggleEvent(this, toggled));
+        }
     }
 }

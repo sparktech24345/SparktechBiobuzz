@@ -16,11 +16,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
+import ro.sparktech24345.logicore.config.Keys;
 import ro.sparktech24345.logicore.core.CoreOpMode;
+import ro.sparktech24345.logicore.utils.Benchmark;
 
 public class SparkMecanum implements Drivetrain {
     public final MecanumConfig config;
-    private final CachingDcMotorEx[] motors;
+    private final DcMotorEx[] motors;
     public final double[] wheelPowers = new double[4];
 
     private static final int FL = 0;
@@ -28,17 +30,20 @@ public class SparkMecanum implements Drivetrain {
     private static final int BL = 2;
     private static final int BR = 3;
 
+    private int[] keys = {0, 0, 0, 0};
+
     private double powerScale = 1.0;
     private DrivePowers drivePowers = DrivePowers.zero();
+    private volatile boolean isStopped = false;
 
     public SparkMecanum(HardwareMap map, MecanumConfig config) {
         this.config = config;
 
-        motors = new CachingDcMotorEx[]{
-                map.get(CachingDcMotorEx.class, config.frontLeftName.get()),
-                map.get(CachingDcMotorEx.class, config.frontRightName.get()),
-                map.get(CachingDcMotorEx.class, config.backLeftName.get()),
-                map.get(CachingDcMotorEx.class, config.backRightName.get())
+        motors = new DcMotorEx[]{
+                map.get(DcMotorEx.class, config.frontLeftName.get()),
+                map.get(DcMotorEx.class, config.frontRightName.get()),
+                map.get(DcMotorEx.class, config.backLeftName.get()),
+                map.get(DcMotorEx.class, config.backRightName.get())
         };
 
         motors[FL].setDirection(config.frontLeftDirection.get());
@@ -46,7 +51,13 @@ public class SparkMecanum implements Drivetrain {
         motors[BL].setDirection(config.backLeftDirection.get());
         motors[BR].setDirection(config.backRightDirection.get());
 
+        keys[FL] = Keys.key(motors[FL].getController().getConnectionInfo(), motors[FL].getPortNumber());
+        keys[FR] = Keys.key(motors[FR].getController().getConnectionInfo(), motors[FR].getPortNumber());
+        keys[BL] = Keys.key(motors[BL].getController().getConnectionInfo(), motors[BL].getPortNumber());
+        keys[BR] = Keys.key(motors[BR].getController().getConnectionInfo(), motors[BR].getPortNumber());
+
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        isStopped = false;
     }
 
     @SuppressLint("DefaultLocale")
@@ -65,10 +76,13 @@ public class SparkMecanum implements Drivetrain {
         for (int i = 0; i < wheelPowers.length; i++) {
             this.wheelPowers[i] = wheelPowers[i] / maxPower;
         }
-        CoreOpMode.instance().setMotorPower(motors[FL], this.wheelPowers[FL]);
-        CoreOpMode.instance().setMotorPower(motors[FR], this.wheelPowers[FR]);
-        CoreOpMode.instance().setMotorPower(motors[BR], this.wheelPowers[BR]);
-        CoreOpMode.instance().setMotorPower(motors[BL], this.wheelPowers[BL]);
+
+        if (!CoreOpMode.instance().config().useDriveTrain.get()) {
+            CoreOpMode.instance().setMotorPower(keys[FL], motors[FL], this.wheelPowers[FL]);
+            CoreOpMode.instance().setMotorPower(keys[FR], motors[FR], this.wheelPowers[FR]);
+            CoreOpMode.instance().setMotorPower(keys[BR], motors[BR], this.wheelPowers[BR]);
+            CoreOpMode.instance().setMotorPower(keys[BL], motors[BL], this.wheelPowers[BL]);
+        }
     }
 
     public double[] computeWheelPowersUnnormalized(DrivePowers powers) {
@@ -115,11 +129,15 @@ public class SparkMecanum implements Drivetrain {
 
     @Override
     public void drive(DrivePowers powers, boolean manual) {
-        if (manual && config.manualBrakeMode.get())
-            setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        else
-            setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        applyDrive(powers);
+        isStopped = false;
+        Benchmark.of("follower Drive",() -> {
+            if (manual && config.manualBrakeMode.get())
+                setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            else
+                setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            applyDrive(powers);
+        });
+        CoreOpMode.instance().telemetry().addLine("follower has used motors");
     }
 
     @Override
@@ -128,16 +146,22 @@ public class SparkMecanum implements Drivetrain {
     }
 
     public void stop(boolean brake) {
+
+        if(isStopped) return;
+        isStopped = true;
+
         if (brake) {
             setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         } else {
             setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         }
-
-        CoreOpMode.instance().setMotorPower(motors[FL], 0);
-        CoreOpMode.instance().setMotorPower(motors[FR], 0);
-        CoreOpMode.instance().setMotorPower(motors[BR], 0);
-        CoreOpMode.instance().setMotorPower(motors[BL], 0);
+        if (!CoreOpMode.instance().config().useDriveTrain.get()) {
+            CoreOpMode.instance().setMotorPower(keys[FL], motors[FL], 0);
+            CoreOpMode.instance().setMotorPower(keys[FR], motors[FR], 0);
+            CoreOpMode.instance().setMotorPower(keys[BR], motors[BR], 0);
+            CoreOpMode.instance().setMotorPower(keys[BL], motors[BL], 0);
+        }
+        CoreOpMode.instance().telemetry().addLine("follower has stopped drivetrain");
     }
 
     @Override

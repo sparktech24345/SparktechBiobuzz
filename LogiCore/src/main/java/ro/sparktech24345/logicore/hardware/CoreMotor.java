@@ -12,6 +12,7 @@ import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.states.HasStates;
 import ro.sparktech24345.logicore.states.StateSet;
+import ro.sparktech24345.logicore.utils.CachingTracker;
 import ro.sparktech24345.logicore.utils.MathUtils;
 import ro.sparktech24345.logicore.utils.TickInterval;
 
@@ -21,7 +22,7 @@ import ro.sparktech24345.logicore.utils.TickInterval;
  */
 public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasStates<Double, T>, IsHardware {
     public CoreMotor(String name, T initialState) {
-        this(name, initialState, 0);
+        this(name, initialState, 0.02);
     }
 
     public CoreMotor(String name, T initialState, double threshold) {
@@ -32,23 +33,12 @@ public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasSta
         this.name = name;
         this.states = (Class<T>) initialState.getClass();
         state(initialState);
-        this.threshold = threshold;
+        this.tracker = new CachingTracker(threshold, 0);
         this.ticker = new TickInterval(interval);
     }
 
     private final String name;
-    private double threshold = 0;
-
-    public double threshold() {
-        return threshold;
-    }
-
-    public void threshold(double value) {
-        this.threshold = value;
-    }
-
     private int key = 0;
-
     @Override
     public void key(int key) {
         this.key = key;
@@ -69,6 +59,10 @@ public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasSta
 
     public TickInterval ticker() {
         return this.ticker;
+    }
+    private final CachingTracker tracker;
+    public CachingTracker tracker() {
+        return this.tracker;
     }
 
     private final Class<T> states;
@@ -240,21 +234,11 @@ public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasSta
         return wantedPower;
     }
 
-    private double lastPow = 0;
-
     @Override
     public void writeCore() {
         if (!ticker.shouldTick()) return;
-        if (
-                MathUtils.abs(lastPow - wantedPower) <= threshold ||
-                        (wantedPower == 0 && lastPow != 0) ||
-                        (wantedPower >= 1.0 && lastPow < 1.0) ||
-                        (wantedPower <= -1.0 && lastPow > -1.0) ||
-                        Double.isNaN(lastPow)
-        ) {
+        if (tracker.shouldUpdate(wantedPower))
             CoreOpMode.instance().setMotorPower(key, motor, wantedPower);
-            lastPow = wantedPower;
-        }
     }
 
     public double velocity() {
