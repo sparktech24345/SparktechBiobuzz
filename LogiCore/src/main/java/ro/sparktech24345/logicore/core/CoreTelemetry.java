@@ -2,51 +2,69 @@ package ro.sparktech24345.logicore.core;
 
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-
-import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Future;
 
-import ro.sparktech24345.logicore.utils.Benchmark;
 import ro.sparktech24345.logicore.utils.TickInterval;
 
 /**
- * Thread-safe async telemetry implementation.
- * Uses ConcurrentHashMap as a staging buffer so main thread addData() calls
- * never collide with background thread tel.update() execution.
+ * Thread-safe async telemetry implementation optimized for custom architectures.
+ * Insulates the main loop from antenna hardware lag (2ms-19ms) while ensuring
+ * stable mathematical synchronization and a strict >=2ms receiver pacing gap.
  */
 public class CoreTelemetry implements CoreModule {
     private final MultipleTelemetry tel;
+
+    public Telemetry telemetry() {
+        return tel;
+    }
+
     private final TickInterval ticker;
 
-    // Buffer thread-safe pentru date, medii și linii
+    // 1. Private workspaces for the main loop thread (No thread contention)
     private final ConcurrentHashMap<String, Object> dataBuffer = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, AvgAccumulator> avgBuffer = new ConcurrentHashMap<>();
     private final List<String> lineBuffer = new CopyOnWriteArrayList<>();
 
-    private ExecutorService executor;
-    private final AtomicBoolean isUpdating = new AtomicBoolean(false);
+    // 2. High-performance, lock-free snapshot queue to carry frames to the background
+    private final ConcurrentLinkedQueue<TelemetryFrameSnapshot> frameQueue = new ConcurrentLinkedQueue<>();
+
+    // 3. Executor Engine and Pacing Variables
+    private ExecutorService scheduler;
+    private Future<?> scheduledTask;
+    private volatile boolean running = false;
+
+    private long lastJniSendTimeNano = 0;
+    private static final long MIN_JNI_GAP_NANO = 2_000_000L; // Strict 2ms receiver gap
 
     public CoreTelemetry(double interval, double delay, Telemetry... telemetryList) {
         this.tel = new MultipleTelemetry(telemetryList);
         this.ticker = new TickInterval(interval < 1 ? 1 : interval, delay < 0 ? 0 : delay);
-        this.executor = Executors.newSingleThreadExecutor();
+        this.scheduler = Executors.newSingleThreadExecutor();
     }
 
     public CoreTelemetry(Telemetry... telemetryList) {
-        this(4, 0, telemetryList);
+        this(3, 0, telemetryList);
     }
 
     /**
-     * Apelat pe main loop - scrie doar în buffer-ul thread-safe.
+     * Apelat pe main loop - scrie doar în buffer-ul privat.
      */
     public void addData(String key, Object value) {
         dataBuffer.put(key, value);
-        System.out.println(key + value);
+    }
+
+    public void addData(String key, String format, Object... args) {
+        if (format == null) return;
+        dataBuffer.put(key, String.format(format, args));
     }
 
     /**
@@ -67,7 +85,6 @@ public class CoreTelemetry implements CoreModule {
      */
     public void addLine(String line) {
         lineBuffer.add(line);
-        System.out.println(line);
     }
 
     public TickInterval getTicker() {
@@ -76,8 +93,16 @@ public class CoreTelemetry implements CoreModule {
 
     @Override
     public void initCore() {
-        if (executor == null || executor.isShutdown()) {
-            executor = Executors.newSingleThreadExecutor();
+        if (scheduler == null || scheduler.isShutdown()) {
+            scheduler = Executors.newSingleThreadExecutor();
+        }
+        startScheduler();
+    }
+
+    private synchronized void startScheduler() {
+        if (scheduledTask == null || scheduledTask.isDone()) {
+            running = true;
+            scheduledTask = scheduler.submit(this::runPacedExecutionLoop);
         }
     }
 
@@ -87,42 +112,124 @@ public class CoreTelemetry implements CoreModule {
     }
 
     /**
-     * Submite actualizarea pe thread-ul secundar.
-     * Muta datele din buffer în MultipleTelemetry doar pe thread-ul secundar.
+     * Main loop finish line! CALL THIS at the absolute end of every OpMode loop iteration.
+     * Takes isolated snapshots of all your telemetry and clears the buffers instantly.
+     */
+    public void dumpMap() {
+        // Freeze everything in a stable frame state container
+        Map<String, Object> dataSnapshot = new HashMap<>();
+        for (Map.Entry<String, Object> entry : dataBuffer.entrySet()) {
+            if (dataBuffer.remove(entry.getKey(), entry.getValue())) {
+                dataSnapshot.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        Map<String, Double> avgSnapshot = new HashMap<>();
+        for (Map.Entry<String, AvgAccumulator> entry : avgBuffer.entrySet()) {
+            avgSnapshot.put(entry.getKey(), entry.getValue().getAndReset());
+        }
+
+        List<String> lineSnapshot = new ArrayList<>(lineBuffer);
+        lineBuffer.removeAll(lineSnapshot);
+
+        // Flings it to the thread-safe queue instantly (<1 microsecond)
+        frameQueue.add(new TelemetryFrameSnapshot(dataSnapshot, avgSnapshot, lineSnapshot));
+
+        // Note: avgBuffer is NOT cleared so it keeps accumulators alive, but their state was reset.
+    }
+
+    /**
+     * Main loop write method remains a clean no-op as the background loop handles everything.
      */
     @Override
     public void writeCore() {
-        Benchmark.of("telemetry", () -> {
-            if (ticker.shouldTick()) {
-                if (isUpdating.compareAndSet(false, true)) {
-                    executor.submit(() -> {
-                        try {
-                            // Populează MultipleTelemetry EXCLUSIV pe thread-ul secundar
-                            for (Map.Entry<String, Object> entry : dataBuffer.entrySet()) {
-                                tel.addData(entry.getKey(), entry.getValue());
-                            }
+    }
 
-                            // Calculează și trimite mediile acumulate
-                            for (Map.Entry<String, AvgAccumulator> entry : avgBuffer.entrySet()) {
-                                tel.addData(entry.getKey(), entry.getValue().getAndReset());
-                            }
+    /**
+     * The background thread's high-precision engine loop.
+     */
+    private void runPacedExecutionLoop() {
+        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
-                            for (String line : lineBuffer) {
-                                tel.addLine(line);
-                            }
+        while (running && !Thread.currentThread().isInterrupted()) {
+            if (frameQueue.isEmpty()) {
+                // If the robot is idling or hasn't called dumpMap(), let the processor breathe
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+                continue;
+            }
 
-                            // Trimite telemetria către FTC Dashboard și Driver Station
-                            tel.update();
+            // ANTENNA LAG COMPACTION: If the antenna stalled for 19ms, your 7ms main loop
+            // queued up multiple frames. We instantly fast-forward to the latest snapshot
+            // to ensure true real-time execution metrics.
+            TelemetryFrameSnapshot frameToSend = null;
+            while (!frameQueue.isEmpty()) {
+                frameToSend = frameQueue.poll();
+            }
 
-                            // Curăță liniile după update (comportament similar FTC Telemetry)
-                            lineBuffer.clear();
-                        } finally {
-                            isUpdating.set(false);
-                        }
-                    });
+            if (frameToSend == null) continue;
+
+
+            //protects the receiver from getting data faster than 2ms intervals + thread sleeps
+            while (true) {
+                long targetTimeNano = lastJniSendTimeNano + MIN_JNI_GAP_NANO;
+                long timeLeftNano = targetTimeNano - System.nanoTime();
+
+                // Break out instantly if time is up, or if the OpMode is stopping
+                if (timeLeftNano <= 0 || !running || Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                // If we have plenty of time left (>2.5ms), take a safe 1ms nap to protect the CPU/battery
+                if (timeLeftNano > 2_500_000L) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                } else {
+                    // Micro-window fallback: Keep the thread active without pinning the core architecture
+                    int dummy = 0;
+                    dummy ^= 1;
                 }
             }
-        });
+
+            // Execute the flush operation on the background thread using the frozen snapshot
+            flushTelemetry(frameToSend);
+        }
+    }
+
+
+    private void flushTelemetry(TelemetryFrameSnapshot snapshot) {
+        try {
+            synchronized (tel) {
+                // Populate telemetry EXCLUSIVELY from the frozen snapshot map
+                for (Map.Entry<String, Object> entry : snapshot.data.entrySet()) {
+                    tel.addData(entry.getKey(), entry.getValue());
+                }
+
+                for (Map.Entry<String, Double> entry : snapshot.averages.entrySet()) {
+                    tel.addData(entry.getKey(), entry.getValue());
+                }
+
+                for (String line : snapshot.lines) {
+                    tel.addLine(line);
+                }
+
+                // THE VOLATILE HARDWARE BOTTLENECK: This safely stalls here for 2ms-19ms in the background.
+                tel.update();
+            }
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        } finally {
+            // Track completion time AFTER the antenna release, starting the 2ms countdown valve
+            lastJniSendTimeNano = System.nanoTime();
+        }
     }
 
     /**
@@ -140,14 +247,34 @@ public class CoreTelemetry implements CoreModule {
         dataBuffer.clear();
         avgBuffer.clear();
         lineBuffer.clear();
+        frameQueue.clear();
     }
 
     /**
      * Închide executor-ul la oprirea OpMode-ului pentru a preveni memory leaks.
      */
     public void stopCore() {
-        if (executor != null && !executor.isShutdown()) {
-            executor.shutdownNow();
+        running = false;
+        if (scheduledTask != null) {
+            scheduledTask.cancel(true);
+        }
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdownNow();
+        }
+    }
+
+    /**
+     * Container holding a frozen point-in-time snapshot of a specific loop frame.
+     */
+    private static class TelemetryFrameSnapshot {
+        public final Map<String, Object> data;
+        public final Map<String, Double> averages;
+        public final List<String> lines;
+
+        public TelemetryFrameSnapshot(Map<String, Object> data, Map<String, Double> averages, List<String> lines) {
+            this.data = data;
+            this.averages = averages;
+            this.lines = lines;
         }
     }
 

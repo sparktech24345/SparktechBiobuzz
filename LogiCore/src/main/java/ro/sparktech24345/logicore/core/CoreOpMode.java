@@ -144,6 +144,8 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
                 });
             Benchmark.of("independent modules output", independentModules::writeCore);
         });
+
+        coreTelemetry.dumpMap(); // send telemetry snapshot
     }
     private final MotorPowerRemember motorPowerRemember = new MotorPowerRemember(0.05); // caching for Blaze also vibecoded
     public void setMotorPower(String name, CachingDcMotorEx motor, double power) {
