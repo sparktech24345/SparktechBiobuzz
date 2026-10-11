@@ -62,6 +62,11 @@ public class CoreTelemetry implements CoreModule {
         dataBuffer.put(key, value);
     }
 
+    public void addData(String key, String format, Object... args) {
+        if (format == null) return;
+        dataBuffer.put(key, String.format(format, args));
+    }
+
     /**
      * Accumulates numeric values across main loop frames and sends their average
      * at the moment telemetry is updated.
@@ -112,7 +117,12 @@ public class CoreTelemetry implements CoreModule {
      */
     public void dumpMap() {
         // Freeze everything in a stable frame state container
-        Map<String, Object> dataSnapshot = new HashMap<>(dataBuffer);
+        Map<String, Object> dataSnapshot = new HashMap<>();
+        for (Map.Entry<String, Object> entry : dataBuffer.entrySet()) {
+            if (dataBuffer.remove(entry.getKey(), entry.getValue())) {
+                dataSnapshot.put(entry.getKey(), entry.getValue());
+            }
+        }
 
         Map<String, Double> avgSnapshot = new HashMap<>();
         for (Map.Entry<String, AvgAccumulator> entry : avgBuffer.entrySet()) {
@@ -120,13 +130,11 @@ public class CoreTelemetry implements CoreModule {
         }
 
         List<String> lineSnapshot = new ArrayList<>(lineBuffer);
+        lineBuffer.removeAll(lineSnapshot);
 
         // Flings it to the thread-safe queue instantly (<1 microsecond)
         frameQueue.add(new TelemetryFrameSnapshot(dataSnapshot, avgSnapshot, lineSnapshot));
 
-        // Clear everything out so the next main loop frame starts completely fresh
-        dataBuffer.clear();
-        lineBuffer.clear();
         // Note: avgBuffer is NOT cleared so it keeps accumulators alive, but their state was reset.
     }
 
@@ -176,8 +184,8 @@ public class CoreTelemetry implements CoreModule {
                     break;
                 }
 
-                // If we have plenty of time left (>1.5ms), take a safe 1ms nap to protect the CPU/battery
-                if (timeLeftNano > 1_500_000L) {
+                // If we have plenty of time left (>2.5ms), take a safe 1ms nap to protect the CPU/battery
+                if (timeLeftNano > 2_500_000L) {
                     try {
                         Thread.sleep(1);
                     } catch (InterruptedException e) {
@@ -199,22 +207,23 @@ public class CoreTelemetry implements CoreModule {
 
     private void flushTelemetry(TelemetryFrameSnapshot snapshot) {
         try {
-            // Populate telemetry EXCLUSIVELY from the frozen snapshot map
-            for (Map.Entry<String, Object> entry : snapshot.data.entrySet()) {
-                tel.addData(entry.getKey(), entry.getValue());
+            synchronized (tel) {
+                // Populate telemetry EXCLUSIVELY from the frozen snapshot map
+                for (Map.Entry<String, Object> entry : snapshot.data.entrySet()) {
+                    tel.addData(entry.getKey(), entry.getValue());
+                }
+
+                for (Map.Entry<String, Double> entry : snapshot.averages.entrySet()) {
+                    tel.addData(entry.getKey(), entry.getValue());
+                }
+
+                for (String line : snapshot.lines) {
+                    tel.addLine(line);
+                }
+
+                // THE VOLATILE HARDWARE BOTTLENECK: This safely stalls here for 2ms-19ms in the background.
+                tel.update();
             }
-
-            for (Map.Entry<String, Double> entry : snapshot.averages.entrySet()) {
-                tel.addData(entry.getKey(), entry.getValue());
-            }
-
-            for (String line : snapshot.lines) {
-                tel.addLine(line);
-            }
-
-            // THE VOLATILE HARDWARE BOTTLENECK: This safely stalls here for 2ms-19ms in the background.
-            tel.update();
-
         } catch (Exception e) {
             e.printStackTrace(System.out);
         } finally {

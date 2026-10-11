@@ -360,7 +360,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     public void runOpMode() {
         try {
             coreTelemetry = new CoreTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-            logger = new Logger(coreTelemetry.telemetry(), config.fd.get());
+            logger = new Logger(coreTelemetry, config.fd.get());
             logger.write("STARTED USING", config.performanceEngine.get());
 
 

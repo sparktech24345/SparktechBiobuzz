@@ -18,6 +18,7 @@ import java.util.Map;
 import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
 import ro.sparktech24345.logicore.config.Keys;
 import ro.sparktech24345.logicore.core.CoreOpMode;
+import ro.sparktech24345.logicore.utils.Benchmark;
 
 public class SparkMecanum implements Drivetrain {
     public final MecanumConfig config;
@@ -33,6 +34,7 @@ public class SparkMecanum implements Drivetrain {
 
     private double powerScale = 1.0;
     private DrivePowers drivePowers = DrivePowers.zero();
+    private volatile boolean isStopped = false;
 
     public SparkMecanum(HardwareMap map, MecanumConfig config) {
         this.config = config;
@@ -55,6 +57,7 @@ public class SparkMecanum implements Drivetrain {
         keys[BR] = Keys.key(motors[BR].getController().getConnectionInfo(), motors[BR].getPortNumber());
 
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        isStopped = false;
     }
 
     @SuppressLint("DefaultLocale")
@@ -126,11 +129,15 @@ public class SparkMecanum implements Drivetrain {
 
     @Override
     public void drive(DrivePowers powers, boolean manual) {
-        if (manual && config.manualBrakeMode.get())
-            setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        else
-            setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        applyDrive(powers);
+        isStopped = false;
+        Benchmark.of("follower Drive",() -> {
+            if (manual && config.manualBrakeMode.get())
+                setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            else
+                setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            applyDrive(powers);
+        });
+        CoreOpMode.instance().telemetry().addLine("follower has used motors");
     }
 
     @Override
@@ -139,6 +146,10 @@ public class SparkMecanum implements Drivetrain {
     }
 
     public void stop(boolean brake) {
+
+        if(isStopped) return;
+        isStopped = true;
+
         if (brake) {
             setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         } else {
@@ -150,6 +161,7 @@ public class SparkMecanum implements Drivetrain {
             CoreOpMode.instance().setMotorPower(keys[BR], motors[BR], 0);
             CoreOpMode.instance().setMotorPower(keys[BL], motors[BL], 0);
         }
+        CoreOpMode.instance().telemetry().addLine("follower has stopped drivetrain");
     }
 
     @Override
