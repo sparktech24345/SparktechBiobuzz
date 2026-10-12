@@ -2,7 +2,6 @@ package ro.sparktech24345.logicore.hardware;
 
 import android.util.Pair;
 
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import ro.sparktech24345.logicore.config.IsHardware;
@@ -11,7 +10,6 @@ import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.states.HasStates;
 import ro.sparktech24345.logicore.states.StateSet;
-import ro.sparktech24345.logicore.utils.MathUtils;
 import ro.sparktech24345.logicore.utils.TickInterval;
 
 /**
@@ -42,12 +40,14 @@ public class CoreServo<T extends StateSet<Double>> implements CoreModule, HasSta
         return this.ticker;
     }
 
-    private ServoImplEx servo;
+    private CachingServo servo;
 
-    public Servo servo() {
+    /** The servo, wrapped in a CachingServo (only changed positions are sent). */
+    public CachingServo servo() {
         return this.servo;
     }
 
+    /** Minimum position change that gets sent (passed to the CachingServo). */
     private double threshold;
 
     public double threshold() {
@@ -56,6 +56,7 @@ public class CoreServo<T extends StateSet<Double>> implements CoreModule, HasSta
 
     public void threshold(double value) {
         this.threshold = value;
+        if (servo != null) servo.threshold(value);
     }
 
     private final Class<T> states;
@@ -117,30 +118,19 @@ public class CoreServo<T extends StateSet<Double>> implements CoreModule, HasSta
     private double rangeDif = 1;
 
     public void initCore() {
-        servo = CoreOpMode.instance().hardwareMap.get(ServoImplEx.class, name);
+        servo = new CachingServo(CoreOpMode.instance().hardwareMap.get(ServoImplEx.class, name), threshold);
         key = Keys.key(servo.getController().getConnectionInfo(), servo.getPortNumber());
     }
 
     public void loopCore() {
     }
 
-    private double lastPos = 0;
-
     /**
-     * Update servo position every loop cycle
+     * Update servo position every loop cycle (CachingServo skips unchanged positions)
      */
     public void writeCore() {
         if (!ticker.shouldTick()) return;
-        if (
-                MathUtils.abs(lastPos - realPosition) <= threshold ||
-                        (realPosition == 0 && lastPos != 0) ||
-                        (realPosition >= 1.0 && lastPos < 1.0) ||
-                        (realPosition <= -1.0 && lastPos > -1.0) ||
-                        Double.isNaN(lastPos)
-        ) {
-            servo.setPosition(realPosition);
-            lastPos = realPosition;
-        }
+        servo.setPosition(realPosition);
     }
 
     private int key;

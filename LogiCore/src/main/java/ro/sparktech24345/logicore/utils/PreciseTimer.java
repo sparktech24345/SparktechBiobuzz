@@ -43,7 +43,7 @@ public class PreciseTimer {
      * @param unit Time unit for display (default: milliseconds)
      */
     public void log(Logger log, TimeUnit unit) {
-        log.write("Timer: " + name + " -- [ms]", time().get(unit));
+        log.write("Timer: " + name + " -- [" + unit + "]", time().get(unit));
     }
 
     public void log(Logger log) {

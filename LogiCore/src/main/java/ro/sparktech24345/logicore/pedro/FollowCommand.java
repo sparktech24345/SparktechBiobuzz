@@ -15,7 +15,7 @@ public class FollowCommand extends BaseCommand {
     }
 
     public FollowCommand(CoreFollower<?> follower, Path path) {
-        this(follower, path, () -> true);
+        this(follower, path, follower::stationaryFinish);
     }
 
 }

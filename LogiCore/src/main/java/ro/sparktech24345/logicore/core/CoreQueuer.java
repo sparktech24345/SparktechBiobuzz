@@ -41,10 +41,10 @@ public class CoreQueuer implements CommandQueuer {
 
 
     /**
-     * True if both queues have pending commands
+     * True if either queue still has pending commands
      */
     public boolean busy() {
-        return !queuer.isEmpty() && !executor.isEmpty();
+        return !queuer.isEmpty() || !executor.isEmpty();
     }
 
     /**

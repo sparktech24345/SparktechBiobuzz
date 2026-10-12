@@ -15,14 +15,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import java.util.HashMap;
 import java.util.Map;
 
-import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
-import ro.sparktech24345.logicore.config.Keys;
 import ro.sparktech24345.logicore.core.CoreOpMode;
+import ro.sparktech24345.logicore.core.DriveMode;
+import ro.sparktech24345.logicore.hardware.CachingMotor;
 import ro.sparktech24345.logicore.utils.Benchmark;
 
 public class SparkMecanum implements Drivetrain {
     public final MecanumConfig config;
-    private final DcMotorEx[] motors;
+    private final CachingMotor[] motors;
     public final double[] wheelPowers = new double[4];
 
     private static final int FL = 0;
@@ -30,7 +30,6 @@ public class SparkMecanum implements Drivetrain {
     private static final int BL = 2;
     private static final int BR = 3;
 
-    private int[] keys = {0, 0, 0, 0};
 
     private double powerScale = 1.0;
     private DrivePowers drivePowers = DrivePowers.zero();
@@ -39,22 +38,17 @@ public class SparkMecanum implements Drivetrain {
     public SparkMecanum(HardwareMap map, MecanumConfig config) {
         this.config = config;
 
-        motors = new DcMotorEx[]{
-                map.get(DcMotorEx.class, config.frontLeftName.get()),
-                map.get(DcMotorEx.class, config.frontRightName.get()),
-                map.get(DcMotorEx.class, config.backLeftName.get()),
-                map.get(DcMotorEx.class, config.backRightName.get())
+        motors = new CachingMotor[]{
+                new CachingMotor(map.get(DcMotorEx.class, config.frontLeftName.get())),
+                new CachingMotor(map.get(DcMotorEx.class, config.frontRightName.get())),
+                new CachingMotor(map.get(DcMotorEx.class, config.backLeftName.get())),
+                new CachingMotor(map.get(DcMotorEx.class, config.backRightName.get()))
         };
 
         motors[FL].setDirection(config.frontLeftDirection.get());
         motors[FR].setDirection(config.frontRightDirection.get());
         motors[BL].setDirection(config.backLeftDirection.get());
         motors[BR].setDirection(config.backRightDirection.get());
-
-        keys[FL] = Keys.key(motors[FL].getController().getConnectionInfo(), motors[FL].getPortNumber());
-        keys[FR] = Keys.key(motors[FR].getController().getConnectionInfo(), motors[FR].getPortNumber());
-        keys[BL] = Keys.key(motors[BL].getController().getConnectionInfo(), motors[BL].getPortNumber());
-        keys[BR] = Keys.key(motors[BR].getController().getConnectionInfo(), motors[BR].getPortNumber());
 
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         isStopped = false;
@@ -77,11 +71,11 @@ public class SparkMecanum implements Drivetrain {
             this.wheelPowers[i] = wheelPowers[i] / maxPower;
         }
 
-        if (!CoreOpMode.instance().config().useDriveTrain.get()) {
-            CoreOpMode.instance().setMotorPower(keys[FL], motors[FL], this.wheelPowers[FL]);
-            CoreOpMode.instance().setMotorPower(keys[FR], motors[FR], this.wheelPowers[FR]);
-            CoreOpMode.instance().setMotorPower(keys[BR], motors[BR], this.wheelPowers[BR]);
-            CoreOpMode.instance().setMotorPower(keys[BL], motors[BL], this.wheelPowers[BL]);
+        if (hasControl()) {
+            motors[FL].setPower(this.wheelPowers[FL]);
+            motors[FR].setPower(this.wheelPowers[FR]);
+            motors[BR].setPower(this.wheelPowers[BR]);
+            motors[BL].setPower(this.wheelPowers[BL]);
         }
     }
 
@@ -127,9 +121,24 @@ public class SparkMecanum implements Drivetrain {
         return Utils.clamp(lambda, 0.0, 1.0);
     }
 
+    private boolean hadControl = false;
+
+    /** True while DriveMode is FOLLOWER. On regaining control, forget cached state the gamepad side may have changed. */
+    private boolean hasControl() {
+        boolean control = CoreOpMode.instance().driveMode() == DriveMode.FOLLOWER;
+        if (control && !hadControl) {
+            // the gamepad DriveTrain may have changed powers / zero power behavior meanwhile
+            for (CachingMotor motor : motors) motor.resetCache();
+            isStopped = false;
+        }
+        hadControl = control;
+        return control;
+    }
+
     @Override
     public void drive(DrivePowers powers, boolean manual) {
         isStopped = false;
+        if (!hasControl()) return;
         Benchmark.of("follower Drive",() -> {
             if (manual && config.manualBrakeMode.get())
                 setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -137,7 +146,6 @@ public class SparkMecanum implements Drivetrain {
                 setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             applyDrive(powers);
         });
-        CoreOpMode.instance().telemetry().addLine("follower has used motors");
     }
 
     @Override
@@ -147,7 +155,7 @@ public class SparkMecanum implements Drivetrain {
 
     public void stop(boolean brake) {
 
-        if(isStopped) return;
+        if (!hasControl() || isStopped) return;
         isStopped = true;
 
         if (brake) {
@@ -155,13 +163,7 @@ public class SparkMecanum implements Drivetrain {
         } else {
             setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         }
-        if (!CoreOpMode.instance().config().useDriveTrain.get()) {
-            CoreOpMode.instance().setMotorPower(keys[FL], motors[FL], 0);
-            CoreOpMode.instance().setMotorPower(keys[FR], motors[FR], 0);
-            CoreOpMode.instance().setMotorPower(keys[BR], motors[BR], 0);
-            CoreOpMode.instance().setMotorPower(keys[BL], motors[BL], 0);
-        }
-        CoreOpMode.instance().telemetry().addLine("follower has stopped drivetrain");
+        for (CachingMotor motor : motors) motor.setPower(0);
     }
 
     @Override
@@ -181,7 +183,8 @@ public class SparkMecanum implements Drivetrain {
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
-        for (DcMotorEx motor : motors) {
+        // CachingMotor only sends it when it changed; drive() calls this every loop
+        for (CachingMotor motor : motors) {
             motor.setZeroPowerBehavior(behavior);
         }
     }

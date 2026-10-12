@@ -119,6 +119,10 @@ public class CoreFollower<T extends FollowerConstants> implements CoreModule {
     }
 
     public void stopCore() {
+        if (follower == null) return;
         PoseStorage.lastPose = pose();
+        // SparkPinpointLocalizer polls I2C on its own thread; it must be stopped or it leaks per run
+        if (follower.localizer instanceof SparkPinpointLocalizer)
+            ((SparkPinpointLocalizer) follower.localizer).stop();
     }
 }

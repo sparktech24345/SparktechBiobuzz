@@ -10,7 +10,8 @@ import ro.sparktech24345.logicore.utils.Benchmark;
  */
 public class ModuleHandler implements ModuleContainer {
 
-    private ArrayList<CoreModule> modules = new ArrayList<>();
+    private final ArrayList<CoreModule> modules = new ArrayList<>();
+    private final ArrayList<Double> priorities = new ArrayList<>();
 
     /**
      * Number of modules currently managed
@@ -32,7 +33,11 @@ public class ModuleHandler implements ModuleContainer {
      */
     public <T extends CoreModule> T install(T module, double priority) {
         if (lock) throw new RuntimeException("Cannot install modules after start!");
-        modules.add(module);
+        // higher priority first; equal priorities keep install order
+        int i = 0;
+        while (i < priorities.size() && priorities.get(i) >= priority) i++;
+        modules.add(i, module);
+        priorities.add(i, priority);
         module.initCore();
         return module;
     }
@@ -70,6 +75,7 @@ public class ModuleHandler implements ModuleContainer {
     public void stopCore() {
         for (CoreModule module : modules) module.stopCore();
         modules.clear();
+        priorities.clear();
     }
 
     public void readCore() {
@@ -80,7 +86,8 @@ public class ModuleHandler implements ModuleContainer {
 
     public void writeCore() {
         for (CoreModule module : modules) {
-            Benchmark.of("module write " + module, module::writeCore);
+            if (Benchmark.enabled) Benchmark.of("module write " + module.getClass().getSimpleName(), module::writeCore);
+            else module.writeCore();
         }
     }
 }

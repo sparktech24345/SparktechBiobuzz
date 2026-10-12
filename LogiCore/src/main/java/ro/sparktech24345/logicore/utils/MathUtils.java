@@ -52,7 +52,7 @@ public class MathUtils {
      * Evaluate if a number is significant (absolute value > 0.1)
      */
     static public boolean eval(double num) {
-        return abs(num) > 0.0;
+        return abs(num) > 0.1;
     }
 
     /**

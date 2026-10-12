@@ -1,19 +1,16 @@
 package ro.sparktech24345.logicore.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import kotlin.jvm.functions.Function2;
 import ro.sparktech24345.logicore.config.IsHardware;
-import ro.sparktech24345.logicore.config.Keys;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.states.HasStates;
 import ro.sparktech24345.logicore.states.StateSet;
 import ro.sparktech24345.logicore.utils.CachingTracker;
-import ro.sparktech24345.logicore.utils.MathUtils;
 import ro.sparktech24345.logicore.utils.TickInterval;
 
 /**
@@ -33,7 +30,7 @@ public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasSta
         this.name = name;
         this.states = (Class<T>) initialState.getClass();
         state(initialState);
-        this.tracker = new CachingTracker(threshold, 0);
+        this.threshold = threshold;
         this.ticker = new TickInterval(interval);
     }
 
@@ -49,9 +46,10 @@ public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasSta
         return this.key;
     }
 
-    private DcMotorEx motor;
+    private CachingMotor motor;
 
-    public DcMotorEx motor() {
+    /** The motor, wrapped in a CachingMotor (only changed powers are sent). */
+    public CachingMotor motor() {
         return this.motor;
     }
 
@@ -60,9 +58,20 @@ public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasSta
     public TickInterval ticker() {
         return this.ticker;
     }
-    private final CachingTracker tracker;
+    /** Minimum power change that gets sent to the hub (passed to the CachingMotor). */
+    private double threshold;
+
+    public double threshold() {
+        return this.threshold;
+    }
+
+    public void threshold(double value) {
+        this.threshold = value;
+        if (motor != null) motor.threshold(value);
+    }
+
     public CachingTracker tracker() {
-        return this.tracker;
+        return motor == null ? null : motor.tracker();
     }
 
     private final Class<T> states;
@@ -149,7 +158,6 @@ public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasSta
     private DcMotor.ZeroPowerBehavior zeroPowerBehavior = DcMotor.ZeroPowerBehavior.UNKNOWN;
 
     public void zeroPowerBehavior(DcMotor.ZeroPowerBehavior zpb) {
-        if (zeroPowerBehavior != zpb) behaviorChange = true;
         this.zeroPowerBehavior = zpb;
     }
 
@@ -157,16 +165,16 @@ public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasSta
         return this.zeroPowerBehavior;
     }
 
-    private boolean behaviorChange = false;
 
     private DcMotorSimple.Direction direction = DcMotorSimple.Direction.FORWARD;
 
     public void direction(DcMotorSimple.Direction dir) {
-        if (dir != direction) directionChanged = true;
         this.direction = dir;
     }
 
-    private boolean directionChanged = false;
+    public DcMotorSimple.Direction direction() {
+        return this.direction;
+    }
 
     private final Function2<CoreMotor, Double, Double> DEFAULT_LOOP = (m, t) -> t;
 
@@ -191,13 +199,13 @@ public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasSta
     }
 
     public void reverse(boolean enabled) {
-        motor.setDirection(enabled ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
+        direction(enabled ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
     }
 
     @Override
     public void initCore() {
-        motor = CoreOpMode.instance().hardwareMap.get(DcMotorImplEx.class, name);
-        key = Keys.key(motor.getController().getConnectionInfo(), motor.getPortNumber());
+        motor = new CachingMotor(CoreOpMode.instance().hardwareMap.get(DcMotorImplEx.class, name), threshold);
+        key = motor.key();
         unitsPerRev = motor.getController().getMotorType(motor.getPortNumber()).getTicksPerRev();
     }
 
@@ -208,12 +216,13 @@ public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasSta
 
     @Override
     public void readCore() {
-        if (behaviorChange && zeroPowerBehavior != DcMotor.ZeroPowerBehavior.UNKNOWN)
+        // CachingMotor only talks to the hub when these actually change, so applying them every loop is free
+        if (zeroPowerBehavior != DcMotor.ZeroPowerBehavior.UNKNOWN)
             motor.setZeroPowerBehavior(zeroPowerBehavior);
-        if (directionChanged)
-            motor.setDirection(direction);
-        if (encoderChange)
+        motor.setDirection(direction);
+        if (encoderChange) // setMode always talks to the hub, so it stays change-gated
             motor.setMode(encoded ? DcMotor.RunMode.RUN_USING_ENCODER : DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        encoderChange = false;
         if (encoded)
             currentPosition = motor.getCurrentPosition() / unitsPerRev;
     }
@@ -237,8 +246,7 @@ public class CoreMotor<T extends StateSet<Double>> implements CoreModule, HasSta
     @Override
     public void writeCore() {
         if (!ticker.shouldTick()) return;
-        if (tracker.shouldUpdate(wantedPower))
-            CoreOpMode.instance().setMotorPower(key, motor, wantedPower);
+        motor.setPower(wantedPower);
     }
 
     public double velocity() {

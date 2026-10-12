@@ -64,8 +64,9 @@ public class TickInterval {
     public boolean shouldTick() {
         switch (mode) {
             case TICKS: {
-                ticks %= (long) interval;
-                boolean update = ticks == (long) delay;
+                long period = Math.max(1, (long) interval);
+                ticks %= period;
+                boolean update = ticks == (long) delay % period;
                 ++ticks;
                 return update;
             }

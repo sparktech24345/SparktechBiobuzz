@@ -8,6 +8,8 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import dev.anygeneric.blazeftc.BlazeFTC;
+import ro.sparktech24345.logicore.core.CoreOpMode;
+import ro.sparktech24345.logicore.utils.Logger;
 
 @Config
 public class MotorMap {
@@ -27,16 +29,10 @@ public class MotorMap {
         double[] pe = {Double.NaN, Double.NaN, Double.NaN, Double.NaN};
         for (int key : powers.keySet()) {
             Object o = powers.get(key);
-            if (o != null) switch (Keys.keyId(key)) {
-                case 2:
-                    pe[Keys.keyPort(key)] = (double) o;
-                    break;
-                case 173:
-                    pc[Keys.keyPort(key)] = (double) o;
-                    break;
-                default:
-                    break;
-            }
+            if (o == null) continue;
+            int id = Keys.keyId(key);
+            if (id == Hubs.EXPANSION.id()) pe[Keys.keyPort(key)] = (double) o;
+            else if (id == Hubs.CONTROL.id()) pc[Keys.keyPort(key)] = (double) o;
         }
         boolean writeC = false;
         for (double d : pc) {
@@ -54,6 +50,11 @@ public class MotorMap {
         else for (int i = 0; i < 4; ++i)
             if (Double.isFinite(pe[i]))
                 BlazeFTC.setMotorPower(Hubs.EXPANSION.id(), i, pe[i]);
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < 4; ++i) {
+            out.append("CONTROL(").append(i).append(") = [").append(pc[i]).append("] -- EXPANSION(").append(i).append(") = [").append(pe[i]).append("]\n");
+        }
+        CoreOpMode.instance().logger().write(out.toString());
         powers.clear();
     }
 }

@@ -8,6 +8,7 @@ public class VPIDController extends PIDController {
     /// an additive constant
     public void setConstants(double p, double i, double d, double f, double s) {
         super.setConstants(p, i, d);
+        this.Kf = f;
         this.Ks = s;
     }
 
@@ -17,7 +18,7 @@ public class VPIDController extends PIDController {
     }
 
     public VPIDCoefficients getConstants() {
-        return new VPIDCoefficients(this.getKf(), this.getKi(), this.getKd(), getKf(), getKs());
+        return new VPIDCoefficients(this.getKp(), this.getKi(), this.getKd(), getKf(), getKs());
     }
 
     public VPIDController(double p, double i, double d, double f, double s) {
@@ -26,7 +27,7 @@ public class VPIDController extends PIDController {
 
     @Override
     public double calculate(double target, double currentVelocity) {
-        return super.calculate(target, currentVelocity) + Ks * Math.signum(target);
+        return super.calculate(target, currentVelocity) + Kf * target + Ks * Math.signum(target);
     }
 
     public double getKf() {
