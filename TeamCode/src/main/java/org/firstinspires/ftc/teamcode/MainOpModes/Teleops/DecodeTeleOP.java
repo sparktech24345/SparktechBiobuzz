@@ -90,7 +90,6 @@ public class DecodeTeleOP extends CoreOpMode {
         install(tilt,2);
         queue(new StateCommand<>(gates,GateStateSet.DEFAULT));
         queue(new StateCommand<>(tilt,TiltStateSet.DEFAULT));
-        if(useEvents) {
             EventBus.subscribe(CoreButton.ButtonPressEvent.class, (event) -> {
                 if (useEvents) {
                     switch (event.button().button()) {
@@ -102,10 +101,10 @@ public class DecodeTeleOP extends CoreOpMode {
                             queue(new StateCommand<>(intake,IntakeStateSet.FULL_COUPLED),
                                     new StateCommand<>(gates,GateStateSet.LEFT_OPEN));
                             break;
-                        case LEFT_TRIGGER1:
+                        case LEFT_BUMPER1:
                             decodeTurret.aimAt(130, 53);
                             break;
-                        case LEFT_BUMPER1:
+                        case LEFT_TRIGGER1:
                             if(colorCase == GetColorCase.NOSORT){
                                 queue(new StateCommand<>(intake,IntakeStateSet.FULL_COUPLED),
                                         new StateCommand<>(gates,GateStateSet.LEFT_OPEN),
@@ -129,7 +128,7 @@ public class DecodeTeleOP extends CoreOpMode {
                     }
                 }
             });
-        }
+
 
 
 
@@ -174,90 +173,91 @@ public class DecodeTeleOP extends CoreOpMode {
                 if(tilt.state() == TiltStateSet.ACTIVE)
                     execute(new StateCommand<>(tilt,TiltStateSet.DEFAULT));
             }
-            if(gamepad.get(Button.LEFT_BUMPER1).pressed()){ // transfer button???
-                if(colorCase == GetColorCase.NOSORT){
-                    queue(new StateCommand<>(intake,IntakeStateSet.FULL_COUPLED),
-                            new StateCommand<>(gates,GateStateSet.LEFT_OPEN),
-                            new DelayCommand(TimeSpec.fromMillis(1500)),
-                            new StateCommand<>(gates,GateStateSet.RIGHT_OPEN),
-                            new DelayCommand(TimeSpec.fromMillis(1500)),
-                            new StateCommand<>(gates,GateStateSet.CLOSED)
-                    );
-                } else {
-                    int greenBallPosition;
-                    if (ballColorRight == Color.GREEN)
-                        greenBallPosition = 1; // green is on the right
-                    else if (ballColorLeft == Color.GREEN)
-                        greenBallPosition = 2; // green is on the left
-                    else greenBallPosition = 3; // green is on the right
-                    if (colorCase == GetColorCase.PGP && greenBallPosition == 1)
-                        greenBallPosition = 4;
-                    if (colorCase == GetColorCase.PGP && greenBallPosition == 2)
-                        greenBallPosition = 3;
-                    if (colorCase == GetColorCase.PGP && greenBallPosition == 3)
-                        greenBallPosition = 2;
-                    if (colorCase == GetColorCase.GPP && greenBallPosition == 1)
-                        greenBallPosition = 3;
-                    if (colorCase == GetColorCase.GPP && greenBallPosition == 2)
-                        greenBallPosition = 4;
-                    if (colorCase == GetColorCase.GPP && greenBallPosition == 3)
-                        greenBallPosition = 2;
-
-                    switch (greenBallPosition) {
-                        case 1: //llr
-                            queue(new StateCommand<>(intake, IntakeStateSet.FULL_COUPLED),
-                                    new StateCommand<>(gates, GateStateSet.LEFT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.CLOSED),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.LEFT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.RIGHT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.CLOSED)
-                            );
-                            break;
-                        case 2: //rrl
-                            queue(new StateCommand<>(intake, IntakeStateSet.FULL_COUPLED),
-                                    new StateCommand<>(gates, GateStateSet.RIGHT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.CLOSED),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.RIGHT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.LEFT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.CLOSED)
-                            );
-                            break;
-                        case 3: //rlr
-                            queue(new StateCommand<>(intake, IntakeStateSet.FULL_COUPLED),
-                                    new StateCommand<>(gates, GateStateSet.RIGHT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.CLOSED),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.LEFT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.RIGHT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.CLOSED)
-                            );
-                            break;
-                        case 4: //lrl
-                            queue(new StateCommand<>(intake, IntakeStateSet.FULL_COUPLED),
-                                    new StateCommand<>(gates, GateStateSet.LEFT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates, GateStateSet.CLOSED),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates,GateStateSet.RIGHT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates,GateStateSet.LEFT_OPEN),
-                                    new DelayCommand(TimeSpec.fromMillis(100)),
-                                    new StateCommand<>(gates,GateStateSet.CLOSED)
-                            );
-                    }
-                }
-            }
+//            if(gamepad.get(Button.LEFT_BUMPER1).pressed()){ // transfer button???
+//                if(colorCase == GetColorCase.NOSORT){
+//                    queue(new StateCommand<>(intake,IntakeStateSet.FULL_COUPLED),
+//                            new StateCommand<>(gates,GateStateSet.LEFT_OPEN),
+//                            new DelayCommand(TimeSpec.fromMillis(1500)),
+//                            new StateCommand<>(gates,GateStateSet.RIGHT_OPEN),
+//                            new DelayCommand(TimeSpec.fromMillis(1500)),
+//                            new StateCommand<>(gates,GateStateSet.CLOSED)
+//                    );
+//                }
+//                else {
+//                    int greenBallPosition;
+//                    if (ballColorRight == Color.GREEN)
+//                        greenBallPosition = 1; // green is on the right
+//                    else if (ballColorLeft == Color.GREEN)
+//                        greenBallPosition = 2; // green is on the left
+//                    else greenBallPosition = 3; // green is on the right
+//                    if (colorCase == GetColorCase.PGP && greenBallPosition == 1)
+//                        greenBallPosition = 4;
+//                    if (colorCase == GetColorCase.PGP && greenBallPosition == 2)
+//                        greenBallPosition = 3;
+//                    if (colorCase == GetColorCase.PGP && greenBallPosition == 3)
+//                        greenBallPosition = 2;
+//                    if (colorCase == GetColorCase.GPP && greenBallPosition == 1)
+//                        greenBallPosition = 3;
+//                    if (colorCase == GetColorCase.GPP && greenBallPosition == 2)
+//                        greenBallPosition = 4;
+//                    if (colorCase == GetColorCase.GPP && greenBallPosition == 3)
+//                        greenBallPosition = 2;
+//
+//                    switch (greenBallPosition) {
+//                        case 1: //llr
+//                            queue(new StateCommand<>(intake, IntakeStateSet.FULL_COUPLED),
+//                                    new StateCommand<>(gates, GateStateSet.LEFT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.CLOSED),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.LEFT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.RIGHT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.CLOSED)
+//                            );
+//                            break;
+//                        case 2: //rrl
+//                            queue(new StateCommand<>(intake, IntakeStateSet.FULL_COUPLED),
+//                                    new StateCommand<>(gates, GateStateSet.RIGHT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.CLOSED),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.RIGHT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.LEFT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.CLOSED)
+//                            );
+//                            break;
+//                        case 3: //rlr
+//                            queue(new StateCommand<>(intake, IntakeStateSet.FULL_COUPLED),
+//                                    new StateCommand<>(gates, GateStateSet.RIGHT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.CLOSED),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.LEFT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.RIGHT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.CLOSED)
+//                            );
+//                            break;
+//                        case 4: //lrl
+//                            queue(new StateCommand<>(intake, IntakeStateSet.FULL_COUPLED),
+//                                    new StateCommand<>(gates, GateStateSet.LEFT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates, GateStateSet.CLOSED),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates,GateStateSet.RIGHT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates,GateStateSet.LEFT_OPEN),
+//                                    new DelayCommand(TimeSpec.fromMillis(100)),
+//                                    new StateCommand<>(gates,GateStateSet.CLOSED)
+//                            );
+//                    }
+//                }
+//            }
         }
 
         coreTelemetry.addData("Loop Time", // formatul doar zice ca floatul sa fie afisat cu 3 zecimale

@@ -106,6 +106,7 @@ public class DecodeTurretComponent implements CoreModule {
         instance.install(rotationMotor, 1);
         rotationMotor.encoded(true);
         rotationMotor.zeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rotationMotor.loop((m, t) -> calculatePower());
     }
 
     // ================== Pose tracking ==================
@@ -116,13 +117,13 @@ public class DecodeTurretComponent implements CoreModule {
     public void loopCore() {
         updateRobotPose(instance.follower().pose());
 
-        if (!enabled) {
-            rotationMotor.motorPower(0);
-            return;
-        }
+//        if (!enabled) {
+//            rotationMotor.motorPower(0);
+//            return;
+//        }
         calculateTargetPosition();
         if (autoAim) targetAngle = calculateAimAngle(usedAimX, usedAimY, lookaheadSeconds);
-        rotationMotor.motorPower(calculatePower());
+//        rotationMotor.motorPower(calculatePower());
     }
 
     // ================== Aiming ==================
@@ -168,6 +169,7 @@ public class DecodeTurretComponent implements CoreModule {
         return Math.toDegrees(angleRadians) + 90;
     }
     private double calculatePower() {
+        if (!enabled) return 0;
         pid.setPIDFConstants(kP, kI, kD, kF);
 
         double target = clamp(targetAngle, MIN_ANGLE, MAX_ANGLE);
