@@ -6,11 +6,10 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import dev.frozenmilk.dairy.cachinghardware.CachingDcMotorEx;
-import ro.sparktech24345.logicore.config.Keys;
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
-import ro.sparktech24345.logicore.core.OpModeType;
+import ro.sparktech24345.logicore.core.DriveMode;
+import ro.sparktech24345.logicore.hardware.CachingMotor;
 
 /**
  * Mecanum drive train implementation with gamepad control.
@@ -35,10 +34,10 @@ public class DriveTrain implements CoreModule {
     protected final String rfn;
     protected final String lfn;
 
-    protected CachingDcMotorEx rf;
-    protected CachingDcMotorEx lf;
-    protected CachingDcMotorEx rb;
-    protected CachingDcMotorEx lb;
+    protected CachingMotor rf;
+    protected CachingMotor lf;
+    protected CachingMotor rb;
+    protected CachingMotor lb;
 
     /**
      * Zero power behavior for all motors (applied to all motors when set)
@@ -83,30 +82,18 @@ public class DriveTrain implements CoreModule {
         return this.slowdownMultiplier;
     }
 
-    private int rfk = 0;
-    private int rbk = 0;
-    private int lbk = 0;
-    private int lfk = 0;
-
     public void initCore() {
         HardwareMap map = CoreOpMode.instance().hardwareMap;
-        DcMotorEx rfm = map.get(DcMotorEx.class, rfn);
-        DcMotorEx lfm = map.get(DcMotorEx.class, lfn);
-        DcMotorEx rbm = map.get(DcMotorEx.class, rbn);
-        DcMotorEx lbm = map.get(DcMotorEx.class, lbn);
+        rf = new CachingMotor(map.get(DcMotorEx.class, rfn));
+        lf = new CachingMotor(map.get(DcMotorEx.class, lfn));
+        rb = new CachingMotor(map.get(DcMotorEx.class, rbn));
+        lb = new CachingMotor(map.get(DcMotorEx.class, lbn));
 
+        lf.setDirection(DcMotorSimple.Direction.REVERSE);
+        rf.setDirection(DcMotorSimple.Direction.FORWARD);
+        rb.setDirection(DcMotorSimple.Direction.FORWARD);
+        lb.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        lfm.setDirection(DcMotorSimple.Direction.REVERSE);
-        lf = new CachingDcMotorEx(lfm, 0.05);
-
-        rfm.setDirection(DcMotorSimple.Direction.FORWARD);
-        rf = new CachingDcMotorEx(rfm, 0.05);
-
-        rbm.setDirection(DcMotorSimple.Direction.FORWARD);
-        rb = new CachingDcMotorEx(rbm, 0.05);
-
-        lbm.setDirection(DcMotorSimple.Direction.REVERSE);
-        lb = new CachingDcMotorEx(lbm, 0.05);
 
 
         this.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -170,18 +157,12 @@ public class DriveTrain implements CoreModule {
 
     public void writeCore() {
         Benchmark.of("drivetrain", () -> {
-            if (CoreOpMode.instance().config().type.get() == OpModeType.AUTONOMOUS) return;
-            // Apply slowdown multiplier and set motor powers
-
-            //CoreOpMode.instance!!.coreTelemetry.addData("Motor rf", rf.portNumber)
-            //CoreOpMode.instance!!.coreTelemetry.addData("Motor rb", rb.portNumber)
-            //CoreOpMode.instance!!.coreTelemetry.addData("Motor lf", lf.portNumber)
-            //CoreOpMode.instance!!.coreTelemetry.addData("Motor lb", lb.portNumber)
-
-            if (rft.shouldUpdate(rfp)) Benchmark.of(rfn, () -> CoreOpMode.instance().setMotorPower(rfk, rf, rfp));
-            if (rbt.shouldUpdate(rbp)) Benchmark.of(rbn, () -> CoreOpMode.instance().setMotorPower(rbk, rb, rbp));
-            if (lbt.shouldUpdate(lbp)) Benchmark.of(lbn, () -> CoreOpMode.instance().setMotorPower(lbk, lb, lbp));
-            if (lft.shouldUpdate(lfp)) Benchmark.of(lfn, () -> CoreOpMode.instance().setMotorPower(lfk, lf, lfp));
+            if (!hasControl()) return;
+            // CachingMotor only sends powers that changed
+            rf.setPower(rfp * slowdownMultiplier);
+            rb.setPower(rbp * slowdownMultiplier);
+            lb.setPower(lbp * slowdownMultiplier);
+            lf.setPower(lfp * slowdownMultiplier);
         });
     }
 }

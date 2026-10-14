@@ -1,8 +1,8 @@
 package ro.sparktech24345.logicore.events;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Global event bus for decoupled communication between components.
@@ -18,10 +18,7 @@ public class EventBus {
      * @param listener The listener to handle events
      */
     public static <T extends Event> void subscribe(Class<T> type, EventListener<T> listener) {
-        if (listeners.containsKey(type)) Objects.requireNonNull(listeners.get(type)).add(listener);
-        else {
-            listeners.put(type, List.of(listener));
-        }
+        listeners.computeIfAbsent(type, k -> new CopyOnWriteArrayList<>()).add(listener);
     }
 
     /**
@@ -31,7 +28,8 @@ public class EventBus {
      * @param listener The listener to remove
      */
     public static <T extends Event> void unsubscribe(Class<T> type, EventListener<T> listener) {
-        List<EventListener<? extends Event>> list = Objects.requireNonNull(listeners.get(type));
+        List<EventListener<? extends Event>> list = listeners.get(type);
+        if (list == null) return;
         list.remove(listener);
         if (list.isEmpty()) listeners.remove(type, list);
     }

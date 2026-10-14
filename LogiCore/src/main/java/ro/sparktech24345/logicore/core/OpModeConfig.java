@@ -18,6 +18,8 @@ public class OpModeConfig {
     public final ConfigVar<Boolean> useVoltageSensor = ConfigVar.of(true);
     public final ConfigVar<Boolean> accelerateMotors = ConfigVar.of(false);
     public final ConfigVar<Pose> startPose = ConfigVar.of(Pose.zero());
+    /** Enables Benchmark timings and per-loop stage logging (slow: prints to logcat every loop). */
+    public final ConfigVar<Boolean> debug = ConfigVar.of(false);
 
     public OpModeConfig(Configuration<OpModeConfig> config) {
         config.configure(this);

@@ -2,6 +2,8 @@ package ro.sparktech24345.logicore.hardware;
 
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.utils.Benchmark;
@@ -31,6 +33,7 @@ public class CoreVoltageSensor implements CoreModule {
      * Current battery voltage in volts
      */
     private volatile double voltage = 0;
+    private final AtomicBoolean readPending = new AtomicBoolean(false);
 
     public double voltage() {
         return this.voltage;
@@ -48,7 +51,15 @@ public class CoreVoltageSensor implements CoreModule {
      */
     public void readCore() {
         Benchmark.of("voltage sensor", () -> {
-            if (ticker.shouldTick()) CoreOpMode.schedule(() -> voltage = sensor.getVoltage());
+            if (!ticker.shouldTick() || !readPending.compareAndSet(false, true)) return;
+            boolean scheduled = CoreOpMode.schedule(() -> {
+                try {
+                    voltage = sensor.getVoltage();
+                } finally {
+                    readPending.set(false);
+                }
+            });
+            if (!scheduled) readPending.set(false);
         });
     }
 

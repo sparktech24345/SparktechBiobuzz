@@ -5,10 +5,15 @@ public enum Hubs {
     EXPANSION(2),
     INDEPENDENT(0);
 
-    private final short id;
+    private volatile short id;
 
     public short id() {
         return this.id;
+    }
+
+    /** Overridden by CoreHubs at init with the real module addresses. */
+    public void id(int id) {
+        this.id = (short) id;
     }
 
     Hubs(short id) {

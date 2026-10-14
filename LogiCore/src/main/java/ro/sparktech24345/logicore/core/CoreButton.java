@@ -121,7 +121,7 @@ public class CoreButton {
     /**
      * Determines when toggle state changes: on press or on release
      */
-    enum ToggleMode {
+    public enum ToggleMode {
         ON_PRESS,
         ON_RELEASE
     }

@@ -22,9 +22,8 @@ repositories {
     mavenCentral()
     google() // Basic FTC repository links
 
-    // (1) Add these 2 lines
+    // (1) Add this line
     maven { url 'https://jitpack.io' }
-    maven { url 'https://repo.dairy.foundation/releases' }
 }
 
 dependencies {

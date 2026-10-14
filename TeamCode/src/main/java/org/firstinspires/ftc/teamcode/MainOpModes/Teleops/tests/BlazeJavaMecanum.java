@@ -11,6 +11,9 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import dev.anygeneric.blazeftc.BlazeDummyPlug;
 import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.anygeneric.blazeftc.DummyPlugOpMode;
+import ro.sparktech24345.logicore.config.Keys;
+
+import org.firstinspires.ftc.teamcode.Helpers.GlobalStorage;
 
 @TeleOp(name = "BlazeJavaMecanum")
 public class BlazeJavaMecanum extends DummyPlugOpMode {
@@ -27,10 +30,10 @@ public class BlazeJavaMecanum extends DummyPlugOpMode {
     private double drivetrainCumulativePower = 0;
 
     // Default configuration names from your snippet
-    private final String frontLeftName  = "frontLeftName";
-    private final String frontRightName = "frontRightName";
-    private final String backLeftName   = "backLeftName";
-    private final String backRightName  = "backRightName";
+    private final String frontLeftName  = GlobalStorage.frontLeftMotorName;
+    private final String frontRightName = GlobalStorage.frontRightMotorName;
+    private final String backLeftName   = GlobalStorage.backLeftMotorName;
+    private final String backRightName  = GlobalStorage.backRightMotorName;
 
     @Override
     public void runOpModeInBlaze() {
@@ -115,10 +118,10 @@ public class BlazeJavaMecanum extends DummyPlugOpMode {
 //            RFDrive.setPower(frontRightPower);
 //            RBDrive.setPower(backRightPower);
 
-            BlazeFTC.setMotorPower(173,LFDrive.getPortNumber(),frontLeftPower);
-            BlazeFTC.setMotorPower(173,LBDrive.getPortNumber(),backLeftPower);
-            BlazeFTC.setMotorPower(173,RFDrive.getPortNumber(),frontRightPower);
-            BlazeFTC.setMotorPower(173,RBDrive.getPortNumber(),backRightPower);
+            BlazeFTC.setMotorPower(hubOf(LFDrive), LFDrive.getPortNumber(), frontLeftPower);
+            BlazeFTC.setMotorPower(hubOf(LBDrive), LBDrive.getPortNumber(), backLeftPower);
+            BlazeFTC.setMotorPower(hubOf(RFDrive), RFDrive.getPortNumber(), frontRightPower);
+            BlazeFTC.setMotorPower(hubOf(RBDrive), RBDrive.getPortNumber(), backRightPower);
 
             // Calculate overall cumulative power metric based on motor levels
             drivetrainCumulativePower = Math.abs(frontLeftPower) + Math.abs(frontRightPower) +
@@ -140,5 +143,10 @@ public class BlazeJavaMecanum extends DummyPlugOpMode {
             // Small safety sleep to match your template base
             sleep(20);
         }
+    }
+
+    /** Module address of the hub the motor is plugged into. */
+    private static int hubOf(DcMotor motor) {
+        return Keys.keyId(Keys.key(motor.getController().getConnectionInfo(), motor.getPortNumber()));
     }
 }

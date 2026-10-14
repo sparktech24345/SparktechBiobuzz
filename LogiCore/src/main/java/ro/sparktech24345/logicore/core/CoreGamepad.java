@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import java.util.HashMap;
 import java.util.Map;
 
+import ro.sparktech24345.logicore.events.EventBus;
 import ro.sparktech24345.logicore.utils.Benchmark;
 
 /**
@@ -50,6 +51,11 @@ public class CoreGamepad implements CoreModule {
                     == PerformanceEngine.BLAZE)
                 CoreOpMode.instance().updateGamepads();
             CoreButton.advanceFrame();
+            // buttons update lazily, so events only fire if every button is polled each frame
+            if (EventBus.hasListeners(CoreButton.ButtonPressEvent.class)
+                    || EventBus.hasListeners(CoreButton.ButtonReleaseEvent.class)
+                    || EventBus.hasListeners(CoreButton.ButtonToggleEvent.class))
+                for (CoreButton button : buttons.values()) button.update();
         });
     }
 

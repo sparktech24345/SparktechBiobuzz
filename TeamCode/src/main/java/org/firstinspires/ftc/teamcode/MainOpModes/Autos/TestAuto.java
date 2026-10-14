@@ -3,15 +3,16 @@ package org.firstinspires.ftc.teamcode.MainOpModes.Autos;
 //import org.jetbrains.annotations.NotNull;
 //
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
 import org.firstinspires.ftc.teamcode.Components.Configs;
 
 import ro.sparktech24345.logicore.core.CoreOpMode;
-import ro.sparktech24345.logicore.core.OpModeConfig;
 
-//
+@Autonomous(name = "Test Auto", group = "Testing")
 public class TestAuto extends CoreOpMode {
-    public TestAuto(OpModeConfig config) {
-        super(Configs.teleopCfg);
+    public TestAuto() {
+        super(Configs.autoCfg);
     }
 
     public void onInit() {

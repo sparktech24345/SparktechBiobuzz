@@ -12,6 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.LockSupport;
 
 import ro.sparktech24345.logicore.utils.TickInterval;
 
@@ -166,9 +167,12 @@ public class CoreTelemetry implements CoreModule {
             // ANTENNA LAG COMPACTION: If the antenna stalled for 19ms, your 7ms main loop
             // queued up multiple frames. We instantly fast-forward to the latest snapshot
             // to ensure true real-time execution metrics.
+            // Frames are merged (newer values win, lines are appended) so data that was
+            // only added on one loop isn't lost when several frames queue up.
             TelemetryFrameSnapshot frameToSend = null;
-            while (!frameQueue.isEmpty()) {
-                frameToSend = frameQueue.poll();
+            TelemetryFrameSnapshot next;
+            while ((next = frameQueue.poll()) != null) {
+                frameToSend = frameToSend == null ? next : frameToSend.mergedWith(next);
             }
 
             if (frameToSend == null) continue;
@@ -193,9 +197,7 @@ public class CoreTelemetry implements CoreModule {
                         break;
                     }
                 } else {
-                    // Micro-window fallback: Keep the thread active without pinning the core architecture
-                    int dummy = 0;
-                    dummy ^= 1;
+                    LockSupport.parkNanos(timeLeftNano);
                 }
             }
 
@@ -275,6 +277,19 @@ public class CoreTelemetry implements CoreModule {
             this.data = data;
             this.averages = averages;
             this.lines = lines;
+        }
+
+        private static final int MAX_LINES = 100;
+
+        TelemetryFrameSnapshot mergedWith(TelemetryFrameSnapshot newer) {
+            Map<String, Object> d = new HashMap<>(data);
+            d.putAll(newer.data);
+            Map<String, Double> a = new HashMap<>(averages);
+            a.putAll(newer.averages);
+            List<String> l = new ArrayList<>(lines);
+            l.addAll(newer.lines);
+            if (l.size() > MAX_LINES) l = new ArrayList<>(l.subList(l.size() - MAX_LINES, l.size()));
+            return new TelemetryFrameSnapshot(d, a, l);
         }
     }
 

@@ -64,7 +64,7 @@ public class BlazeOpMode extends OpMode {
         //do what you like here. Personally I'd use a command library. but as a trivial example:
         if (motorInPlace) {
             pathToFollow = line(new Pose(0.0, 0.0), new Pose(10.0, 10.0));
-            if (follower.currentPath() != null && follower.atParametricEnd()) {
+            if (follower != null && follower.currentPath() != null && follower.atParametricEnd()) {
                 telemetry.addData("done", true);
             }
         }

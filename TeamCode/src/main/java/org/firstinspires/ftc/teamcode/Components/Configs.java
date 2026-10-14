@@ -13,6 +13,18 @@ public class Configs {
         opModeConfig.performanceEngine.set(PerformanceEngine.BLAZE);
         opModeConfig.useFollower.set(true);
         opModeConfig.useDriveTrain.set(true);
+        opModeConfig.debug.set(true);
+        opModeConfig.driveMode.set(DriveMode.GAMEPAD); // driver drives; switch with driveMode(...) for auto-aim
+        opModeConfig.accelerateMotors.set(false);
+        opModeConfig.followerConstants.set(new ConstantsDecode());
+    });
+
+    public static final OpModeConfig autoCfg = new OpModeConfig((opModeConfig) -> {
+        opModeConfig.type.set(OpModeType.AUTONOMOUS);
+        opModeConfig.performanceEngine.set(PerformanceEngine.BLAZE);
+        opModeConfig.useFollower.set(true);
+        opModeConfig.useDriveTrain.set(false);
+        opModeConfig.driveMode.set(DriveMode.FOLLOWER); // the follower drives in auto
         opModeConfig.accelerateMotors.set(false);
         opModeConfig.followerConstants.set(new ConstantsDecode());
     });

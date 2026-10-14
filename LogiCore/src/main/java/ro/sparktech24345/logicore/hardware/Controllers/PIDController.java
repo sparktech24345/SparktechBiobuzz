@@ -10,7 +10,7 @@ public class PIDController {
     private double lastVelocity = 0;
     private double lastPos = 0;
     private double error;
-    private long lastTime = System.currentTimeMillis();
+    private long lastTime = -1;
 
     public PIDController(double p, double i, double d) {
         setConstants(p, i, d);
@@ -61,11 +61,12 @@ public class PIDController {
     }
 
     public double calculate(double target, double current) {
-        long now = System.currentTimeMillis();
-        double deltaTime = (now - lastTime) / 1000.0;  // in seconds
+        long now = System.nanoTime();
+        double deltaTime = lastTime < 0 ? 0 : (now - lastTime) / 1e9;  // in seconds, 0 on first call
         lastTime = now;
 
         error = target - current;
+        if (deltaTime == 0) lastError = error; // no derivative kick on the first call
 
         // Integral term (accumulated error)
         integral += error * deltaTime;

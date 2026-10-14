@@ -11,6 +11,7 @@ import dev.anygeneric.blazeftc.BlazeDummyPlug;
 import dev.anygeneric.blazeftc.BlazeFTC;
 import dev.anygeneric.blazeftc.DummyPlugOpMode;
 import ro.sparktech24345.logicore.commands.BaseCommand;
+import ro.sparktech24345.logicore.config.Hubs;
 import ro.sparktech24345.logicore.config.IsHardware;
 import ro.sparktech24345.logicore.config.Keys;
 import ro.sparktech24345.logicore.config.MotorMap;
@@ -128,17 +129,10 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     public <T extends CoreModule> T install(T module, double priority) {
         if (module instanceof IsHardware) {
             int k = ((IsHardware) module).key();
-            switch (Keys.keyId(k)) {
-                case 2:
-                    eHubModules.install(module, priority);
-                    break;
-                case 173:
-                    cHubModules.install(module, priority);
-                    break;
-                default:
-                    independentModules.install(module, priority);
-                    break;
-            }
+            int id = Keys.keyId(k);
+            if (id == Hubs.EXPANSION.id()) eHubModules.install(module, priority);
+            else if (id == Hubs.CONTROL.id()) cHubModules.install(module, priority);
+            else independentModules.install(module, priority);
         } else independentModules.install(module, priority);
         return module;
     }
@@ -166,10 +160,19 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 
     public static ExecutorService executor = null;
 
-    public static void schedule(Runnable run) {
-        if (run == null) return;
-        executor.execute(run);
-//        run.run();
+    /**
+     * Runs the task on the shared background executor.
+     * @return false if the task was dropped (no executor, e.g. after stop)
+     */
+    public static boolean schedule(Runnable run) {
+        ExecutorService ex = executor;
+        if (run == null || ex == null || ex.isShutdown()) return false;
+        try {
+            ex.execute(run);
+            return true;
+        } catch (java.util.concurrent.RejectedExecutionException e) {
+            return false;
+        }
     }
 
     /**
@@ -232,6 +235,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 
     final public void initCore() {
         instance = this;
+        Benchmark.enabled = config.debug.get();
         if (executor == null || executor.isShutdown()) {
             executor = Executors.newSingleThreadExecutor();
         }
@@ -286,7 +290,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     final public void init_loopCore() {
-        logger.write("stage", stage);
+        if (Benchmark.enabled) logger.write("stage", stage);
         update(this::onInitLoop);
     }
 
@@ -297,7 +301,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     }
 
     final public void loopCore() {
-        logger.write("stage", stage);
+        if (Benchmark.enabled) logger.write("stage", stage);
         update(this::onLoop);
     }
 
@@ -313,6 +317,17 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             else
                 onStop();
         } catch(Exception e) {
+            e.printStackTrace(logger.fd());
+        }
+        // make sure every module (telemetry thread, follower/localizer, sensors) is stopped,
+        // also when stopping from init where update(onStop) is skipped. Handlers clear
+        // themselves on stop, so this is a no-op if update() already stopped them.
+        try {
+            internalModules.stopCore();
+            cHubModules.stopCore();
+            eHubModules.stopCore();
+            independentModules.stopCore();
+        } catch (Exception e) {
             e.printStackTrace(logger.fd());
         }
 
@@ -458,10 +473,9 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
             try {
                 Thread.sleep(sleepTime);
             } catch (InterruptedException e) {
-                isStopped = true;
+                // stop was requested; keep the interrupt flag so the loop exits,
+                // but don't touch isStopped or stopCore() would skip the shutdown
                 Thread.currentThread().interrupt();
-                logger.write(e.getMessage());
-                e.printStackTrace(logger.fd());
             }
         }
     }
