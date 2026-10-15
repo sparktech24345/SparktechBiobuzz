@@ -35,7 +35,6 @@ public class ShowcaseTeleop extends CoreOpMode {
     }
 
     public void onLoop() {
-
         int a = 0;
         Benchmark.start("b1");
         Benchmark.start("b2");

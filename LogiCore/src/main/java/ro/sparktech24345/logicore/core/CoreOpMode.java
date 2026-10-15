@@ -2,6 +2,7 @@ package ro.sparktech24345.logicore.core;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.seattlesolvers.solverslib.photon.PhotonCore;
 
 import java.util.concurrent.ExecutorService;
@@ -232,6 +233,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
                 independentModules.writeCore();
                 Benchmark.end();
             }
+            Benchmark.end();
         }
         {
             Benchmark.start("map dump");
@@ -249,7 +251,9 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
     public void setMotorPower(int key, DcMotorEx motor, double power) {
         if (config.performanceEngine.get() == PerformanceEngine.BLAZE && !config.accelerateMotors.get()) {
             double targetPower = MathUtils.clip(power, -1, 1);
-            MotorMap.set(key, targetPower);
+            targetPower *= motor.getDirection() == DcMotorSimple.Direction.REVERSE ? 1 : -1; // very handicap but if it works it works ,I have no clue why it's reversed of the normal reversed way
+            MotorMap.set(key,targetPower);
+            coreTelemetry.addData(motor.toString(),targetPower);
         } else
             motor.setPower(MathUtils.clip(power, -1, 1)); // reverse should by itself make it negative
     }

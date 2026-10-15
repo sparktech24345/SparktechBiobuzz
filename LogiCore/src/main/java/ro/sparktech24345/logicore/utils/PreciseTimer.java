@@ -22,9 +22,9 @@ public class PreciseTimer {
     }
 
     private long time;
-    public double time() { return time; }
-    public double timeMs() { return time * 1e6; }
-    public double timeS() { return time * 1e9; }
+    public double time() { return (System.nanoTime() - time); }
+    public double timeMs() { return (System.nanoTime() - time) / 1e6; }
+    public double timeS() { return (System.nanoTime() - time) / 1e9; }
 
     /**
      * Start or restart the timer.
@@ -32,6 +32,14 @@ public class PreciseTimer {
      * @return This timer for method chaining
      */
     public PreciseTimer start() {
+        time = System.nanoTime();
+        return this;
+    }
+    /**
+     * Start or restart the timer.
+     * @return This timer for method chaining
+     */
+    public PreciseTimer restart() {
         time = System.nanoTime();
         return this;
     }
