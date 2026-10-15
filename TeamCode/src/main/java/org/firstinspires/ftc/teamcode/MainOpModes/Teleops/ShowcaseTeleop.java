@@ -3,16 +3,24 @@ package org.firstinspires.ftc.teamcode.MainOpModes.Teleops;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Components.Configs;
+import org.firstinspires.ftc.teamcode.Components.DecodeTempForTests.TiltComponent;
+import org.firstinspires.ftc.teamcode.Components.DecodeTempForTests.TiltStateSet;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
+import ro.sparktech24345.logicore.commands.DelayCommand;
+import ro.sparktech24345.logicore.commands.SequenceCommand;
+import ro.sparktech24345.logicore.commands.StateCommand;
 import ro.sparktech24345.logicore.core.CoreOpMode;
+import ro.sparktech24345.logicore.core.CoreQueuer;
 import ro.sparktech24345.logicore.utils.Benchmark;
 import ro.sparktech24345.logicore.utils.PreciseTimer;
-import ro.sparktech24345.logicore.utils.TimeUnit;
+import ro.sparktech24345.logicore.utils.TimeSpec;
 
 @TeleOp(name = "Showcase TeleOP", group = "AAA")
 public class ShowcaseTeleop extends CoreOpMode {
+    TiltComponent tiltComponent;
     public ShowcaseTeleop() {
         super(Configs.teleopCfg);
     }
@@ -21,6 +29,8 @@ public class ShowcaseTeleop extends CoreOpMode {
     private final PreciseTimer mainTimer = new PreciseTimer();
 
     public void onInit() {
+        tiltComponent = new TiltComponent();
+        install(tiltComponent,1);
     }
 
     /**
@@ -46,7 +56,23 @@ public class ShowcaseTeleop extends CoreOpMode {
         Benchmark.end();
         Benchmark.end();
 
+
+
+        if(gamepad1.aWasPressed()){
+            execute(new SequenceCommand(new Consumer<CoreQueuer>() {
+                @Override
+                public void accept(CoreQueuer coreQueuer) {
+                    coreQueuer.queue(new StateCommand<>(tiltComponent,TiltStateSet.INACTIVE));
+                    coreQueuer.queue(new DelayCommand(TimeSpec.fromMillis(20)));
+                    coreQueuer.queue(new StateCommand<>(tiltComponent,TiltStateSet.ACTIVE));
+                }
+            }
+            ));
+        }
+
+
         coreTelemetry.addData("voltage", voltageSensor.voltage());
+        coreTelemetry.addData("pose", coreFollower.pose());
         coreTelemetry.addData("Loop time", mainTimer.timeMs());
 //        coreTelemetry.addData("pos", getFollower().pose());
         mainTimer.start();

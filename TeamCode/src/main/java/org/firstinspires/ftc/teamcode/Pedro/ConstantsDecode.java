@@ -8,8 +8,11 @@ import com.pedropathing.math.Matrix;
 import com.pedropathing.math.Vector2D;
 import com.pedropathing.revhub.drivetrains.Mecanum;
 import com.pedropathing.revhub.drivetrains.MecanumConfig;
+import com.pedropathing.revhub.localizers.OctoQuadConfig;
+import com.pedropathing.revhub.localizers.OctoQuadLocalizer;
 import com.pedropathing.revhub.localizers.PinpointConfig;
 import com.pedropathing.revhub.localizers.PinpointLocalizer;
+import com.qualcomm.hardware.digitalchickenlabs.OctoQuad;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -20,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import ro.sparktech24345.logicore.core.CoreOpMode;
 import ro.sparktech24345.logicore.pedro.FollowerConstants;
 import ro.sparktech24345.logicore.pedro.SparkMecanum;
+import ro.sparktech24345.logicore.pedro.SparkOctoQuadLocalizer;
 import ro.sparktech24345.logicore.pedro.SparkPinpointLocalizer;
 
 public class ConstantsDecode implements FollowerConstants {
@@ -83,14 +87,7 @@ public class ConstantsDecode implements FollowerConstants {
         c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD); // was strafeEncoderDirection
         // yawScalar(1.000977114) — no PinpointConfig field exists; set directly on the raw driver below.
     });
-
-    private static void applyYawScalar(HardwareMap hardwareMap) {
-        GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
-        pinpoint.setYawScalar(1.000977114);
-    }
-
     public static Follower createFollowerDecode(HardwareMap hardwareMap) {
-        applyYawScalar(hardwareMap);
         Mecanum drivetrain = new Mecanum(hardwareMap, drivetrainConfig);
         PinpointLocalizer localizer = new PinpointLocalizer(hardwareMap, localizerConfig);
         Foresight algorithm = new Foresight(foresightConfig);
@@ -98,7 +95,6 @@ public class ConstantsDecode implements FollowerConstants {
     }
 
     public static Follower createPhotonFollower(HardwareMap hardwareMap) {
-        applyYawScalar(hardwareMap);
         Mecanum drivetrain = new Mecanum(hardwareMap, drivetrainConfig);
         SparkPinpointLocalizer localizer = new SparkPinpointLocalizer(hardwareMap, localizerConfig);
         Foresight algorithm = new Foresight(foresightConfigFarAuto);
@@ -106,23 +102,43 @@ public class ConstantsDecode implements FollowerConstants {
     }
 
     public static Follower createBlazeFollower(HardwareMap hardwareMap) {
-        applyYawScalar(hardwareMap);
         SparkMecanum drivetrain = new SparkMecanum(hardwareMap, drivetrainConfig);
         SparkPinpointLocalizer localizer = new SparkPinpointLocalizer(hardwareMap, localizerConfig);
         Foresight algorithm = new Foresight(foresightConfigFarAuto);
         return new Follower(localizer, drivetrain, algorithm);
     }
+    public static Follower createFollowerOctoQuad(HardwareMap hardwareMap) {
+        SparkMecanum drivetrain = new SparkMecanum(hardwareMap, drivetrainConfig);
+        SparkOctoQuadLocalizer localizer = new SparkOctoQuadLocalizer(hardwareMap, octoQuadConfig);
+        Foresight algorithm = new Foresight(foresightConfigFarAuto);
+        return new Follower(localizer, drivetrain, algorithm);
+    }
+    public static OctoQuadConfig octoQuadConfig = new OctoQuadConfig(c -> {
+        c.name.set("octoquad");
+        c.globalDistanceUnit.set(DistanceUnit.MM);
+        c.offsetUnits.set(DistanceUnit.MM);
+        c.xPodOffset.set(-111.9);   // was forwardPodY, -0.1119 m converted to inches
+        c.yPodOffset.set(-185.67);   // was strafePodX, -0.18467 m converted to inches
+        c.xPodDirection.set(OctoQuad.EncoderDirection.FORWARD);  // was forwardEncoderDirection
+        c.yPodDirection.set(OctoQuad.EncoderDirection.FORWARD); // was strafeEncoderDirection
+
+
+        c.ticksPerUnit.set(19.89436789); // the gobilda 4 bar odometry pod value of ticks per mm
+    });
+
+
 
     @Override
     public @NotNull Follower create(@NotNull HardwareMap hardwareMap) {
-        switch (CoreOpMode.instance().config().performanceEngine.get()) {
-            case PHOTON:
-                return createPhotonFollower(hardwareMap);
-            case BLAZE:
-                return createBlazeFollower(hardwareMap);
-            default:
-                return createFollowerDecode(hardwareMap);
-        }
+//        switch (CoreOpMode.instance().config().performanceEngine.get()) {
+//            case PHOTON:
+//                return createPhotonFollower(hardwareMap);
+//            case BLAZE:
+//                return createBlazeFollower(hardwareMap);
+//            default:
+//                return createFollowerDecode(hardwareMap);
+//        }
+        return createFollowerOctoQuad(hardwareMap);
     }
 
     @Override
