@@ -37,7 +37,7 @@ public class TestTeleOP extends CoreOpMode {
             // practic eventurile trimit un semnal atunci cand ele se intampla iar acel semnal e interceptat in mai multe locuri
             // ex: eventul de button press e interceptat, verifica daca butonul apasat e CROSS1 si atunci scrie ceva in telemetry
             if (event.button().button() == Button.CROSS1)
-                coreTelemetry.addData("Salut", timer.time().getMs());
+                coreTelemetry.addData("Salut", timer.timeMs());
         });
     }
 
@@ -48,7 +48,7 @@ public class TestTeleOP extends CoreOpMode {
     public void onLoop() {
         logger.write("Loop Time",
                 "%.3f ms", // formatul doar zice ca floatul sa fie afisat cu 3 zecimale
-                timer.time().getMs());
+                timer.timeMs());
     }
 
     public void onStop() {

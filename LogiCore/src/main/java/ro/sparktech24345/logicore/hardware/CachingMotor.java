@@ -30,8 +30,6 @@ public class CachingMotor implements DcMotorEx {
     private final int key;
     private double threshold;
     private CachingTracker tracker;
-    private double lastPower = 0;
-    private ZeroPowerBehavior lastZeroPowerBehavior = null;
 
     public CachingMotor(DcMotorEx motor) {
         this(motor, DEFAULT_THRESHOLD);
@@ -70,7 +68,6 @@ public class CachingMotor implements DcMotorEx {
     /** Forget the cached power and zero power behavior; the next writes are always sent. */
     public void resetCache() {
         tracker = new CachingTracker(threshold, Double.NaN);
-        lastZeroPowerBehavior = null;
     }
 
     // ===================== cached writes =====================
@@ -79,7 +76,6 @@ public class CachingMotor implements DcMotorEx {
     public void setPower(double power) {
         power = MathUtils.clip(power, -1, 1);
         if (!tracker.shouldUpdate(power)) return;
-        lastPower = power;
         CoreOpMode op = CoreOpMode.instance();
         if (op != null) op.setMotorPower(key, motor, power);
         else motor.setPower(power);
@@ -88,13 +84,11 @@ public class CachingMotor implements DcMotorEx {
     /** Last power that was actually sent (in Blaze mode the SDK's own getPower() isn't updated). */
     @Override
     public double getPower() {
-        return lastPower;
+        return tracker.lastValue();
     }
 
     @Override
     public void setZeroPowerBehavior(ZeroPowerBehavior zeroPowerBehavior) {
-        if (zeroPowerBehavior == lastZeroPowerBehavior) return;
-        lastZeroPowerBehavior = zeroPowerBehavior;
         motor.setZeroPowerBehavior(zeroPowerBehavior);
     }
 

@@ -175,9 +175,9 @@ public class CoreButton {
     /**
      * Duration of the most recent button hold
      */
-    private TimeSpec holdTime = new TimeSpec(0);
+    private double holdTime = 0;
 
-    public TimeSpec holdTime() {
+    public double holdTime() {
         ensureUpdated();
         return this.holdTime;
     }

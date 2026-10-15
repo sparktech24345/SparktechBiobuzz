@@ -80,7 +80,9 @@ public class ModuleHandler implements ModuleContainer {
 
     public void writeCore() {
         for (CoreModule module : modules) {
-            Benchmark.of("module write " + module, module::writeCore);
+            Benchmark.start("module write " + module.getClass().getSimpleName());
+            module.writeCore();
+            Benchmark.end();
         }
     }
 }

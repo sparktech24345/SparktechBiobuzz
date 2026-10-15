@@ -50,7 +50,8 @@ public class CoreVoltageSensor implements CoreModule {
      * Update voltage reading at throttled rate
      */
     public void readCore() {
-        Benchmark.of("voltage sensor", () -> {
+        {
+            Benchmark.start("voltage sensor");
             if (!ticker.shouldTick() || !readPending.compareAndSet(false, true)) return;
             boolean scheduled = CoreOpMode.schedule(() -> {
                 try {
@@ -60,7 +61,7 @@ public class CoreVoltageSensor implements CoreModule {
                 }
             });
             if (!scheduled) readPending.set(false);
-        });
+            Benchmark.end();
+        }
     }
-
 }

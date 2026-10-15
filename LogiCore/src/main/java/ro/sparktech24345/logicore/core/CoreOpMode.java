@@ -186,7 +186,8 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
      */
     private void update(Runnable fn) {
         // read control hub motors, exp motors, senzori, processing, write controlhub, motors exp, motors all servos
-        if (stage != GameStage.INIT) Benchmark.of("inputs", () -> {
+        if (stage != GameStage.INIT) {
+            Benchmark.start("inputs");
             internalModules.readCore();
 //                if (config.performanceEngine.get() != PerformanceEngine.BLAZE) {
             cHubModules.readCore();
@@ -194,29 +195,49 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 //                }
             independentModules.readCore();
             // end of input stuff
-        });
+            Benchmark.end();
+        }
 
-        Benchmark.of("processing", () -> {
+        {
+            Benchmark.start("processing");
             fn.run();
             internalModules.doUpdate(stage); // kinda also read // actually not really
             cHubModules.doUpdate(stage);
             eHubModules.doUpdate(stage);
             independentModules.doUpdate(stage);
             // end of processing
-        });
+            Benchmark.end();
+        }
 
-        if (stage != GameStage.INIT) Benchmark.of("outputs", () -> {
-            Benchmark.of("internal modules output", internalModules::writeCore);
-            Benchmark.of("motors and servos output", () -> {
+        if (stage != GameStage.INIT) {
+            Benchmark.start("outputs");
+            {
+                Benchmark.start("internal modules output");
+                internalModules.writeCore();
+                Benchmark.end();
+            }
+            {
+                Benchmark.start("motors and servos output");
                 cHubModules.writeCore();
                 eHubModules.writeCore();
-                if (config.performanceEngine.get() == PerformanceEngine.BLAZE)
-                    Benchmark.of("MotorMap write", MotorMap::write);
-            });
-            Benchmark.of("independent modules output", independentModules::writeCore);
-        });
-
-        coreTelemetry.dumpMap(); // save snapshot of current telemetry to send
+                if (config.performanceEngine.get() == PerformanceEngine.BLAZE) {
+                    Benchmark.start("MotorMap write");
+                    MotorMap.write();
+                    Benchmark.end();
+                }
+                Benchmark.end();
+            }
+            {
+                Benchmark.start("independent modules output");
+                independentModules.writeCore();
+                Benchmark.end();
+            }
+        }
+        {
+            Benchmark.start("map dump");
+            coreTelemetry.dumpMap(); // save snapshot of current telemetry to send
+            Benchmark.end();
+        }
     }
 
     public void setMotorPower(DcMotorEx motor, double power) {
@@ -235,6 +256,7 @@ public abstract class CoreOpMode extends DummyPlugOpMode {
 
     final public void initCore() {
         instance = this;
+        Benchmark.init();
         Benchmark.enabled = config.debug.get();
         if (executor == null || executor.isShutdown()) {
             executor = Executors.newSingleThreadExecutor();

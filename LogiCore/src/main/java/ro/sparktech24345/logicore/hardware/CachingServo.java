@@ -73,7 +73,7 @@ public class CachingServo implements Servo {
 
     // ===================== pass-through =====================
 
-    @Override public double getPosition() { return servo.getPosition(); }
+    @Override public double getPosition() { return tracker.lastValue(); }
     @Override public Direction getDirection() { return servo.getDirection(); }
     @Override public ServoController getController() { return servo.getController(); }
     @Override public int getPortNumber() { return servo.getPortNumber(); }

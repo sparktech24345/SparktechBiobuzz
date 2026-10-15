@@ -115,7 +115,9 @@ public class CoreFollower<T extends FollowerConstants> implements CoreModule {
     }
 
     public void writeCore() {
-        Benchmark.of("follower", follower::update);
+        Benchmark.start("follower");
+        follower.update();
+        Benchmark.end();
     }
 
     public void stopCore() {

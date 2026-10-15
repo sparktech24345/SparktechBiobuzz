@@ -46,7 +46,8 @@ public class CoreGamepad implements CoreModule {
     }
 
     public void readCore() {
-        Benchmark.of("gamepad", () -> {
+        {
+            Benchmark.start("gamepad");
             if (CoreOpMode.instance().config().performanceEngine.get()
                     == PerformanceEngine.BLAZE)
                 CoreOpMode.instance().updateGamepads();
@@ -56,7 +57,8 @@ public class CoreGamepad implements CoreModule {
                     || EventBus.hasListeners(CoreButton.ButtonReleaseEvent.class)
                     || EventBus.hasListeners(CoreButton.ButtonToggleEvent.class))
                 for (CoreButton button : buttons.values()) button.update();
-        });
+            Benchmark.end();
+        }
     }
 
     /**

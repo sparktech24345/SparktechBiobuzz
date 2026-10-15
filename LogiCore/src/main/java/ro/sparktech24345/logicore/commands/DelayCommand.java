@@ -2,6 +2,7 @@ package ro.sparktech24345.logicore.commands;
 
 import ro.sparktech24345.logicore.utils.PreciseTimer;
 import ro.sparktech24345.logicore.utils.TimeSpec;
+import ro.sparktech24345.logicore.utils.TimeUnit;
 
 /**
  * Command that waits for a specified duration before finishing.
@@ -13,7 +14,7 @@ public class DelayCommand extends BaseCommand {
         super(() -> {
         });
         this.onStart = () -> timer.start();
-        this.finishCondition = () -> timer.time().compareTo(time) >= 0;
+        this.finishCondition = () -> timer.time() >= time.getNs();
     }
 
     protected PreciseTimer timer = new PreciseTimer();

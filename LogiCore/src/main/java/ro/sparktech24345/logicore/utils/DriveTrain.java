@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import ro.sparktech24345.logicore.core.CoreModule;
 import ro.sparktech24345.logicore.core.CoreOpMode;
-import ro.sparktech24345.logicore.core.DriveMode;
+import ro.sparktech24345.logicore.core.OpModeType;
 import ro.sparktech24345.logicore.hardware.CachingMotor;
 
 /**
@@ -94,13 +94,7 @@ public class DriveTrain implements CoreModule {
         rb.setDirection(DcMotorSimple.Direction.FORWARD);
         lb.setDirection(DcMotorSimple.Direction.REVERSE);
 
-
-
         this.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rfk = Keys.key(rf.getController().getConnectionInfo(), rf.getPortNumber());
-        rbk = Keys.key(rb.getController().getConnectionInfo(), rb.getPortNumber());
-        lbk = Keys.key(lb.getController().getConnectionInfo(), lb.getPortNumber());
-        lfk = Keys.key(lf.getController().getConnectionInfo(), lf.getPortNumber());
     }
 
     protected double rfp = 0;
@@ -113,7 +107,8 @@ public class DriveTrain implements CoreModule {
      * Implements holonomic drive with automatic power normalization.
      */
     public void loopCore() {
-        Benchmark.of("drivetrain calc", () -> {
+        {
+            Benchmark.start("drivetrain calc");
             if (CoreOpMode.instance().config().type.get() == OpModeType.AUTONOMOUS) return;
             double flip = directionFlip ? -1 : 1;
             double vertical = -gamepad.left_stick_y * flip;
@@ -140,29 +135,27 @@ public class DriveTrain implements CoreModule {
                 lfp /= div;
                 lbp /= div;
             }
-        });
+            Benchmark.end();
+        }
     }
 
-    public void writePowers() {
-        System.out.printf(
-            "x=%.3f y=%.3f turn=%.3f powers=[%.3f, %.3f, %.3f, %.3f]%n",
-            gamepad.left_stick_x, gamepad.left_stick_y, gamepad.right_stick_x,
-            rfp, lfp, lbp, rbp
-        );
-    }
-    private final CachingTracker rft = new CachingTracker(.02);
-    private final CachingTracker rbt = new CachingTracker(.02);
-    private final CachingTracker lbt = new CachingTracker(.02);
-    private final CachingTracker lft = new CachingTracker(.02);
-
+//    public void writePowers() {
+//        System.out.printf(
+//            "x=%.3f y=%.3f turn=%.3f powers=[%.3f, %.3f, %.3f, %.3f]%n",
+//            gamepad.left_stick_x, gamepad.left_stick_y, gamepad.right_stick_x,
+//            rfp, lfp, lbp, rbp
+//        );
+//    }
     public void writeCore() {
-        Benchmark.of("drivetrain", () -> {
-            if (!hasControl()) return;
+        {
+            Benchmark.start("drivetrain");
+            if (CoreOpMode.instance().config().type.get() == OpModeType.AUTONOMOUS) return;
             // CachingMotor only sends powers that changed
             rf.setPower(rfp * slowdownMultiplier);
             rb.setPower(rbp * slowdownMultiplier);
             lb.setPower(lbp * slowdownMultiplier);
             lf.setPower(lfp * slowdownMultiplier);
-        });
+            Benchmark.end();
+        }
     }
 }

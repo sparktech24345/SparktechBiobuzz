@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ro.sparktech24345.logicore.core.CoreOpMode;
-import ro.sparktech24345.logicore.core.DriveMode;
 import ro.sparktech24345.logicore.hardware.CachingMotor;
 import ro.sparktech24345.logicore.utils.Benchmark;
 
@@ -33,17 +32,17 @@ public class SparkMecanum implements Drivetrain {
 
     private double powerScale = 1.0;
     private DrivePowers drivePowers = DrivePowers.zero();
-    private volatile boolean isStopped = false;
-
+    private volatile boolean shouldRun = true;
     public SparkMecanum(HardwareMap map, MecanumConfig config) {
         this.config = config;
-
+        this.shouldRun = !CoreOpMode.instance().config().useDriveTrain.get();
         motors = new CachingMotor[]{
                 new CachingMotor(map.get(DcMotorEx.class, config.frontLeftName.get())),
                 new CachingMotor(map.get(DcMotorEx.class, config.frontRightName.get())),
                 new CachingMotor(map.get(DcMotorEx.class, config.backLeftName.get())),
                 new CachingMotor(map.get(DcMotorEx.class, config.backRightName.get()))
         };
+        if (!shouldRun) return;
 
         motors[FL].setDirection(config.frontLeftDirection.get());
         motors[FR].setDirection(config.frontRightDirection.get());
@@ -51,11 +50,11 @@ public class SparkMecanum implements Drivetrain {
         motors[BR].setDirection(config.backRightDirection.get());
 
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        isStopped = false;
     }
 
     @SuppressLint("DefaultLocale")
     public void applyDrive(DrivePowers powers) {
+        if (!shouldRun) return;
         drivePowers = powers;
 
         double[] wheelPowers = computeWheelPowersUnnormalized(powers);
@@ -71,15 +70,14 @@ public class SparkMecanum implements Drivetrain {
             this.wheelPowers[i] = wheelPowers[i] / maxPower;
         }
 
-        if (hasControl()) {
-            motors[FL].setPower(this.wheelPowers[FL]);
-            motors[FR].setPower(this.wheelPowers[FR]);
-            motors[BR].setPower(this.wheelPowers[BR]);
-            motors[BL].setPower(this.wheelPowers[BL]);
-        }
+        motors[FL].setPower(this.wheelPowers[FL]);
+        motors[FR].setPower(this.wheelPowers[FR]);
+        motors[BR].setPower(this.wheelPowers[BR]);
+        motors[BL].setPower(this.wheelPowers[BL]);
     }
 
     public double[] computeWheelPowersUnnormalized(DrivePowers powers) {
+        if (!shouldRun) return new double[]{0, 0, 0, 0};
         double[] wheelPowers = new double[4];
         double forward = powers.forward();
         double strafe = powers.strafe();
@@ -100,6 +98,7 @@ public class SparkMecanum implements Drivetrain {
 
     @Override
     public double maxScaling(DrivePowers current, DrivePowers delta) {
+        if (!shouldRun) return 0;
         double lambda = 1.0;
 
         double[] currentPowers = computeWheelPowersUnnormalized(current);
@@ -123,14 +122,14 @@ public class SparkMecanum implements Drivetrain {
 
     @Override
     public void drive(DrivePowers powers, boolean manual) {
-        isStopped = false;
-        Benchmark.of("follower Drive",() -> {
+        if (!shouldRun) return;
+        Benchmark.start("follower Drive");
             if (manual && config.manualBrakeMode.get())
                 setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             else
                 setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             applyDrive(powers);
-        });
+        Benchmark.end();
         CoreOpMode.instance().telemetry().addLine("follower has used motors");
     }
 
@@ -140,9 +139,7 @@ public class SparkMecanum implements Drivetrain {
     }
 
     public void stop(boolean brake) {
-
-        if(isStopped) return;
-        isStopped = true;
+        if (!shouldRun) return;
 
         if (brake) {
             setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -155,6 +152,7 @@ public class SparkMecanum implements Drivetrain {
     @Override
     public Map<String, Object> debug() {
         Map<String, Object> map = new HashMap<>();
+        if (!shouldRun) return map;
 
         map.put("forward", drivePowers.forward());
         map.put("strafe", drivePowers.strafe());
@@ -169,6 +167,7 @@ public class SparkMecanum implements Drivetrain {
     }
 
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
+        if (!shouldRun) return;
         // CachingMotor only sends it when it changed; drive() calls this every loop
         for (CachingMotor motor : motors) {
             motor.setZeroPowerBehavior(behavior);
@@ -180,6 +179,7 @@ public class SparkMecanum implements Drivetrain {
      * This is not bulk cached by the motors so each motor request is a hardware read
      */
     public double currentAmps() {
+        if (!shouldRun) return 0;
         double total = 0;
         for (DcMotorEx motor : motors) {
             total += motor.getCurrent(CurrentUnit.AMPS);
@@ -189,6 +189,7 @@ public class SparkMecanum implements Drivetrain {
 
     @Override
     public double interpolateVelocity(double xRadius, double yRadius, double theta) {
+        if (!shouldRun) return 0;
         return 1.0 / (Math.abs(Math.cos(theta)) / xRadius + Math.abs(Math.sin(theta)) / yRadius);
     }
 }

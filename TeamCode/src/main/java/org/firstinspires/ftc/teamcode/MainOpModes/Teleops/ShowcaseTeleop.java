@@ -4,7 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Components.Configs;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import ro.sparktech24345.logicore.core.CoreOpMode;
+import ro.sparktech24345.logicore.utils.Benchmark;
 import ro.sparktech24345.logicore.utils.PreciseTimer;
 import ro.sparktech24345.logicore.utils.TimeUnit;
 
@@ -32,8 +35,20 @@ public class ShowcaseTeleop extends CoreOpMode {
     }
 
     public void onLoop() {
+
+        int a = 0;
+        Benchmark.start("b1");
+        Benchmark.start("b2");
+        Benchmark.start("b3");
+        Benchmark.start("b4");
+        a += 1;
+        Benchmark.end();
+        Benchmark.end();
+        Benchmark.end();
+        Benchmark.end();
+
         coreTelemetry.addData("voltage", voltageSensor.voltage());
-        coreTelemetry.addData("Loop time", mainTimer.time().get(TimeUnit.MILLIS));
+        coreTelemetry.addData("Loop time", mainTimer.timeMs());
 //        coreTelemetry.addData("pos", getFollower().pose());
         mainTimer.start();
     }

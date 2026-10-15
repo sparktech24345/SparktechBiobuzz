@@ -5,26 +5,32 @@ import ro.sparktech24345.logicore.core.CoreOpMode;
 public class Benchmark {
     /** Set from OpModeConfig.debug in CoreOpMode.initCore. Off by default: timing every block costs loop time. */
     public static volatile boolean enabled = false;
+    private static final int MAX_BENCHES = 100;
+    private static final PreciseTimer[] timers = new PreciseTimer[MAX_BENCHES];
+    private static int stackPtr = 0;
 
     /**
      * Benchmark a block of code when debug mode is enabled.
      * Logs execution time to both telemetry and console.
      */
-    public static void of(String name, Runnable run) {
-        if (!enabled) {
-            run.run();
-            return;
-        }
-        Benchmark.of(name, CoreOpMode.instance().logger(), run);
+
+    static {
+        for (int i = 0; i < MAX_BENCHES; ++i) timers[i] = new PreciseTimer("default stuff");
     }
 
-    public static void of(String name, Logger log, Runnable run) {
-        if (!enabled || log == null) {
-            run.run();
-            return;
-        }
-        PreciseTimer bm = new PreciseTimer(name).start();
-        run.run();
-        bm.log(log);
+    public static void init() {
+        stackPtr = 0;
+    }
+
+    public static void start(String name) {
+        if (!enabled) return;
+        if (stackPtr >= MAX_BENCHES) return;
+        timers[stackPtr++].name(name).start();
+    }
+
+    public static void end() {
+        if (!enabled) return;
+        if (stackPtr <= 0) return;
+        timers[--stackPtr].log(CoreOpMode.instance().logger());
     }
 }

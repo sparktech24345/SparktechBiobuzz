@@ -71,7 +71,7 @@ public class TickInterval {
                 return update;
             }
             case TIME: {
-                double elapsed = timer.time().get(timeUnit);
+                double elapsed = timer.timeMs();
                 if (elapsed >= interval) {
                     timer.start();
                     return true;

@@ -14,7 +14,7 @@ public class HoldCommand extends BaseCommand {
             follower.hold(pose);
             timer.start();
         };
-        this.finishCondition = () -> timer.time().compareTo(holdTime) >= 0;
+        this.finishCondition = () -> timer.time() >= holdTime.getNs();
     }
 
     private final PreciseTimer timer = new PreciseTimer();
